@@ -19,9 +19,9 @@ export default function HomePage() {
       <Services />
 
       {/* Selected Work */}
-      <section id="work" className="relative py-32 px-6 overflow-hidden">
+      <section id="work" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center">
         <SectionAtmosphere theme="work" />
-        <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="relative z-10 max-w-7xl mx-auto w-full">
           <WorkSectionHeader />
           <PortfolioGrid items={items} />
         </div>

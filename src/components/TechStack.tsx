@@ -45,9 +45,9 @@ function StackRow({ row, index }: { row: typeof STACK_ROWS[0]; index: number }) 
 
 export default function TechStack() {
   return (
-    <section id="stack" className="relative py-32 px-6 overflow-hidden">
+    <section id="stack" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center">
       <SectionAtmosphere theme="techstack" />
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto w-full">
 
         <div className="mb-16 space-y-2">
           <ScrollReveal direction="down">
