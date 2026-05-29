@@ -88,12 +88,16 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                     <div className="w-9 h-9 rounded-xl opacity-30" style={{ background: accent }} />
                   </div>
                 )}
+                {/* Dark scrim so badges are always legible over photos */}
+                {item.coverImage && (
+                  <div className="absolute inset-0 bg-black/30" />
+                )}
                 {/* Overlay badges — always shown on top */}
-                <div className="absolute top-4 left-4 text-xs font-mono tracking-widest text-white/40">
+                <div className="absolute top-4 left-4 text-xs font-mono tracking-widest text-white/70 drop-shadow-md">
                   {String(index + 1).padStart(2, '0')}
                 </div>
-                <div className="absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium tracking-wide backdrop-blur-sm"
-                  style={{ backgroundColor: `${accent}25`, color: accent, border: `1px solid ${accent}40` }}>
+                <div className="absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium tracking-wide backdrop-blur-md"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: accent, border: `1px solid ${accent}50` }}>
                   {CATEGORY_LABELS[item.mainCategory]}
                 </div>
                 <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#111] to-transparent" />
