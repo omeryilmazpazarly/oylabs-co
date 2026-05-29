@@ -14,7 +14,7 @@ export default function Contact() {
   const rightIn  = useInView(rightRef, { margin: '-72px 0px', once: false });
 
   return (
-    <section id="contact" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center snap-start">
+    <section id="contact" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center">
       <SectionAtmosphere theme="contact" />
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <div className="grid md:grid-cols-2 gap-16 items-center">

@@ -28,8 +28,11 @@ export default function HomePage() {
       </section>
 
       <TechStack />
-      <Contact />
-      <Footer />
+      {/* Contact + Footer share one snap unit so the footer is reachable */}
+      <div className="snap-start">
+        <Contact />
+        <Footer />
+      </div>
     </>
   );
 }
