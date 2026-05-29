@@ -4,9 +4,9 @@ import TechStack from '@/components/TechStack';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getAllItems } from '@/lib/db';
-import PortfolioGrid from '@/components/PortfolioGrid';
 import LightSection from '@/components/effects/LightSection';
 import SectionOrbs from '@/components/effects/SectionOrbs';
+import SelectedWorkSection from '@/components/SelectedWorkSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,30 +18,10 @@ export default function HomePage() {
       <Hero />
       <Services />
 
-      {/* Featured Work — violet/amber orb tint */}
-      <section id="work" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
-        <SectionOrbs variant="violet-amber" />
-        <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Selected Work</span>
-              <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight text-white">
-                Recent <span className="text-[#71717a]">Projects</span>
-              </h2>
-            </div>
-            <a
-              href="/portfolio"
-              className="text-sm text-[#71717a] hover:text-white tracking-wide transition-colors border-b border-[#333] pb-0.5 hover:border-white whitespace-nowrap"
-            >
-              View all projects →
-            </a>
-          </div>
-          <PortfolioGrid items={items} />
-        </div>
-      </section>
+      {/* Selected Work — full page goes white as you scroll through */}
+      <SelectedWorkSection items={items} />
 
-      {/* Mercury-style: as this section enters the viewport the entire
-          page (including Navbar) smoothly transitions dark → light → dark */}
+      {/* The Core Stack — same Mercury transition */}
       <LightSection>
         <TechStack />
       </LightSection>

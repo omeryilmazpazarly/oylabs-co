@@ -21,11 +21,9 @@ export default function PageBackground() {
   }, []);
 
   useMotionValueEvent(lightness, 'change', (v) => {
-    // Interpolate  #000000 (0,0,0)  →  #f7f7f8 (247,247,248)
-    const r = Math.round(v * 247);
-    const g = Math.round(v * 247);
-    const b = Math.round(v * 248);
-    document.body.style.backgroundColor = `rgb(${r},${g},${b})`;
+    // Interpolate  #000000 (0,0,0)  →  #ffffff (255,255,255)
+    const c = Math.round(v * 255);
+    document.body.style.backgroundColor = `rgb(${c},${c},${c})`;
   });
 
   return null;

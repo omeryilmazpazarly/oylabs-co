@@ -33,10 +33,10 @@ export default function Navbar() {
   // ── page lightness from global context ────────────────────────────────
   const lightness = usePageLightness();
 
-  // Background colour components (black ↔ near-white)
-  const bgR = useTransform(lightness, [0, 1], [0,   247]);
-  const bgG = useTransform(lightness, [0, 1], [0,   247]);
-  const bgB = useTransform(lightness, [0, 1], [0,   248]);
+  // Background colour components (black ↔ white)
+  const bgR = useTransform(lightness, [0, 1], [0,   255]);
+  const bgG = useTransform(lightness, [0, 1], [0,   255]);
+  const bgB = useTransform(lightness, [0, 1], [0,   255]);
   // Opacity: 0 at top, 0.88 when scrolled
   const bgA = useTransform(scrolled, [0, 1], [0, 0.88]);
   const headerBg = useMotionTemplate`rgba(${bgR},${bgG},${bgB},${bgA})`;
