@@ -33,7 +33,7 @@ const STACK_ROWS = [
  */
 export default function TechStack() {
   return (
-    <section id="stack" className="py-32 px-6">
+    <section id="stack" className="py-40 px-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

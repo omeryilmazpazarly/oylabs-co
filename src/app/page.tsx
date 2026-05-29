@@ -41,7 +41,10 @@ export default function HomePage() {
       </section>
 
       {/* Mercury-style: scrolls from dark → light → dark */}
-      <LightSection>
+      <LightSection className="relative">
+        {/* Edge feathers so the white never cuts hard against the black page */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 to-transparent z-10" />
         <TechStack />
       </LightSection>
 
