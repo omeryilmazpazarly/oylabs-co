@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Globe, ExternalLink } from 'lucide-react';
 import type { PortfolioItem } from '@/types/portfolio';
 import { CATEGORY_LABELS } from '@/types/portfolio';
 import { CATEGORY_COLORS, COVER_GRADIENTS } from '@/lib/portfolioConstants';
@@ -26,30 +26,51 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
       <div className="min-h-screen bg-[#000]">
 
         {/* ── Hero cover ─────────────────────────────────────────────── */}
-        <div className={`relative h-[55vh] min-h-[400px] bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]} overflow-hidden`}>
-          {/* Ambient glow */}
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-25 pointer-events-none"
-            style={{ background: `radial-gradient(ellipse, ${accent}70 0%, transparent 70%)`, filter: 'blur(72px)' }}
-          />
-          {/* Grid */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)',
-              backgroundSize: '48px 48px',
-            }}
-          />
-          {/* Rotating rings */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-              className="absolute w-64 h-64 rounded-full border opacity-[0.12]" style={{ borderColor: accent }} />
-            <motion.div animate={{ rotate: -360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-              className="absolute w-44 h-44 rounded-full border opacity-[0.18]" style={{ borderColor: accent }} />
-            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-16 h-16 rounded-2xl opacity-40" style={{ background: accent }} />
-          </div>
+        <div className={`relative h-[55vh] min-h-[400px] overflow-hidden ${item.coverImage ? '' : `bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]}`}`}>
+
+          {/* Real cover image (if set) */}
+          {item.coverImage && (
+            <img
+              src={item.coverImage}
+              alt={item.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+
+          {/* Overlay — always present so text stays readable */}
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+
+          {/* Ambient glow (only shown when no cover image) */}
+          {!item.coverImage && (
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-25 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse, ${accent}70 0%, transparent 70%)`, filter: 'blur(72px)' }}
+            />
+          )}
+
+          {/* Grid (only shown when no cover image) */}
+          {!item.coverImage && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)',
+                backgroundSize: '48px 48px',
+              }}
+            />
+          )}
+
+          {/* Rotating rings (only shown when no cover image) */}
+          {!item.coverImage && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+                className="absolute w-64 h-64 rounded-full border opacity-[0.12]" style={{ borderColor: accent }} />
+              <motion.div animate={{ rotate: -360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                className="absolute w-44 h-44 rounded-full border opacity-[0.18]" style={{ borderColor: accent }} />
+              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-16 h-16 rounded-2xl opacity-40" style={{ background: accent }} />
+            </div>
+          )}
 
           {/* Breadcrumb */}
           <div className="absolute top-28 left-0 right-0 px-6 max-w-7xl mx-auto">
@@ -121,6 +142,31 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
                 </div>
               </div>
 
+              {/* Gallery */}
+              {item.images && item.images.length > 0 && (
+                <div>
+                  <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-5">
+                    Project Gallery
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {item.images.map((src, i) => (
+                      <a key={i} href={src} target="_blank" rel="noopener noreferrer"
+                        className="group relative rounded-xl overflow-hidden border border-[#1a1a1a] hover:border-[#333] transition-colors aspect-video block bg-[#0d0d0d]">
+                        <img
+                          src={src}
+                          alt={`${item.title} screenshot ${i + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <ArrowUpRight size={20} className="text-white drop-shadow-lg" />
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Highlights */}
               <div>
                 <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-5">
@@ -160,6 +206,36 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
 
               {/* Accent divider */}
               <div className="h-px" style={{ background: `linear-gradient(90deg, ${accent}50, transparent)` }} />
+
+              {/* External links */}
+              {(item.websiteUrl || item.liveUrl) && (
+                <div className="space-y-2.5">
+                  {item.websiteUrl && (
+                    <a
+                      href={item.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2.5 w-full px-4 py-3 rounded-xl border border-[#222] bg-[#0d0d0d] text-sm text-[#a1a1aa] hover:text-white hover:border-[#333] transition-all"
+                    >
+                      <Globe size={14} className="flex-shrink-0" style={{ color: accent }} />
+                      <span className="flex-1 truncate">Visit Website</span>
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </a>
+                  )}
+                  {item.liveUrl && (
+                    <a
+                      href={item.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2.5 w-full px-4 py-3 rounded-xl border border-[#222] bg-[#0d0d0d] text-sm text-[#a1a1aa] hover:text-white hover:border-[#333] transition-all"
+                    >
+                      <ExternalLink size={14} className="flex-shrink-0" style={{ color: accent }} />
+                      <span className="flex-1 truncate">Live Preview</span>
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* CTA */}
               <div className="rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] p-5">

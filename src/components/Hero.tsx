@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import GradientOrbs from './effects/GradientOrbs';
 import MagneticButton from './effects/MagneticButton';
 import TextScramble from './effects/TextScramble';
@@ -52,7 +52,6 @@ export default function Hero() {
         {/* Eyebrow chip */}
         <motion.div variants={fadeUp(0)} className="inline-flex items-center gap-2 mb-8">
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#222] bg-[#111]/80 backdrop-blur-sm text-xs text-[#71717a] tracking-widest uppercase font-medium">
-            <Zap size={11} className="text-white" />
             Technical Systems Architecture
           </div>
         </motion.div>
