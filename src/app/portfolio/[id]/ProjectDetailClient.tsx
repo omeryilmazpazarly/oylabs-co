@@ -327,20 +327,53 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             {/* RIGHT sidebar */}
             <aside className="space-y-5">
 
-              {/* Meta card — no Client row (already in title block) */}
+              {/* Meta card */}
               <div className="rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] divide-y divide-[#141414] overflow-hidden">
+
+                {/* Category */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Category</span>
+                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Category</span>
                   <span className="text-sm text-white font-medium text-right">{CATEGORY_LABELS[item.mainCategory]}</span>
                 </div>
+
+                {/* Year */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Stack</span>
-                  <span className="text-sm text-white font-medium text-right">{item.tags.length} technologies</span>
+                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Year</span>
+                  <span className="text-sm text-white font-medium text-right">
+                    {new Date(item.createdAt).getFullYear()}
+                  </span>
                 </div>
+
+                {/* Scope */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Status</span>
-                  <span className="text-sm text-white font-medium text-right">Delivered ✓</span>
+                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Scope</span>
+                  <span className="text-sm text-white font-medium text-right">
+                    {{
+                      WEBSITES:              'Full Build',
+                      APPS_PLUGINS:          'Custom Development',
+                      SYSTEM_IMPLEMENTATION: 'System Integration',
+                      MOBILE_APPS:           'Mobile Build',
+                    }[item.mainCategory]}
+                  </span>
                 </div>
+
+                {/* Built with — actual tag pills */}
+                {item.tags.length > 0 && (
+                  <div className="px-5 py-4">
+                    <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase block mb-3">Built with</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[11px] px-2.5 py-1 rounded-md font-medium tracking-wide border"
+                          style={{ backgroundColor: `${accent}12`, color: accent, borderColor: `${accent}30` }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Accent divider */}
