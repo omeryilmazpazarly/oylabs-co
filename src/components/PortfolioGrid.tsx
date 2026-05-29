@@ -120,7 +120,8 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
 export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
   const [page,      setPage]      = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+  const [direction, setDirection] = useState(1);
+  const dragStartX = useRef(0);
 
   const filtered   = activeFilter === 'ALL' ? items : items.filter((i) => i.mainCategory === activeFilter);
   const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
@@ -129,21 +130,17 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   /* Reset to page 0 whenever the filter changes */
   useEffect(() => { setPage(0); setDirection(1); }, [activeFilter]);
 
-  function goNext() {
-    if (page >= totalPages - 1) return;
-    setDirection(1);
-    setPage((p) => p + 1);
-  }
+  /* Infinite loop — wraps around */
+  function goNext() { setDirection(1);  setPage((p) => (p + 1) % totalPages); }
+  function goPrev() { setDirection(-1); setPage((p) => (p - 1 + totalPages) % totalPages); }
+  function goTo(i: number) { setDirection(i > page ? 1 : -1); setPage(i); }
 
-  function goPrev() {
-    if (page <= 0) return;
-    setDirection(-1);
-    setPage((p) => p - 1);
-  }
-
-  function goTo(i: number) {
-    setDirection(i > page ? 1 : -1);
-    setPage(i);
+  /* Drag / swipe handlers */
+  function onDragStart(e: React.PointerEvent) { dragStartX.current = e.clientX; }
+  function onDragEnd(e: React.PointerEvent) {
+    const delta = e.clientX - dragStartX.current;
+    if (delta < -50) goNext();
+    else if (delta > 50) goPrev();
   }
 
   /* Slide variants — direction drives which side items enter/exit from */
@@ -182,8 +179,12 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
         ))}
       </motion.div>
 
-      {/* Carousel */}
-      <div className="relative overflow-hidden">
+      {/* Carousel — drag/swipe to navigate */}
+      <div
+        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+        onPointerDown={onDragStart}
+        onPointerUp={onDragEnd}
+      >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={`${activeFilter}-${page}`}
@@ -226,16 +227,14 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
           <div className="flex items-center gap-2">
             <button
               onClick={goPrev}
-              disabled={page === 0}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200"
               aria-label="Previous page"
             >
               <ChevronLeft size={15} />
             </button>
             <button
               onClick={goNext}
-              disabled={page >= totalPages - 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200"
               aria-label="Next page"
             >
               <ChevronRight size={15} />

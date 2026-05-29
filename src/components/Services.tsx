@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Package, Code2, Workflow, Building2, Cloud,
@@ -20,7 +20,6 @@ interface Service {
   title:       string;
   description: string;
   tags:        string[];
-  badge?:      string; // optional highlight badge on the card
 }
 
 const SERVICES: Service[] = [
@@ -30,7 +29,6 @@ const SERVICES: Service[] = [
     title:       'E-Commerce Engineering',
     description: 'Headless Shopify storefronts and high-performance WordPress/WooCommerce architectures — conversion-optimised, mobile-first, and built for scale.',
     tags:        ['Shopify', 'Headless Commerce', 'WooCommerce', 'Next.js', 'PWA'],
-    badge:       'Shopify Partner',
   },
   {
     icon:        <Package size={22} />,
@@ -38,7 +36,6 @@ const SERVICES: Service[] = [
     title:       'Custom Shopify Apps',
     description: 'Private and public Shopify apps engineered to extend store functionality — custom admin UIs, Shopify Functions, checkout extensions, and webhook integrations.',
     tags:        ['Shopify API', 'Shopify Functions', 'Checkout Extensions', 'Admin UI'],
-    badge:       'Shopify Partner',
   },
   {
     icon:        <Code2 size={22} />,
@@ -117,17 +114,6 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           <h3 className="text-lg font-semibold text-white mb-3 tracking-tight">{service.title}</h3>
           <p className="text-sm text-[#71717a] leading-relaxed mb-6 flex-1">{service.description}</p>
 
-          {/* Shopify Partner badge */}
-          {service.badge && (
-            <div className="mb-4">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(0,128,96,0.15)', color: '#00c48c', border: '1px solid rgba(0,196,140,0.25)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00c48c]" />
-                {service.badge}
-              </span>
-            </div>
-          )}
-
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
             {service.tags.map((tag) => (
@@ -146,20 +132,22 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 export default function Services() {
   const [page,      setPage]      = useState(0);
   const [direction, setDirection] = useState(1);
+  const dragStartX = useRef(0);
 
   const totalPages = Math.ceil(SERVICES.length / CARDS_PER_PAGE);
   const visible    = SERVICES.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE);
 
-  function goNext() {
-    if (page >= totalPages - 1) return;
-    setDirection(1); setPage((p) => p + 1);
-  }
-  function goPrev() {
-    if (page <= 0) return;
-    setDirection(-1); setPage((p) => p - 1);
-  }
-  function goTo(i: number) {
-    setDirection(i > page ? 1 : -1); setPage(i);
+  /* Infinite loop — wraps around */
+  function goNext() { setDirection(1);  setPage((p) => (p + 1) % totalPages); }
+  function goPrev() { setDirection(-1); setPage((p) => (p - 1 + totalPages) % totalPages); }
+  function goTo(i: number) { setDirection(i > page ? 1 : -1); setPage(i); }
+
+  /* Drag / swipe handlers */
+  function onDragStart(e: React.PointerEvent) { dragStartX.current = e.clientX; }
+  function onDragEnd(e: React.PointerEvent) {
+    const delta = e.clientX - dragStartX.current;
+    if (delta < -50) goNext();
+    else if (delta > 50) goPrev();
   }
 
   const slideVariants = {
@@ -176,15 +164,7 @@ export default function Services() {
         {/* Header */}
         <div className="mb-16 space-y-2">
           <ScrollReveal direction="down">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
-              {/* Shopify Partner badge */}
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(0,128,96,0.15)', color: '#00c48c', border: '1px solid rgba(0,196,140,0.25)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00c48c] animate-pulse" />
-                Shopify Partner
-              </span>
-            </div>
+            <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.07}>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
@@ -198,8 +178,12 @@ export default function Services() {
           </ScrollReveal>
         </div>
 
-        {/* Carousel */}
-        <div className="overflow-hidden">
+        {/* Carousel — drag/swipe to navigate */}
+        <div
+          className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
+          onPointerDown={onDragStart}
+          onPointerUp={onDragEnd}
+        >
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={page}
@@ -236,12 +220,12 @@ export default function Services() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={goPrev} disabled={page === 0}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200">
+              <button onClick={goPrev}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200">
                 <ChevronLeft size={15} />
               </button>
-              <button onClick={goNext} disabled={page >= totalPages - 1}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200">
+              <button onClick={goNext}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200">
                 <ChevronRight size={15} />
               </button>
             </div>
