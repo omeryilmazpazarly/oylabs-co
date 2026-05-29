@@ -24,7 +24,7 @@ function fadeUp(delay = 0) {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16 snap-start">
       {/* Linear-style grid */}
       <div
         className="absolute inset-0 pointer-events-none"

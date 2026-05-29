@@ -118,7 +118,7 @@ function GlowCard({ service, index }: { service: Service; index: number }) {
 
 export default function Services() {
   return (
-    <section id="systems" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center">
+    <section id="systems" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center snap-start">
       <SectionAtmosphere theme="services" />
       <div className="relative z-10 max-w-7xl mx-auto">
 
