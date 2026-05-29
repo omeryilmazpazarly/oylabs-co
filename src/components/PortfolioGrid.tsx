@@ -70,21 +70,33 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
             <div className="relative z-[2]">
               {/* Cover */}
               <div className={`relative h-52 bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]} overflow-hidden`}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-                    className="absolute w-32 h-32 rounded-3xl border opacity-10" style={{ borderColor: accent }} />
-                  <motion.div animate={{ rotate: -360 }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-                    className="absolute w-20 h-20 rounded-2xl border opacity-20" style={{ borderColor: accent }} />
-                  <div className="w-9 h-9 rounded-xl opacity-30" style={{ background: accent }} />
-                </div>
-                <div className="absolute top-4 left-4 text-xs font-mono tracking-widest text-white/20">
+                {/* Real cover photo — shown when available */}
+                {item.coverImage && (
+                  <img
+                    src={item.coverImage}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+                {/* Animated placeholder — shown only when no cover image */}
+                {!item.coverImage && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                      className="absolute w-32 h-32 rounded-3xl border opacity-10" style={{ borderColor: accent }} />
+                    <motion.div animate={{ rotate: -360 }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
+                      className="absolute w-20 h-20 rounded-2xl border opacity-20" style={{ borderColor: accent }} />
+                    <div className="w-9 h-9 rounded-xl opacity-30" style={{ background: accent }} />
+                  </div>
+                )}
+                {/* Overlay badges — always shown on top */}
+                <div className="absolute top-4 left-4 text-xs font-mono tracking-widest text-white/40">
                   {String(index + 1).padStart(2, '0')}
                 </div>
-                <div className="absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium tracking-wide"
-                  style={{ backgroundColor: `${accent}20`, color: accent, border: `1px solid ${accent}30` }}>
+                <div className="absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium tracking-wide backdrop-blur-sm"
+                  style={{ backgroundColor: `${accent}25`, color: accent, border: `1px solid ${accent}40` }}>
                   {CATEGORY_LABELS[item.mainCategory]}
                 </div>
-                <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-[#111] to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#111] to-transparent" />
               </div>
 
               {/* Body */}
