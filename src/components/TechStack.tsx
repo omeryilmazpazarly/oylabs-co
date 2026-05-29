@@ -25,9 +25,9 @@ function StackRow({ row, index }: { row: typeof STACK_ROWS[0]; index: number }) 
       initial={{ opacity: 0, x: -36 }}
       animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -36 }}
       transition={{ ...EASE, delay: index * 0.06 }}
-      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 py-6 border-b border-[#111] group hover:border-[#1a1a1a] transition-colors"
+      className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 py-5 sm:py-6 border-b border-[#111] group hover:border-[#1a1a1a] transition-colors"
     >
-      <div className="w-36 flex-shrink-0">
+      <div className="w-full sm:w-36 flex-shrink-0">
         <span className="text-[11px] text-[#3f3f46] tracking-[0.2em] uppercase font-medium group-hover:text-[#71717a] transition-colors">
           {row.category}
         </span>
@@ -45,18 +45,18 @@ function StackRow({ row, index }: { row: typeof STACK_ROWS[0]; index: number }) 
 
 export default function TechStack() {
   return (
-    <section id="stack" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center snap-start">
+    <section id="stack" className="relative min-h-screen py-20 sm:py-32 px-4 sm:px-6 overflow-hidden flex flex-col justify-center snap-start">
       <SectionAtmosphere theme="techstack" />
       <div className="relative z-10 max-w-7xl mx-auto w-full">
 
-        <div className="mb-16 space-y-2">
+        <div className="mb-10 sm:mb-16 space-y-2">
           <ScrollReveal direction="down">
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">
               Technical Arsenal
             </span>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.07}>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
               The Core <span className="text-[#71717a]">Stack</span>
             </h2>
           </ScrollReveal>

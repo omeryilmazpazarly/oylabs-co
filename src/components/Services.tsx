@@ -92,7 +92,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setGlowStyle({})}
-        className="relative group rounded-2xl border border-[#222] bg-[#111] p-8 overflow-hidden cursor-default h-full flex flex-col hover:border-[#333] transition-colors duration-300"
+        className="relative group rounded-2xl border border-[#222] bg-[#111] p-5 sm:p-8 overflow-hidden cursor-default h-full flex flex-col hover:border-[#333] transition-colors duration-300"
       >
         {/* Mouse glow */}
         <div className="absolute inset-0 pointer-events-none transition-all duration-300" style={glowStyle} />
@@ -157,17 +157,17 @@ export default function Services() {
   };
 
   return (
-    <section id="systems" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center snap-start">
+    <section id="systems" className="relative min-h-screen py-20 sm:py-32 px-4 sm:px-6 overflow-hidden flex flex-col justify-center snap-start">
       <SectionAtmosphere theme="services" />
       <div className="relative z-10 max-w-7xl mx-auto w-full">
 
         {/* Header */}
-        <div className="mb-16 space-y-2">
+        <div className="mb-10 sm:mb-16 space-y-2">
           <ScrollReveal direction="down">
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.07}>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
               What We <span className="text-[#71717a]">Engineer</span>
             </h2>
           </ScrollReveal>

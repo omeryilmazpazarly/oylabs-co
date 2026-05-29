@@ -14,10 +14,10 @@ export default function Contact() {
   const rightIn  = useInView(rightRef, { margin: '-72px 0px', once: false });
 
   return (
-    <section id="contact" className="relative min-h-screen py-32 px-6 overflow-hidden flex flex-col justify-center">
+    <section id="contact" className="relative min-h-screen py-20 sm:py-32 px-4 sm:px-6 overflow-hidden flex flex-col justify-center">
       <SectionAtmosphere theme="contact" />
       <div className="relative z-10 max-w-7xl mx-auto w-full">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <motion.div
             ref={leftRef}
             initial={{ opacity: 0, y: 52 }}
@@ -25,7 +25,7 @@ export default function Contact() {
             transition={EASE}
           >
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Get In Touch</span>
-            <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
               Ready to Build
               <br />
               <span className="text-[#71717a]">Something Real?</span>
@@ -57,10 +57,10 @@ export default function Contact() {
             initial={{ opacity: 0, y: 52 }}
             animate={rightIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 52 }}
             transition={{ ...EASE, delay: 0.1 }}
-            className="rounded-2xl border border-[#222] bg-[#111] p-8"
+            className="rounded-2xl border border-[#222] bg-[#111] p-5 sm:p-8"
           >
             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-[#71717a] tracking-widest uppercase mb-2">Name</label>
                   <input

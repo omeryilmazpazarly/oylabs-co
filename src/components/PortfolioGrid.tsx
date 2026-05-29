@@ -69,7 +69,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
 
             <div className="relative z-[2]">
               {/* Cover */}
-              <div className={`relative h-52 bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]} overflow-hidden`}>
+              <div className={`relative h-44 sm:h-52 bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]} overflow-hidden`}>
                 {/* Real cover photo — shown when available */}
                 {item.coverImage && (
                   <img
@@ -104,7 +104,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
               </div>
 
               {/* Body */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <h3 className="text-base font-semibold text-white tracking-tight leading-snug">
                     {item.title}

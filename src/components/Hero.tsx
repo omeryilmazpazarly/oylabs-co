@@ -24,7 +24,7 @@ function fadeUp(delay = 0) {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16 snap-start">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16 px-4 sm:px-6 snap-start">
       {/* Linear-style grid */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -47,11 +47,11 @@ export default function Hero() {
         initial="hidden"
         animate="visible"
         variants={{ visible: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } } }}
-        className="relative z-10 max-w-5xl mx-auto px-6 text-center"
+        className="relative z-10 max-w-5xl mx-auto px-0 text-center"
       >
         {/* Eyebrow chips */}
-        <motion.div variants={fadeUp(0)} className="flex flex-wrap items-center justify-center gap-2 mb-8">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#222] bg-[#111]/80 backdrop-blur-sm text-xs text-[#71717a] tracking-widest uppercase font-medium">
+        <motion.div variants={fadeUp(0)} className="flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#222] bg-[#111]/80 backdrop-blur-sm text-[10px] sm:text-xs text-[#71717a] tracking-widest uppercase font-medium">
             Technical Systems Architecture
           </div>
           <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full backdrop-blur-sm text-xs font-semibold tracking-wider"
@@ -64,7 +64,7 @@ export default function Hero() {
         {/* Main headline */}
         <motion.h1
           variants={fadeUp(1)}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-[88px] font-bold tracking-tight leading-[0.95] mb-6"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[88px] font-bold tracking-tight leading-[0.95] mb-5 sm:mb-6"
         >
           <span className="block text-white">We Build</span>
           <span className="block text-white">Systems That</span>
@@ -77,7 +77,7 @@ export default function Hero() {
         {/* Sub-headline */}
         <motion.p
           variants={fadeUp(2)}
-          className="text-lg md:text-xl text-[#71717a] max-w-2xl mx-auto leading-relaxed mb-12"
+          className="text-base sm:text-lg md:text-xl text-[#71717a] max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-12"
         >
           Custom web and mobile applications, serverless automation workflows, and enterprise
           system integrations — engineered for velocity and built to last.
@@ -107,7 +107,7 @@ export default function Hero() {
         {/* Stats */}
         <motion.div
           variants={fadeUp(4)}
-          className="mt-20 grid grid-cols-3 gap-8 max-w-lg mx-auto border-t border-[#1a1a1a] pt-10"
+          className="mt-12 sm:mt-20 grid grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto border-t border-[#1a1a1a] pt-8 sm:pt-10"
         >
           {[
             { value: '50+', label: 'Projects Delivered' },

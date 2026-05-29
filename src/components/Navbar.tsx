@@ -95,14 +95,14 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-16 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#222] p-6 flex flex-col gap-4 md:hidden"
+            className="fixed top-16 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-b border-[#222] px-6 py-5 flex flex-col gap-1 md:hidden"
           >
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-[#71717a] hover:text-white text-base tracking-wide transition-colors"
+                className="text-[#71717a] hover:text-white text-sm tracking-wide transition-colors py-3 border-b border-[#111] last:border-0"
               >
                 {link.label}
               </Link>
@@ -110,7 +110,7 @@ export default function Navbar() {
             <Link
               href="/#contact"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 px-5 py-2.5 rounded-full text-sm font-medium bg-white text-black text-center tracking-wide"
+              className="mt-3 px-5 py-3 rounded-full text-sm font-medium bg-white text-black text-center tracking-wide"
             >
               Start a Project
             </Link>

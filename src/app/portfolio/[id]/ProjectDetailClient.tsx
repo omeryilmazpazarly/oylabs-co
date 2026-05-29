@@ -97,7 +97,7 @@ function Lightbox({
 
       {/* Image */}
       <div
-        className="relative w-full max-w-5xl mx-16 aspect-video overflow-hidden rounded-xl"
+        className="relative w-full max-w-5xl mx-4 sm:mx-16 aspect-video overflow-hidden rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <AnimatePresence mode="wait" custom={dir}>
@@ -159,7 +159,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
       <div className="min-h-screen bg-[#000]">
 
         {/* ── Hero cover ─────────────────────────────────────────────── */}
-        <div className={`relative h-[55vh] min-h-[400px] overflow-hidden ${item.coverImage ? '' : `bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]}`}`}>
+        <div className={`relative h-[40vh] sm:h-[55vh] min-h-[280px] sm:min-h-[400px] overflow-hidden ${item.coverImage ? '' : `bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]}`}`}>
 
           {item.coverImage && (
             <img src={item.coverImage} alt={item.title}
@@ -185,7 +185,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
           )}
 
           {/* Breadcrumb */}
-          <div className="absolute top-28 left-0 right-0 px-6 max-w-7xl mx-auto">
+          <div className="absolute top-20 sm:top-28 left-0 right-0 px-4 sm:px-6 max-w-7xl mx-auto">
             <Link href="/portfolio"
               className="inline-flex items-center gap-1.5 text-xs text-[#71717a] hover:text-white transition-colors tracking-wide group">
               <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -194,7 +194,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
           </div>
 
           {/* Category badge */}
-          <div className="absolute bottom-8 left-0 right-0 px-6 max-w-7xl mx-auto">
+          <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 px-4 sm:px-6 max-w-7xl mx-auto">
             <span className="text-xs px-3 py-1.5 rounded-full font-medium tracking-widest uppercase"
               style={{ backgroundColor: `${accent}20`, color: accent, border: `1px solid ${accent}30` }}>
               {CATEGORY_LABELS[item.mainCategory]}
@@ -205,14 +205,14 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
         </div>
 
         {/* ── Main content ─────────────────────────────────────────────── */}
-        <div className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
 
           {/* Title block */}
-          <div className="pt-12 pb-16 border-b border-[#111]">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight max-w-3xl">
+          <div className="pt-8 sm:pt-12 pb-10 sm:pb-16 border-b border-[#111]">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight max-w-3xl">
               {item.title}
             </h1>
-            <p className="mt-5 text-xl text-[#71717a] max-w-2xl leading-relaxed">
+            <p className="mt-4 sm:mt-5 text-base sm:text-xl text-[#71717a] max-w-2xl leading-relaxed">
               {item.description}
             </p>
 
@@ -247,7 +247,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
           </div>
 
           {/* Two-column */}
-          <div className="grid lg:grid-cols-[1fr_320px] gap-16 pt-16">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10 sm:gap-16 pt-10 sm:pt-16">
 
             {/* LEFT */}
             <div className="space-y-14">
@@ -411,7 +411,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
 
           {/* ── Related ────────────────────────────────────────────────── */}
           {(related.length > 0 || nextItem) && (
-            <div className="mt-24 pt-16 border-t border-[#111]">
+            <div className="mt-14 sm:mt-24 pt-10 sm:pt-16 border-t border-[#111]">
               <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-10">
                 {related.length > 0 ? 'Related Projects' : 'Next Project'}
               </p>

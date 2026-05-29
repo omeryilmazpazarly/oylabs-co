@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#111] py-12 px-6">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <footer className="border-t border-[#111] py-10 sm:py-12 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 text-center md:text-left">
         <div className="flex items-center gap-1.5 select-none">
           <span className="text-white font-bold text-sm tracking-tight">OY</span>
           <span className="text-[#71717a] font-light text-sm tracking-[0.2em] ml-1">LABS</span>

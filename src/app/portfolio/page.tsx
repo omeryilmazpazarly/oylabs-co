@@ -15,13 +15,13 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <div className="relative min-h-screen pt-32 pb-16 px-6 overflow-hidden">
+      <div className="relative min-h-screen pt-24 sm:pt-32 pb-16 px-4 sm:px-6 overflow-hidden">
         <SectionAtmosphere theme="work" showTopEdge={false} />
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-16">
+          <div className="mb-10 sm:mb-16">
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Our Work</span>
-            <h1 className="mt-3 text-5xl md:text-6xl font-bold tracking-tight text-white leading-none">
+            <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-none">
               Portfolio
             </h1>
             <p className="mt-4 text-[#71717a] max-w-xl leading-relaxed">
