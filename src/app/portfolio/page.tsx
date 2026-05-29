@@ -1,6 +1,7 @@
 import { getAllItems } from '@/lib/db';
 import PortfolioGrid from '@/components/PortfolioGrid';
 import Footer from '@/components/Footer';
+import SectionOrbs from '@/components/effects/SectionOrbs';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +15,9 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <div className="min-h-screen pt-32 pb-16 px-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="relative min-h-screen pt-32 pb-16 px-6 overflow-hidden">
+        <SectionOrbs variant="violet-amber" />
+        <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-16">
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Our Work</span>

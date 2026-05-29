@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Workflow, Building2, ShoppingCart, Cloud, ArrowUpRight } from 'lucide-react';
+import SectionOrbs from './effects/SectionOrbs';
 
 const SPRING = { type: 'spring', stiffness: 120, damping: 22, mass: 0.8 } as const;
 
@@ -123,8 +124,9 @@ function GlowCard({ service, index }: { service: Service; index: number }) {
 
 export default function Services() {
   return (
-    <section id="systems" className="py-32 px-6">
-      <div className="max-w-7xl mx-auto">
+    <section id="systems" className="relative py-32 px-6 overflow-hidden">
+      <SectionOrbs variant="indigo-teal" />
+      <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -152,3 +154,4 @@ export default function Services() {
     </section>
   );
 }
+

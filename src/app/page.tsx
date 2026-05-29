@@ -5,6 +5,8 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getAllItems } from '@/lib/db';
 import PortfolioGrid from '@/components/PortfolioGrid';
+import LightSection from '@/components/effects/LightSection';
+import SectionOrbs from '@/components/effects/SectionOrbs';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +18,10 @@ export default function HomePage() {
       <Hero />
       <Services />
 
-      {/* Featured Work teaser */}
-      <section id="work" className="py-32 px-6 border-t border-[#111]">
-        <div className="max-w-7xl mx-auto">
+      {/* Featured Work — violet/amber orb tint */}
+      <section id="work" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
+        <SectionOrbs variant="violet-amber" />
+        <div className="relative z-10 max-w-7xl mx-auto">
           <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Selected Work</span>
@@ -37,8 +40,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      <TechStack />
-      <Contact />
+      {/* Mercury-style: scrolls from dark → light → dark */}
+      <LightSection>
+        <TechStack />
+      </LightSection>
+
+      {/* Contact — teal/violet orb tint */}
+      <section id="contact-wrap" className="relative overflow-hidden">
+        <SectionOrbs variant="teal-violet" />
+        <div className="relative z-10">
+          <Contact />
+        </div>
+      </section>
+
       <Footer />
     </>
   );
