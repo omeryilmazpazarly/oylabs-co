@@ -43,9 +43,11 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
         <motion.div
           ref={cardRef}
           layout
-          initial={{ opacity: 0, scale: 0.94, y: 20 }}
+          initial={{ opacity: 0, scale: 0.94, y: 36 }}
           animate={{ opacity: 1, scale: 1,    y: 0  }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
           exit={{    opacity: 0, scale: 0.92, y: 12 }}
+          viewport={{ once: false, margin: '-40px' }}
           transition={SPRING}
           onMouseMove={onMove}
           onMouseLeave={() => setGlow({})}

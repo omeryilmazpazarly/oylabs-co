@@ -4,9 +4,9 @@ import TechStack from '@/components/TechStack';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getAllItems } from '@/lib/db';
-import LightSection from '@/components/effects/LightSection';
+import PortfolioGrid from '@/components/PortfolioGrid';
 import SectionOrbs from '@/components/effects/SectionOrbs';
-import SelectedWorkSection from '@/components/SelectedWorkSection';
+import WorkSectionHeader from '@/components/WorkSectionHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,22 +18,17 @@ export default function HomePage() {
       <Hero />
       <Services />
 
-      {/* Selected Work — full page goes white as you scroll through */}
-      <SelectedWorkSection items={items} />
-
-      {/* The Core Stack — same Mercury transition */}
-      <LightSection>
-        <TechStack />
-      </LightSection>
-
-      {/* Contact — teal/violet orb tint */}
-      <section id="contact-wrap" className="relative overflow-hidden">
-        <SectionOrbs variant="teal-violet" />
-        <div className="relative z-10">
-          <Contact />
+      {/* Selected Work */}
+      <section id="work" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
+        <SectionOrbs variant="violet-amber" />
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <WorkSectionHeader />
+          <PortfolioGrid items={items} />
         </div>
       </section>
 
+      <TechStack />
+      <Contact />
       <Footer />
     </>
   );

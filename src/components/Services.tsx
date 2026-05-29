@@ -75,10 +75,10 @@ function GlowCard({ service, index }: { service: Service; index: number }) {
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
-      transition={{ ...SPRING, delay: index * 0.1 }}
+      initial={{ opacity: 0, y: 48, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: false, margin: '-60px' }}
+      transition={{ ...SPRING, delay: index * 0.08 }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className={`relative group rounded-2xl border border-[#222] bg-[#111] p-8 overflow-hidden cursor-default ${service.span ?? ''}`}
@@ -128,21 +128,35 @@ export default function Services() {
       <SectionOrbs variant="indigo-teal" />
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={SPRING}
-          className="mb-16"
-        >
-          <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight text-white">
+        <div className="mb-16">
+          <motion.span
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: '-60px' }}
+            transition={SPRING}
+            className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium"
+          >
+            Core Capabilities
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: '-60px' }}
+            transition={{ ...SPRING, delay: 0.07 }}
+            className="mt-3 text-4xl md:text-5xl font-bold tracking-tight text-white"
+          >
             What We <span className="text-[#71717a]">Engineer</span>
-          </h2>
-          <p className="mt-4 text-[#71717a] max-w-xl leading-relaxed">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, margin: '-60px' }}
+            transition={{ ...SPRING, delay: 0.13 }}
+            className="mt-4 text-[#71717a] max-w-xl leading-relaxed"
+          >
             Four specialization domains, one integrated architecture practice — each built to production-grade standards.
-          </p>
-        </motion.div>
+          </motion.p>
+        </div>
 
         {/* Bento grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">

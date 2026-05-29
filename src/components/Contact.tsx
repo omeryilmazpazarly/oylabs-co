@@ -11,9 +11,9 @@ export default function Contact() {
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 48 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: false, margin: '-60px' }}
             transition={SPRING}
           >
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Get In Touch</span>
@@ -45,10 +45,10 @@ export default function Contact() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 48 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ...SPRING, delay: 0.15 }}
+            viewport={{ once: false, margin: '-60px' }}
+            transition={{ ...SPRING, delay: 0.12 }}
             className="rounded-2xl border border-[#222] bg-[#111] p-8"
           >
             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
