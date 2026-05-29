@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { usePageLightness } from '@/contexts/ThemeContext';
 
 interface Props {
   children: React.ReactNode;
@@ -9,42 +10,35 @@ interface Props {
 }
 
 /*
- * Mercury-style scroll-driven light section.
- *
- * Key design decisions:
- *  - offset ['start end', 'end start'] = full enter-to-exit viewport range.
- *    This gives the maximum possible scroll distance for the transition.
- *  - NO useSpring — springs add lag, making the color change happen AFTER
- *    you scroll instead of WITH your scroll. Direct MotionValue is the right
- *    primitive for scroll-linked effects.
- *  - Peak whiteness at progress 0.5 = when section is vertically centred.
- *  - Content uses dark text so it "materialises" as the white arrives.
+ * Invisible wrapper — no background of its own.
+ * Watches its scroll position and writes a 0–1 lightness value into the
+ * global ThemeContext. PageBackground then paints that colour on document.body
+ * so the ENTIRE viewport (including the navbar) transitions together.
  */
 export default function LightSection({ children, className = '' }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref   = useRef<HTMLDivElement>(null);
+  const lightness = usePageLightness();
 
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ['start end', 'end start'],   // full range: first pixel enters → last pixel leaves
+    offset: ['start end', 'end start'], // full enter-to-exit range
   });
 
-  // Ramp: dark → white centred on the section → dark
-  // Using RGB strings for reliable Framer Motion colour interpolation
-  const backgroundColor = useTransform(
+  // Triangle wave — peak at centre (section fully in view)
+  const sectionLightness = useTransform(
     scrollYProgress,
     [0, 0.25, 0.5, 0.75, 1],
-    [
-      'rgb(0,   0,   0)',
-      'rgb(0,   0,   0)',
-      'rgb(247, 247, 248)',
-      'rgb(0,   0,   0)',
-      'rgb(0,   0,   0)',
-    ]
+    [0,  0,    1,   0,    0]
   );
 
+  // Push to global — PageBackground + Navbar both react to this
+  useMotionValueEvent(sectionLightness, 'change', (v) => {
+    lightness.set(v);
+  });
+
   return (
-    <motion.div ref={ref} style={{ backgroundColor }} className={className}>
+    <div ref={ref} className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }
