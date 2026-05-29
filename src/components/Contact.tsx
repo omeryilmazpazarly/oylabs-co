@@ -1,20 +1,26 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Mail, Globe } from 'lucide-react';
 
-const SPRING = { type: 'spring', stiffness: 120, damping: 22, mass: 0.8 } as const;
+const EASE = { type: 'spring', stiffness: 90, damping: 22, mass: 0.8 } as const;
 
 export default function Contact() {
+  const leftRef  = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const leftIn   = useInView(leftRef,  { margin: '-72px 0px', once: false });
+  const rightIn  = useInView(rightRef, { margin: '-72px 0px', once: false });
+
   return (
-    <section id="contact" className="py-32 px-6 border-t border-[#111]">
+    <section id="contact" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, y: 48 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, margin: '-60px' }}
-            transition={SPRING}
+            ref={leftRef}
+            initial={{ opacity: 0, y: 52 }}
+            animate={leftIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 52 }}
+            transition={EASE}
           >
             <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Get In Touch</span>
             <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
@@ -45,10 +51,10 @@ export default function Contact() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 48 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, margin: '-60px' }}
-            transition={{ ...SPRING, delay: 0.12 }}
+            ref={rightRef}
+            initial={{ opacity: 0, y: 52 }}
+            animate={rightIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 52 }}
+            transition={{ ...EASE, delay: 0.1 }}
             className="rounded-2xl border border-[#222] bg-[#111] p-8"
           >
             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
