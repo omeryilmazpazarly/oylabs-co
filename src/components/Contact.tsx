@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Mail, Globe } from 'lucide-react';
+import SectionAtmosphere from './effects/SectionAtmosphere';
 
 const EASE = { type: 'spring', stiffness: 90, damping: 22, mass: 0.8 } as const;
 
@@ -13,8 +14,9 @@ export default function Contact() {
   const rightIn  = useInView(rightRef, { margin: '-72px 0px', once: false });
 
   return (
-    <section id="contact" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
-      <div className="max-w-7xl mx-auto">
+    <section id="contact" className="relative py-32 px-6 overflow-hidden">
+      <SectionAtmosphere theme="contact" />
+      <div className="relative z-10 max-w-7xl mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <motion.div
             ref={leftRef}

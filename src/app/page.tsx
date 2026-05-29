@@ -5,7 +5,7 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getAllItems } from '@/lib/db';
 import PortfolioGrid from '@/components/PortfolioGrid';
-import SectionOrbs from '@/components/effects/SectionOrbs';
+import SectionAtmosphere from '@/components/effects/SectionAtmosphere';
 import WorkSectionHeader from '@/components/WorkSectionHeader';
 
 export const dynamic = 'force-dynamic';
@@ -19,8 +19,8 @@ export default function HomePage() {
       <Services />
 
       {/* Selected Work */}
-      <section id="work" className="relative py-32 px-6 border-t border-[#111] overflow-hidden">
-        <SectionOrbs variant="violet-amber" />
+      <section id="work" className="relative py-32 px-6 overflow-hidden">
+        <SectionAtmosphere theme="work" />
         <div className="relative z-10 max-w-7xl mx-auto">
           <WorkSectionHeader />
           <PortfolioGrid items={items} />
