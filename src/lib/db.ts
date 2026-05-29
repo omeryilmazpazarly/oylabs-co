@@ -50,6 +50,86 @@ function initSchema(db: Database.Database) {
 
   const { count } = db.prepare('SELECT COUNT(*) as count FROM portfolio_items').get() as { count: number };
   if (count === 0) seedData(db);
+
+  backfillDemoData(db);
+}
+
+/* ── Backfill rich demo data for the 4 seed projects ──────────────────
+   Runs on every startup but only touches rows where client_name IS NULL,
+   so any data you've edited via the admin is never overwritten.          */
+function backfillDemoData(db: Database.Database) {
+  const stmt = db.prepare(`
+    UPDATE portfolio_items
+    SET client_name  = @clientName,
+        website_url  = @websiteUrl,
+        live_url     = @liveUrl,
+        cover_image  = @coverImage,
+        images       = @images,
+        updated_at   = datetime('now')
+    WHERE item_order = @order
+      AND client_name IS NULL
+  `);
+
+  const demos = [
+    /* 1 — Enterprise automation */
+    {
+      order: 1,
+      clientName: 'TradeNex International',
+      websiteUrl: 'https://oylabs.co',
+      liveUrl:    'https://oylabs.co/portfolio',
+      coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80',
+        'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=900&q=80',
+        'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80',
+      ]),
+    },
+    /* 2 — Shopify mobile app */
+    {
+      order: 2,
+      clientName: 'Nexify Commerce',
+      websiteUrl: 'https://oylabs.co',
+      liveUrl:    'https://oylabs.co/portfolio',
+      coverImage: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80',
+        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80',
+        'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=900&q=80',
+        'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=80',
+      ]),
+    },
+    /* 3 — SaaS financial analytics */
+    {
+      order: 3,
+      clientName: 'ClearLedger Analytics',
+      websiteUrl: 'https://oylabs.co',
+      liveUrl:    'https://oylabs.co/portfolio',
+      coverImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=900&q=80',
+        'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=900&q=80',
+        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&q=80',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80',
+      ]),
+    },
+    /* 4 — Minimalist storefronts */
+    {
+      order: 4,
+      clientName: 'Maison Collective',
+      websiteUrl: 'https://oylabs.co',
+      liveUrl:    'https://oylabs.co/portfolio',
+      coverImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=80',
+        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80',
+        'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=900&q=80',
+        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80',
+      ]),
+    },
+  ];
+
+  for (const d of demos) stmt.run(d);
 }
 
 function seedData(db: Database.Database) {
