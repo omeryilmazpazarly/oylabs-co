@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PortfolioItem, MainCategory } from '@/types/portfolio';
 import { CATEGORY_LABELS } from '@/types/portfolio';
 import TiltCard from './effects/TiltCard';
@@ -12,7 +12,9 @@ import { CATEGORY_COLORS, COVER_GRADIENTS } from '@/lib/portfolioConstants';
 export { CATEGORY_COLORS, COVER_GRADIENTS };
 
 const SPRING = { type: 'spring', stiffness: 120, damping: 22, mass: 0.8 } as const;
-const EASE   = { type: 'spring', stiffness: 90,  damping: 22, mass: 0.8 } as const;
+const SLIDE  = { type: 'spring', stiffness: 260, damping: 32, mass: 0.9 } as const;
+
+const CARDS_PER_PAGE = 3;
 
 type FilterKey = 'ALL' | MainCategory;
 
@@ -24,14 +26,11 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'MOBILE_APPS',           label: 'Mobile Apps'          },
 ];
 
+/* ── Single card ─────────────────────────────────────────────────────── */
 function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) {
-  const cardRef   = useRef<HTMLDivElement>(null);
-  const revealRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [glow, setGlow] = useState<React.CSSProperties>({});
   const accent = CATEGORY_COLORS[item.mainCategory];
-
-  /* Scroll reveal — smooth both ways */
-  const isInView = useInView(revealRef, { margin: '-60px 0px', once: false });
 
   const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current;
@@ -43,23 +42,17 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
   }, [accent]);
 
   return (
-    /* Outer div drives scroll-reveal opacity/y */
+    /* Staggered fade-up on card entry */
     <motion.div
-      ref={revealRef}
-      initial={{ opacity: 0, y: 44, scale: 0.96 }}
-      animate={isInView
-        ? { opacity: 1, y: 0,  scale: 1    }
-        : { opacity: 0, y: 44, scale: 0.96 }}
-      transition={{ ...EASE, delay: index * 0.06 }}
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...SPRING, delay: index * 0.07 }}
     >
       <TiltCard maxTilt={7} scaleOnHover={1.02}>
         <Link href={`/portfolio/${item.id}`} className="block">
-          {/* Inner motion.div handles layout/filter-change animation only */}
           <motion.div
             ref={cardRef}
             layout
-            exit={{ opacity: 0, scale: 0.92, y: 12 }}
-            transition={SPRING}
             onMouseMove={onMove}
             onMouseLeave={() => setGlow({})}
             className="relative group rounded-2xl border border-[#222] bg-[#111] overflow-hidden hover:border-[#333] transition-colors duration-300 cursor-pointer"
@@ -74,7 +67,6 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
             />
             <div className="absolute inset-[1px] rounded-2xl bg-[#111] z-[1]" />
 
-            {/* Card content */}
             <div className="relative z-[2]">
               {/* Cover */}
               <div className={`relative h-52 bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]} overflow-hidden`}>
@@ -105,7 +97,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                 </div>
                 <p className="text-sm text-[#71717a] leading-relaxed mb-4 line-clamp-2">{item.description}</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {item.tags.map((tag) => (
+                  {item.tags.slice(0, 3).map((tag) => (
                     <span key={tag} className="text-xs text-[#71717a] border border-[#1e1e1e] rounded px-2 py-0.5 bg-[#0a0a0a] tracking-wide group-hover:border-[#2a2a2a] transition-colors">
                       {tag}
                     </span>
@@ -124,13 +116,46 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
   );
 }
 
+/* ── Main carousel grid ──────────────────────────────────────────────── */
 export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
-  const filtered = activeFilter === 'ALL' ? items : items.filter((i) => i.mainCategory === activeFilter);
+  const [page,      setPage]      = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+
+  const filtered   = activeFilter === 'ALL' ? items : items.filter((i) => i.mainCategory === activeFilter);
+  const totalPages = Math.ceil(filtered.length / CARDS_PER_PAGE);
+  const visible    = filtered.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE);
+
+  /* Reset to page 0 whenever the filter changes */
+  useEffect(() => { setPage(0); setDirection(1); }, [activeFilter]);
+
+  function goNext() {
+    if (page >= totalPages - 1) return;
+    setDirection(1);
+    setPage((p) => p + 1);
+  }
+
+  function goPrev() {
+    if (page <= 0) return;
+    setDirection(-1);
+    setPage((p) => p - 1);
+  }
+
+  function goTo(i: number) {
+    setDirection(i > page ? 1 : -1);
+    setPage(i);
+  }
+
+  /* Slide variants — direction drives which side items enter/exit from */
+  const slideVariants = {
+    enter:  (dir: number) => ({ x: dir > 0 ?  60 : -60, opacity: 0 }),
+    center:              () => ({ x: 0,                   opacity: 1 }),
+    exit:   (dir: number) => ({ x: dir > 0 ? -60 :  60, opacity: 0 }),
+  };
 
   return (
     <div>
-      {/* Filter Pills */}
+      {/* Filter pills */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -157,15 +182,69 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
         ))}
       </motion.div>
 
-      {/* Grid */}
-      <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((item, i) => (
-            <PortfolioCard key={item.id} item={item} index={i} />
-          ))}
+      {/* Carousel */}
+      <div className="relative overflow-hidden">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={`${activeFilter}-${page}`}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={SLIDE}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+          >
+            {visible.map((item, i) => (
+              <PortfolioCard key={item.id} item={item} index={i} />
+            ))}
+          </motion.div>
         </AnimatePresence>
-      </motion.div>
+      </div>
 
+      {/* Pagination — only shown if there's more than 1 page */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-10">
+
+          {/* Dot indicators */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className="relative h-1.5 rounded-full transition-all duration-300 focus:outline-none"
+                style={{ width: i === page ? 28 : 6, background: i === page ? '#fff' : '#333' }}
+                aria-label={`Page ${i + 1}`}
+              />
+            ))}
+            <span className="ml-3 text-[11px] text-[#3f3f46] tracking-widest tabular-nums">
+              {page + 1} / {totalPages}
+            </span>
+          </div>
+
+          {/* Arrow buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={goPrev}
+              disabled={page === 0}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200"
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={15} />
+            </button>
+            <button
+              onClick={goNext}
+              disabled={page >= totalPages - 1}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-200"
+              aria-label="Next page"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
       {filtered.length === 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="text-center py-24 text-[#3f3f46] text-sm">
