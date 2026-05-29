@@ -116,8 +116,14 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
   );
 }
 
-/* ── Main carousel grid ──────────────────────────────────────────────── */
-export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
+/* ── Main grid (carousel or full) ───────────────────────────────────── */
+export default function PortfolioGrid({
+  items,
+  carousel = true,
+}: {
+  items: PortfolioItem[];
+  carousel?: boolean;
+}) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
   const [page,      setPage]      = useState(0);
   const [direction, setDirection] = useState(1);
@@ -150,34 +156,58 @@ export default function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
     exit:   (dir: number) => ({ x: dir > 0 ? -60 :  60, opacity: 0 }),
   };
 
+  /* ── Filter pill bar (shared between both modes) ─────────────── */
+  const FilterBar = (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={SPRING}
+      className="flex flex-wrap gap-2 mb-10"
+    >
+      {FILTERS.map((f) => (
+        <button
+          key={f.key}
+          onClick={() => setActiveFilter(f.key)}
+          className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 ${
+            activeFilter === f.key
+              ? 'bg-white text-black border-white'
+              : 'bg-transparent text-[#71717a] border-[#222] hover:border-[#444] hover:text-white'
+          }`}
+        >
+          {f.label}
+          {f.key !== 'ALL' && (
+            <span className={`ml-1.5 text-[10px] ${activeFilter === f.key ? 'text-black/50' : 'text-[#3f3f46]'}`}>
+              {items.filter((i) => i.mainCategory === f.key).length}
+            </span>
+          )}
+        </button>
+      ))}
+    </motion.div>
+  );
+
+  /* ── Full grid mode (portfolio page) ────────────────────────── */
+  if (!carousel) {
+    return (
+      <div>
+        {FilterBar}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((item, i) => (
+            <PortfolioCard key={item.id} item={item} index={i} />
+          ))}
+        </div>
+        {filtered.length === 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="text-center py-24 text-[#3f3f46] text-sm">
+            No projects in this category yet.
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* Filter pills */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={SPRING}
-        className="flex flex-wrap gap-2 mb-10"
-      >
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setActiveFilter(f.key)}
-            className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 ${
-              activeFilter === f.key
-                ? 'bg-white text-black border-white'
-                : 'bg-transparent text-[#71717a] border-[#222] hover:border-[#444] hover:text-white'
-            }`}
-          >
-            {f.label}
-            {f.key !== 'ALL' && (
-              <span className={`ml-1.5 text-[10px] ${activeFilter === f.key ? 'text-black/50' : 'text-[#3f3f46]'}`}>
-                {items.filter((i) => i.mainCategory === f.key).length}
-              </span>
-            )}
-          </button>
-        ))}
-      </motion.div>
+      {FilterBar}
 
       {/* Carousel — drag/swipe to navigate */}
       <div

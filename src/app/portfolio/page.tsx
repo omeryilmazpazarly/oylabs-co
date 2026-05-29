@@ -1,7 +1,7 @@
 import { getAllItems } from '@/lib/db';
 import PortfolioGrid from '@/components/PortfolioGrid';
 import Footer from '@/components/Footer';
-import SectionOrbs from '@/components/effects/SectionOrbs';
+import SectionAtmosphere from '@/components/effects/SectionAtmosphere';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export default function PortfolioPage() {
   return (
     <>
       <div className="relative min-h-screen pt-32 pb-16 px-6 overflow-hidden">
-        <SectionOrbs variant="violet-amber" />
+        <SectionAtmosphere theme="work" showTopEdge={false} />
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-16">
@@ -29,7 +29,7 @@ export default function PortfolioPage() {
             </p>
           </div>
 
-          <PortfolioGrid items={items} />
+          <PortfolioGrid items={items} carousel={false} />
         </div>
       </div>
       <Footer />

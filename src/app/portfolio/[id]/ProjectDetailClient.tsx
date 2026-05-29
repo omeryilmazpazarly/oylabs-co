@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Globe, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Globe, ExternalLink, Building2, Play } from 'lucide-react';
 import type { PortfolioItem } from '@/types/portfolio';
 import { CATEGORY_LABELS } from '@/types/portfolio';
 import { CATEGORY_COLORS, COVER_GRADIENTS } from '@/lib/portfolioConstants';
@@ -105,6 +105,51 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             <p className="mt-5 text-xl text-[#71717a] max-w-2xl leading-relaxed">
               {item.description}
             </p>
+
+            {/* Client credit + Live Preview CTA */}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+
+              {/* Client name — hyperlinked to websiteUrl if available */}
+              {item.clientName && (
+                <div className="flex items-center gap-2.5 text-sm text-[#71717a]">
+                  <Building2 size={14} className="text-[#3f3f46]" />
+                  <span className="text-[#3f3f46] tracking-widest uppercase text-[10px] font-medium">Client</span>
+                  {item.websiteUrl ? (
+                    <a
+                      href={item.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-1 text-white font-medium hover:text-[#a1a1aa] transition-colors"
+                    >
+                      {item.clientName}
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                  ) : (
+                    <span className="text-white font-medium">{item.clientName}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Separator dot */}
+              {item.clientName && item.liveUrl && (
+                <span className="w-1 h-1 rounded-full bg-[#2a2a2a]" />
+              )}
+
+              {/* Live preview button */}
+              {item.liveUrl && (
+                <a
+                  href={item.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide transition-all duration-200 hover:bg-white hover:text-black hover:border-white"
+                  style={{ borderColor: `${accent}60`, color: accent }}
+                >
+                  <Play size={11} className="fill-current" />
+                  Live Preview
+                  <ArrowUpRight size={12} className="opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Two-column */}
@@ -191,17 +236,32 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             <aside className="space-y-5">
               {/* Meta card */}
               <div className="rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] divide-y divide-[#141414] overflow-hidden">
-                {[
-                  { label: 'Category', value: CATEGORY_LABELS[item.mainCategory] },
-                  { label: 'Domain',   value: item.tags[0] ?? '—' },
-                  { label: 'Stack',    value: `${item.tags.length} technologies` },
-                  { label: 'Status',   value: 'Delivered ✓' },
-                ].map(({ label, value }) => (
-                  <div key={label} className="px-5 py-4 flex items-center justify-between gap-4">
-                    <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">{label}</span>
-                    <span className="text-sm text-white font-medium text-right">{value}</span>
+                <div className="px-5 py-4 flex items-center justify-between gap-4">
+                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Category</span>
+                  <span className="text-sm text-white font-medium text-right">{CATEGORY_LABELS[item.mainCategory]}</span>
+                </div>
+                {item.clientName && (
+                  <div className="px-5 py-4 flex items-center justify-between gap-4">
+                    <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Client</span>
+                    {item.websiteUrl ? (
+                      <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer"
+                        className="group flex items-center gap-1 text-sm text-white font-medium hover:text-[#a1a1aa] transition-colors text-right">
+                        {item.clientName}
+                        <ArrowUpRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                      </a>
+                    ) : (
+                      <span className="text-sm text-white font-medium text-right">{item.clientName}</span>
+                    )}
                   </div>
-                ))}
+                )}
+                <div className="px-5 py-4 flex items-center justify-between gap-4">
+                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">Stack</span>
+                  <span className="text-sm text-white font-medium text-right">{item.tags.length} technologies</span>
+                </div>
+                <div className="px-5 py-4 flex items-center justify-between gap-4">
+                  <span className="text-[11px] text-[#3f3f46] tracking-widests uppercase">Status</span>
+                  <span className="text-sm text-white font-medium text-right">Delivered ✓</span>
+                </div>
               </div>
 
               {/* Accent divider */}

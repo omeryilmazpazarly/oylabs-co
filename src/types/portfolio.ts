@@ -19,6 +19,7 @@ export interface PortfolioItem {
   mainCategory:    MainCategory;
   tags:            string[];
   order:           number;
+  clientName?:     string;   // client / company name
   coverImage?:     string;   // hero banner image URL
   websiteUrl?:     string;   // live website link
   liveUrl?:        string;   // demo / preview link

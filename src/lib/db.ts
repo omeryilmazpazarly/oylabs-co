@@ -39,9 +39,10 @@ function initSchema(db: Database.Database) {
   /* Live-safe migrations — SQLite silently errors on duplicate ADD COLUMN,
      so we try each individually and swallow the exception. */
   const migrations = [
-    `ALTER TABLE portfolio_items ADD COLUMN website_url TEXT`,
-    `ALTER TABLE portfolio_items ADD COLUMN live_url    TEXT`,
-    `ALTER TABLE portfolio_items ADD COLUMN images      TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE portfolio_items ADD COLUMN website_url  TEXT`,
+    `ALTER TABLE portfolio_items ADD COLUMN live_url     TEXT`,
+    `ALTER TABLE portfolio_items ADD COLUMN images       TEXT NOT NULL DEFAULT '[]'`,
+    `ALTER TABLE portfolio_items ADD COLUMN client_name  TEXT`,
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists — fine */ }
@@ -108,9 +109,10 @@ function rowToItem(row: Record<string, unknown>): PortfolioItem {
     mainCategory:    row.main_category as PortfolioItem['mainCategory'],
     tags:            JSON.parse((row.tags as string) || '[]'),
     order:           row.item_order as number,
-    coverImage:      (row.cover_image as string | null) ?? undefined,
-    websiteUrl:      (row.website_url as string | null) ?? undefined,
-    liveUrl:         (row.live_url    as string | null) ?? undefined,
+    clientName:      (row.client_name  as string | null) ?? undefined,
+    coverImage:      (row.cover_image  as string | null) ?? undefined,
+    websiteUrl:      (row.website_url  as string | null) ?? undefined,
+    liveUrl:         (row.live_url     as string | null) ?? undefined,
     images:          JSON.parse((row.images as string) || '[]'),
     createdAt:       row.created_at as string,
     updatedAt:       row.updated_at as string,
@@ -134,10 +136,10 @@ export function createItem(input: PortfolioItemInput): PortfolioItem {
   const result = db.prepare(`
     INSERT INTO portfolio_items
       (title, description, long_description, main_category, tags, item_order,
-       cover_image, website_url, live_url, images)
+       client_name, cover_image, website_url, live_url, images)
     VALUES
       (@title, @description, @longDescription, @mainCategory, @tags, @order,
-       @coverImage, @websiteUrl, @liveUrl, @images)
+       @clientName, @coverImage, @websiteUrl, @liveUrl, @images)
   `).run({
     title:           input.title,
     description:     input.description,
@@ -145,6 +147,7 @@ export function createItem(input: PortfolioItemInput): PortfolioItem {
     mainCategory:    input.mainCategory,
     tags:            JSON.stringify(input.tags),
     order:           input.order,
+    clientName:      input.clientName  ?? null,
     coverImage:      input.coverImage  ?? null,
     websiteUrl:      input.websiteUrl  ?? null,
     liveUrl:         input.liveUrl     ?? null,
@@ -165,6 +168,7 @@ export function updateItem(id: number, input: Partial<PortfolioItemInput>): Port
     mainCategory:    input.mainCategory    ?? existing.mainCategory,
     tags:            JSON.stringify(input.tags ?? existing.tags),
     order:           input.order           ?? existing.order,
+    clientName:      input.clientName      ?? existing.clientName  ?? null,
     coverImage:      input.coverImage      ?? existing.coverImage  ?? null,
     websiteUrl:      input.websiteUrl      ?? existing.websiteUrl  ?? null,
     liveUrl:         input.liveUrl         ?? existing.liveUrl     ?? null,
@@ -176,8 +180,8 @@ export function updateItem(id: number, input: Partial<PortfolioItemInput>): Port
     UPDATE portfolio_items
     SET title=@title, description=@description, long_description=@longDescription,
         main_category=@mainCategory, tags=@tags, item_order=@order,
-        cover_image=@coverImage, website_url=@websiteUrl, live_url=@liveUrl,
-        images=@images, updated_at=datetime('now')
+        client_name=@clientName, cover_image=@coverImage, website_url=@websiteUrl,
+        live_url=@liveUrl, images=@images, updated_at=datetime('now')
     WHERE id=@id
   `).run(merged);
 

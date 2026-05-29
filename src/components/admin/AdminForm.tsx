@@ -119,6 +119,21 @@ export default function AdminForm({ item, onClose }: Props) {
               </div>
             </div>
 
+            {/* ── Client ── */}
+            <div className="pt-2 border-t border-[#1a1a1a]">
+              <p className="text-[10px] text-[#3f3f46] tracking-[0.3em] uppercase font-medium mb-4">Client</p>
+              <div>
+                <label className={labelCls}>Client / Company Name</label>
+                <input
+                  name="clientName"
+                  defaultValue={item?.clientName}
+                  placeholder="Acme Corp"
+                  className={inputCls}
+                />
+                <p className="mt-1.5 text-xs text-[#3f3f46]">Shown on the project page, hyperlinked to the Website URL if provided.</p>
+              </div>
+            </div>
+
             {/* ── Media & Links ── */}
             <div className="pt-2 border-t border-[#1a1a1a]">
               <p className="text-[10px] text-[#3f3f46] tracking-[0.3em] uppercase font-medium mb-4">Media &amp; Links</p>
