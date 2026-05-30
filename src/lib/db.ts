@@ -54,126 +54,71 @@ function initSchema(db: Database.Database) {
   backfillDemoData(db);
 }
 
-/* ── Backfill rich demo data for the 4 seed projects ──────────────────
-   Runs on every startup but only touches rows where client_name IS NULL,
-   so any data you've edited via the admin is never overwritten.          */
-function backfillDemoData(db: Database.Database) {
-  const stmt = db.prepare(`
-    UPDATE portfolio_items
-    SET client_name  = @clientName,
-        website_url  = @websiteUrl,
-        live_url     = @liveUrl,
-        cover_image  = @coverImage,
-        images       = @images,
-        updated_at   = datetime('now')
-    WHERE item_order = @order
-      AND client_name IS NULL
-  `);
-
-  const demos = [
-    /* 1 — Enterprise automation */
-    {
-      order: 1,
-      clientName: 'TradeNex International',
-      websiteUrl: 'https://oylabs.co',
-      liveUrl:    'https://oylabs.co/portfolio',
-      coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80',
-      images: JSON.stringify([
-        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80',
-        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80',
-        'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=900&q=80',
-        'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80',
-      ]),
-    },
-    /* 2 — Shopify mobile app */
-    {
-      order: 2,
-      clientName: 'Nexify Commerce',
-      websiteUrl: 'https://oylabs.co',
-      liveUrl:    'https://oylabs.co/portfolio',
-      coverImage: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1400&q=80',
-      images: JSON.stringify([
-        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80',
-        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80',
-        'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=900&q=80',
-        'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=80',
-      ]),
-    },
-    /* 3 — SaaS financial analytics */
-    {
-      order: 3,
-      clientName: 'ClearLedger Analytics',
-      websiteUrl: 'https://oylabs.co',
-      liveUrl:    'https://oylabs.co/portfolio',
-      coverImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1400&q=80',
-      images: JSON.stringify([
-        'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=900&q=80',
-        'https://images.unsplash.com/photo-1543286386-713bdd548da4?w=900&q=80',
-        'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=900&q=80',
-        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80',
-      ]),
-    },
-    /* 4 — Minimalist storefronts */
-    {
-      order: 4,
-      clientName: 'Maison Collective',
-      websiteUrl: 'https://oylabs.co',
-      liveUrl:    'https://oylabs.co/portfolio',
-      coverImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1400&q=80',
-      images: JSON.stringify([
-        'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=80',
-        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80',
-        'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=900&q=80',
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80',
-      ]),
-    },
-  ];
-
-  for (const d of demos) stmt.run(d);
-}
+/* ── backfillDemoData removed — real project data seeded directly ──── */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function backfillDemoData(_db: Database.Database) { /* no-op */ }
 
 function seedData(db: Database.Database) {
   const insert = db.prepare(`
-    INSERT INTO portfolio_items (title, description, long_description, main_category, tags, item_order)
-    VALUES (@title, @description, @longDescription, @mainCategory, @tags, @order)
+    INSERT INTO portfolio_items
+      (title, description, long_description, main_category, tags, item_order,
+       client_name, cover_image, images, created_at, updated_at)
+    VALUES
+      (@title, @description, @longDescription, @mainCategory, @tags, @order,
+       @clientName, @coverImage, @images, @createdAt, datetime('now'))
   `);
 
   const items = [
     {
-      title: 'Unified Global Trade Expo Ecosystem',
-      description: 'Total automation architecture engineered for an international exhibition firm.',
+      title: 'Zoho One Enterprise Implementation',
+      description: 'Unified system implementation across departments for an international exhibition firm.',
       longDescription:
-        'A complete operational overhaul unifying sales pipelines, enterprise finance, and real-time logistics tracking into a singular, high-availability Zoho One instance connected via serverless API hooks.',
+        'Delivered a unified operational system across all departments for a US-based global exhibition firm. Customised Zoho CRM and Zoho Desk significantly reduced support response time. Automated financial operations and reporting pipelines, reducing manual effort by 40% and enabling the team to focus on growth rather than administration.',
       mainCategory: 'SYSTEM_IMPLEMENTATION',
-      tags: JSON.stringify(['Zoho One', 'API Architecture', 'n8n Pipelines', 'Workflow Optimization']),
+      tags: JSON.stringify(['Zoho One', 'Zoho CRM', 'Zoho Desk', 'Workflow Automation']),
       order: 1,
+      clientName: 'Global Products Expo',
+      coverImage: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80',
+        'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&q=80',
+        'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=900&q=80',
+      ]),
+      createdAt: '2025-02-10 00:00:00',
     },
     {
-      title: 'Headless Shopify Native App Builder',
-      description: 'A high-performance framework translating e-commerce storefronts into native applications.',
+      title: 'Real Estate CRM & HR Management System',
+      description: 'Custom real estate CRM and HR management application built in Zoho Creator.',
       longDescription:
-        'A technical implementation enabling enterprise storefronts to compile live web stores directly into optimized mobile binaries, maximizing performance and mobile-checkout conversion rates.',
-      mainCategory: 'MOBILE_APPS',
-      tags: JSON.stringify(['Shopify API', 'Next.js', 'Cross-Platform Mobile', 'Headless Commerce']),
+        'Built a tailored real estate CRM and HR management application inside Zoho Creator for a leading Turkish property group. Developed intelligent workflow automations that reduced administrative overhead by 35%. Integrated lead capture pipelines that boosted lead generation efficiency by 10% within the first quarter post-launch.',
+      mainCategory: 'SYSTEM_IMPLEMENTATION',
+      tags: JSON.stringify(['Zoho Creator', 'Zoho CRM', 'Workflow Automation', 'Real Estate']),
       order: 2,
+      clientName: 'Baytak Group',
+      coverImage: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=900&q=80',
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&q=80',
+        'https://images.unsplash.com/photo-1504615755583-2916b52192a3?w=900&q=80',
+      ]),
+      createdAt: '2025-01-05 00:00:00',
     },
     {
-      title: 'SaaS Financial Profit Analytics Engine',
-      description: 'Automated profit and cash-flow data extraction engine for small business operations.',
+      title: 'Shopify Real-Time Inventory Sync Engine',
+      description: 'Serverless AWS Lambda integration for real-time Shopify inventory synchronisation.',
       longDescription:
-        'A secure dashboard application linking multi-channel accounting data, computing net profit margins automatically, and projecting cash runaways on a streamlined, minimal web interface.',
+        'Engineered a serverless AWS Lambda function to synchronise Shopify stock levels in real-time across multiple sales channels. The solution slashed inventory discrepancies by 90% and dramatically improved order fulfilment accuracy, eliminating the manual reconciliation process that had been costing the team several hours per day.',
       mainCategory: 'APPS_PLUGINS',
-      tags: JSON.stringify(['Node.js', 'AWS Lambda', 'Financial Dashboards', 'SaaS Architecture']),
+      tags: JSON.stringify(['AWS Lambda', 'Shopify API', 'Node.js', 'Serverless']),
       order: 3,
-    },
-    {
-      title: 'High-Volume Minimalist Storefront Architectures',
-      description: 'Custom optimised e-commerce architectures integrating WordPress and Shopify frameworks.',
-      longDescription:
-        'Engineering high-speed, secure, and presentation-critical web nodes capable of maintaining peak structural performance under intense global traffic spikes.',
-      mainCategory: 'WEBSITES',
-      tags: JSON.stringify(['Shopify', 'WordPress Core', 'Tailwind CSS', 'Performance Optimization']),
-      order: 4,
+      clientName: 'Pazarly',
+      coverImage: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&q=80',
+      images: JSON.stringify([
+        'https://images.unsplash.com/photo-1553413077-190dd305871c?w=900&q=80',
+        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80',
+        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&q=80',
+      ]),
+      createdAt: '2024-06-15 00:00:00',
     },
   ];
 
