@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Globe, Cpu, Puzzle, Smartphone } from 'lucide-react';
 import type { PortfolioItem, MainCategory } from '@/types/portfolio';
 import { CATEGORY_LABELS } from '@/types/portfolio';
 import TiltCard from './effects/TiltCard';
@@ -12,6 +12,14 @@ import { CATEGORY_COLORS, COVER_GRADIENTS } from '@/lib/portfolioConstants';
 export { CATEGORY_COLORS, COVER_GRADIENTS };
 
 const SPRING = { type: 'spring', stiffness: 120, damping: 22, mass: 0.8 } as const;
+
+/* Short label + icon shown on the card badge */
+const CATEGORY_BADGE: Record<MainCategory, { label: string; Icon: React.FC<{ size?: number }> }> = {
+  SYSTEM_IMPLEMENTATION: { label: 'Integration',  Icon: Cpu        },
+  WEBSITES:              { label: 'Website',       Icon: Globe      },
+  APPS_PLUGINS:          { label: 'App / Plugin',  Icon: Puzzle     },
+  MOBILE_APPS:           { label: 'Mobile App',    Icon: Smartphone },
+};
 const SLIDE  = { type: 'spring', stiffness: 260, damping: 32, mass: 0.9 } as const;
 
 const CARDS_PER_PAGE = 3;
@@ -93,13 +101,27 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                   <div className="absolute inset-0 bg-black/30" />
                 )}
                 {/* Overlay badges — always shown on top */}
-                <div className="absolute top-4 left-4 text-xs font-mono tracking-widest text-white/70 drop-shadow-md">
+                <div className="absolute top-3.5 left-3.5 text-[10px] font-mono tracking-widest text-white/40 drop-shadow-md tabular-nums">
                   {String(index + 1).padStart(2, '0')}
                 </div>
-                <div className="absolute top-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium tracking-wide backdrop-blur-md"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: accent, border: `1px solid ${accent}50` }}>
-                  {CATEGORY_LABELS[item.mainCategory]}
-                </div>
+                {/* Category badge — icon + short label, accent-tinted glassy pill */}
+                {(() => {
+                  const { label, Icon } = CATEGORY_BADGE[item.mainCategory];
+                  return (
+                    <div
+                      className="absolute top-3.5 right-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium tracking-wide backdrop-blur-md"
+                      style={{
+                        backgroundColor: `${accent}22`,
+                        border: `1px solid ${accent}55`,
+                        color: accent,
+                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                      }}
+                    >
+                      <Icon size={11} />
+                      {label}
+                    </div>
+                  );
+                })()}
                 <div className="absolute bottom-0 inset-x-0 h-20 pointer-events-none"
                   style={{ background: 'linear-gradient(to top, var(--_panel), transparent)' }} />
               </div>
@@ -115,7 +137,15 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                 <p className="text-sm text-ink-dim leading-relaxed mb-4 line-clamp-2">{item.description}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {item.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="text-xs text-ink-dim border border-line-sub rounded px-2 py-0.5 bg-input tracking-wide group-hover:border-line transition-colors">
+                    <span
+                      key={tag}
+                      className="text-[11px] font-medium rounded-md px-2.5 py-1 tracking-wide transition-all duration-200"
+                      style={{
+                        backgroundColor: `${accent}0f`,
+                        border: `1px solid ${accent}28`,
+                        color: `${accent}cc`,
+                      }}
+                    >
                       {tag}
                     </span>
                   ))}
