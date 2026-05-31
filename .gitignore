@@ -22,3 +22,7 @@ data/*.db-wal
 .DS_Store
 *.pem
 npm-debug.log*
+
+# Uploaded images (server-side, not in git)
+public/uploads/*
+!public/uploads/.gitkeep
