@@ -6,7 +6,7 @@ import {
   MotionValue,
 } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import GradientOrbs from './effects/GradientOrbs';
 import MagneticButton from './effects/MagneticButton';
 
@@ -116,12 +116,25 @@ export default function Hero() {
               </motion.div>
 
               <motion.div variants={fadeUp(4)}
-                className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-dull">
-                {['50+ projects delivered', '12+ enterprise clients', '99.9% uptime SLA'].map((s, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    <CheckCircle2 size={12} className="text-ink-dull/50" />
-                    {s}
-                  </span>
+                className="flex items-center gap-6 sm:gap-8">
+                {[
+                  { value: '50+',   label: 'Projects Delivered' },
+                  { value: '12+',   label: 'Enterprise Clients'  },
+                  { value: '99.9%', label: 'Uptime SLA'          },
+                ].map((stat, i) => (
+                  <div key={i} className="flex items-center gap-6 sm:gap-8">
+                    {i > 0 && (
+                      <span className="w-px h-8 flex-shrink-0" style={{ background: 'var(--_line-hi)' }} />
+                    )}
+                    <div>
+                      <p className="text-2xl font-bold text-ink tabular-nums tracking-tight leading-none">
+                        {stat.value}
+                      </p>
+                      <p className="text-[11px] text-ink-dull mt-1 tracking-wide leading-none">
+                        {stat.label}
+                      </p>
+                    </div>
+                  </div>
                 ))}
               </motion.div>
             </motion.div>
