@@ -213,47 +213,22 @@ export default function PortfolioGrid({
       style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
     >
       {FILTERS.map((f) => {
-        const isActive  = activeFilter === f.key;
-        const accent    = f.key !== 'ALL' ? CATEGORY_COLORS[f.key as MainCategory] : null;
-        const count     = f.key !== 'ALL' ? items.filter((i) => i.mainCategory === f.key).length : null;
-
-        const style: React.CSSProperties = accent
-          ? isActive
-            ? { backgroundColor: `${accent}18`, borderColor: `${accent}55`, color: accent }
-            : { backgroundColor: 'transparent', borderColor: `${accent}30`, color: `${accent}99` }
-          : {};
-
-        const baseClass =
-          'flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 whitespace-nowrap cursor-pointer';
-
-        const neutralClass = !accent
-          ? isActive
-            ? 'bg-ink/8 border-ink/25 text-ink'
-            : 'bg-transparent border-line text-ink-dim hover:border-line-hi hover:text-ink'
-          : isActive
-            ? 'hover:opacity-90'
-            : 'hover:opacity-80';
+        const isActive = activeFilter === f.key;
+        const count    = f.key !== 'ALL' ? items.filter((i) => i.mainCategory === f.key).length : null;
 
         return (
           <button
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
-            className={`${baseClass} ${neutralClass}`}
-            style={style}
+            className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 whitespace-nowrap cursor-pointer ${
+              isActive
+                ? 'bg-ink/8 border-ink/30 text-ink'
+                : 'bg-transparent border-line text-ink-dim hover:border-line-hi hover:text-ink'
+            }`}
           >
-            {/* Coloured dot for category filters */}
-            {accent && (
-              <span
-                className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200"
-                style={{ backgroundColor: isActive ? accent : `${accent}70` }}
-              />
-            )}
             {f.label}
             {count !== null && (
-              <span
-                className="text-[10px] tabular-nums font-normal"
-                style={{ color: accent ? (isActive ? `${accent}aa` : `${accent}55`) : undefined }}
-              >
+              <span className={`text-[10px] tabular-nums font-normal ${isActive ? 'text-ink-dull' : 'text-ink-dull/50'}`}>
                 {count}
               </span>
             )}
