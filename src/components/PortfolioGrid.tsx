@@ -192,8 +192,8 @@ export default function PortfolioGrid({
   function onDragStart(e: React.PointerEvent) { dragStartX.current = e.clientX; }
   function onDragEnd(e: React.PointerEvent) {
     const delta = e.clientX - dragStartX.current;
-    if (delta < -50) goNext();
-    else if (delta > 50) goPrev();
+    if (delta < -30) goNext();
+    else if (delta > 30) goPrev();
   }
 
   /* Slide variants — direction drives which side items enter/exit from */
@@ -210,7 +210,7 @@ export default function PortfolioGrid({
       animate={{ opacity: 1, y: 0 }}
       transition={SPRING}
       className="flex gap-2 mb-10 overflow-x-auto pb-0.5"
-      style={{ scrollbarWidth: 'none' }}
+      style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
     >
       {FILTERS.map((f) => {
         const isActive  = activeFilter === f.key;

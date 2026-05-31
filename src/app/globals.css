@@ -65,11 +65,11 @@ html[data-theme="light"] {
 
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
   scroll-padding-top: 64px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: dark;
+  /* No scroll-snap on html — it makes touch scroll feel sticky on mobile */
 }
 
 html[data-theme="light"] {
@@ -82,6 +82,29 @@ body {
   font-family: var(--font-sans);
   overflow-x: hidden;
   transition: background-color 0.25s ease, color 0.25s ease;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent overscroll bounce pulling background colour through */
+  overscroll-behavior-y: none;
+}
+
+/* Horizontal scroll containers (filter bar, tag rows) — iOS momentum */
+.overflow-x-auto,
+[style*="overflow-x: auto"],
+[style*="overflow-x:auto"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Remove tap highlight on interactive elements on mobile */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Smoother font rendering at all sizes */
+* {
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
