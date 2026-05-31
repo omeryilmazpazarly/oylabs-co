@@ -179,26 +179,57 @@ export default function PortfolioGrid({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={SPRING}
-      className="flex flex-wrap gap-2 mb-10"
+      className="flex gap-2 mb-10 overflow-x-auto pb-0.5"
+      style={{ scrollbarWidth: 'none' }}
     >
-      {FILTERS.map((f) => (
-        <button
-          key={f.key}
-          onClick={() => setActiveFilter(f.key)}
-          className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 ${
-            activeFilter === f.key
-              ? 'bg-ink text-page border-ink'
-              : 'bg-transparent text-ink-dim border-line hover:border-line-hi hover:text-ink'
-          }`}
-        >
-          {f.label}
-          {f.key !== 'ALL' && (
-            <span className={`ml-1.5 text-[10px] ${activeFilter === f.key ? 'text-page/50' : 'text-ink-dull'}`}>
-              {items.filter((i) => i.mainCategory === f.key).length}
-            </span>
-          )}
-        </button>
-      ))}
+      {FILTERS.map((f) => {
+        const isActive  = activeFilter === f.key;
+        const accent    = f.key !== 'ALL' ? CATEGORY_COLORS[f.key as MainCategory] : null;
+        const count     = f.key !== 'ALL' ? items.filter((i) => i.mainCategory === f.key).length : null;
+
+        const style: React.CSSProperties = accent
+          ? isActive
+            ? { backgroundColor: `${accent}18`, borderColor: `${accent}55`, color: accent }
+            : { backgroundColor: 'transparent', borderColor: `${accent}30`, color: `${accent}99` }
+          : {};
+
+        const baseClass =
+          'flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 whitespace-nowrap cursor-pointer';
+
+        const neutralClass = !accent
+          ? isActive
+            ? 'bg-ink/8 border-ink/25 text-ink'
+            : 'bg-transparent border-line text-ink-dim hover:border-line-hi hover:text-ink'
+          : isActive
+            ? 'hover:opacity-90'
+            : 'hover:opacity-80';
+
+        return (
+          <button
+            key={f.key}
+            onClick={() => setActiveFilter(f.key)}
+            className={`${baseClass} ${neutralClass}`}
+            style={style}
+          >
+            {/* Coloured dot for category filters */}
+            {accent && (
+              <span
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200"
+                style={{ backgroundColor: isActive ? accent : `${accent}70` }}
+              />
+            )}
+            {f.label}
+            {count !== null && (
+              <span
+                className="text-[10px] tabular-nums font-normal"
+                style={{ color: accent ? (isActive ? `${accent}aa` : `${accent}55`) : undefined }}
+              >
+                {count}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </motion.div>
   );
 
