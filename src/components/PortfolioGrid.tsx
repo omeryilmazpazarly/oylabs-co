@@ -55,7 +55,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
             layout
             onMouseMove={onMove}
             onMouseLeave={() => setGlow({})}
-            className="relative group rounded-2xl border border-[#222] bg-[#111] overflow-hidden hover:border-[#333] transition-colors duration-300 cursor-pointer"
+            className="relative group rounded-2xl border border-line bg-panel overflow-hidden hover:border-line-hi transition-colors duration-300 cursor-pointer"
           >
             {/* Mouse glow */}
             <div className="absolute inset-0 pointer-events-none z-10 transition-all duration-200" style={glow} />
@@ -65,7 +65,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
               className="absolute -inset-[1px] rounded-2xl pointer-events-none z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
               style={{ background: `conic-gradient(from 180deg at 50% 50%, transparent 60%, ${accent}55 80%, transparent 100%)` }}
             />
-            <div className="absolute inset-[1px] rounded-2xl bg-[#111] z-[1]" />
+            <div className="absolute inset-[1px] rounded-2xl bg-panel z-[1]" />
 
             <div className="relative z-[2]">
               {/* Cover */}
@@ -100,26 +100,27 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                   style={{ backgroundColor: 'rgba(0,0,0,0.55)', color: accent, border: `1px solid ${accent}50` }}>
                   {CATEGORY_LABELS[item.mainCategory]}
                 </div>
-                <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#111] to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 h-20 pointer-events-none"
+                  style={{ background: 'linear-gradient(to top, var(--_panel), transparent)' }} />
               </div>
 
               {/* Body */}
               <div className="p-4 sm:p-6">
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h3 className="text-base font-semibold text-white tracking-tight leading-snug">
+                  <h3 className="text-base font-semibold text-ink tracking-tight leading-snug">
                     {item.title}
                   </h3>
-                  <ArrowUpRight size={16} className="flex-shrink-0 text-[#71717a] opacity-0 group-hover:opacity-100 transition-all duration-200 -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0" />
+                  <ArrowUpRight size={16} className="flex-shrink-0 text-ink-dim opacity-0 group-hover:opacity-100 transition-all duration-200 -translate-x-1 translate-y-1 group-hover:translate-x-0 group-hover:translate-y-0" />
                 </div>
-                <p className="text-sm text-[#71717a] leading-relaxed mb-4 line-clamp-2">{item.description}</p>
+                <p className="text-sm text-ink-dim leading-relaxed mb-4 line-clamp-2">{item.description}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {item.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="text-xs text-[#71717a] border border-[#1e1e1e] rounded px-2 py-0.5 bg-[#0a0a0a] tracking-wide group-hover:border-[#2a2a2a] transition-colors">
+                    <span key={tag} className="text-xs text-ink-dim border border-line-sub rounded px-2 py-0.5 bg-input tracking-wide group-hover:border-line transition-colors">
                       {tag}
                     </span>
                   ))}
                 </div>
-                <div className="mt-5 flex items-center gap-1.5 text-xs font-medium tracking-wide text-[#71717a] group-hover:text-white transition-colors duration-200">
+                <div className="mt-5 flex items-center gap-1.5 text-xs font-medium tracking-wide text-ink-dim group-hover:text-ink transition-colors duration-200">
                   View Case Study
                   <ArrowUpRight size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
                 </div>
@@ -186,13 +187,13 @@ export default function PortfolioGrid({
           onClick={() => setActiveFilter(f.key)}
           className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all duration-200 ${
             activeFilter === f.key
-              ? 'bg-white text-black border-white'
-              : 'bg-transparent text-[#71717a] border-[#222] hover:border-[#444] hover:text-white'
+              ? 'bg-ink text-page border-ink'
+              : 'bg-transparent text-ink-dim border-line hover:border-line-hi hover:text-ink'
           }`}
         >
           {f.label}
           {f.key !== 'ALL' && (
-            <span className={`ml-1.5 text-[10px] ${activeFilter === f.key ? 'text-black/50' : 'text-[#3f3f46]'}`}>
+            <span className={`ml-1.5 text-[10px] ${activeFilter === f.key ? 'text-page/50' : 'text-ink-dull'}`}>
               {items.filter((i) => i.mainCategory === f.key).length}
             </span>
           )}
@@ -213,7 +214,7 @@ export default function PortfolioGrid({
         </div>
         {filtered.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="text-center py-24 text-[#3f3f46] text-sm">
+            className="text-center py-24 text-ink-dull text-sm">
             No projects in this category yet.
           </motion.div>
         )}
@@ -260,11 +261,11 @@ export default function PortfolioGrid({
                 key={i}
                 onClick={() => goTo(i)}
                 className="relative h-1.5 rounded-full transition-all duration-300 focus:outline-none"
-                style={{ width: i === page ? 28 : 6, background: i === page ? '#fff' : '#333' }}
+                style={{ width: i === page ? 28 : 6, background: i === page ? 'var(--_ink)' : 'var(--_line-hi)' }}
                 aria-label={`Page ${i + 1}`}
               />
             ))}
-            <span className="ml-3 text-[11px] text-[#3f3f46] tracking-widest tabular-nums">
+            <span className="ml-3 text-[11px] text-ink-dull tracking-widest tabular-nums">
               {page + 1} / {totalPages}
             </span>
           </div>
@@ -273,14 +274,14 @@ export default function PortfolioGrid({
           <div className="flex items-center gap-2">
             <button
               onClick={goPrev}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-line text-ink-dim hover:text-ink hover:border-line-hi transition-all duration-200"
               aria-label="Previous page"
             >
               <ChevronLeft size={15} />
             </button>
             <button
               onClick={goNext}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-line text-ink-dim hover:text-ink hover:border-line-hi transition-all duration-200"
               aria-label="Next page"
             >
               <ChevronRight size={15} />
@@ -292,7 +293,7 @@ export default function PortfolioGrid({
       {/* Empty state */}
       {filtered.length === 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="text-center py-24 text-[#3f3f46] text-sm">
+          className="text-center py-24 text-ink-dull text-sm">
           No projects in this category yet.
         </motion.div>
       )}

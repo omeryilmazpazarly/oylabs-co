@@ -77,7 +77,7 @@ function Lightbox({
       {/* Close */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 z-10 w-10 h-10 flex items-center justify-center rounded-full border border-[#333] text-[#71717a] hover:text-white hover:border-[#555] transition-all bg-black/60"
+        className="absolute top-5 right-5 z-10 w-10 h-10 flex items-center justify-center rounded-full border border-line-hi text-ink-dim hover:text-ink hover:border-[#555] transition-all bg-black/60"
       >
         <X size={16} />
       </button>
@@ -90,7 +90,7 @@ function Lightbox({
       {/* Prev arrow */}
       <button
         onClick={(e) => { e.stopPropagation(); goPrev(); }}
-        className="absolute left-4 z-10 w-11 h-11 flex items-center justify-center rounded-full border border-[#333] text-[#71717a] hover:text-white hover:border-[#555] transition-all bg-black/60"
+        className="absolute left-4 z-10 w-11 h-11 flex items-center justify-center rounded-full border border-line-hi text-ink-dim hover:text-ink hover:border-[#555] transition-all bg-black/60"
       >
         <ChevronLeft size={18} />
       </button>
@@ -119,7 +119,7 @@ function Lightbox({
       {/* Next arrow */}
       <button
         onClick={(e) => { e.stopPropagation(); goNext(); }}
-        className="absolute right-4 z-10 w-11 h-11 flex items-center justify-center rounded-full border border-[#333] text-[#71717a] hover:text-white hover:border-[#555] transition-all bg-black/60"
+        className="absolute right-4 z-10 w-11 h-11 flex items-center justify-center rounded-full border border-line-hi text-ink-dim hover:text-ink hover:border-[#555] transition-all bg-black/60"
       >
         <ChevronRight size={18} />
       </button>
@@ -156,7 +156,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-[#000]">
+      <div className="min-h-screen bg-page">
 
         {/* ── Hero cover ─────────────────────────────────────────────── */}
         <div className={`relative h-[40vh] sm:h-[55vh] min-h-[280px] sm:min-h-[400px] overflow-hidden ${item.coverImage ? '' : `bg-gradient-to-br ${COVER_GRADIENTS[item.mainCategory]}`}`}>
@@ -187,7 +187,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
           {/* Breadcrumb */}
           <div className="absolute top-20 sm:top-28 left-0 right-0 px-4 sm:px-6 max-w-7xl mx-auto">
             <Link href="/portfolio"
-              className="inline-flex items-center gap-1.5 text-xs text-[#71717a] hover:text-white transition-colors tracking-wide group">
+              className="inline-flex items-center gap-1.5 text-xs text-ink-dim hover:text-ink transition-colors tracking-wide group">
               <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
               Portfolio
             </Link>
@@ -201,18 +201,19 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             </span>
           </div>
 
-          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-[#000] to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 inset-x-0 h-24 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, var(--_page), transparent)' }} />
         </div>
 
         {/* ── Main content ─────────────────────────────────────────────── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
 
           {/* Title block */}
-          <div className="pt-8 sm:pt-12 pb-10 sm:pb-16 border-b border-[#111]">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight max-w-3xl">
+          <div className="pt-8 sm:pt-12 pb-10 sm:pb-16 border-b border-line-sub">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-ink tracking-tight leading-tight max-w-3xl">
               {item.title}
             </h1>
-            <p className="mt-4 sm:mt-5 text-base sm:text-xl text-[#71717a] max-w-2xl leading-relaxed">
+            <p className="mt-4 sm:mt-5 text-base sm:text-xl text-ink-dim max-w-2xl leading-relaxed">
               {item.description}
             </p>
 
@@ -220,20 +221,20 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               {item.clientName && (
                 <div className="flex items-center gap-2.5 text-sm">
-                  <Building2 size={14} className="text-[#3f3f46]" />
-                  <span className="text-[#3f3f46] tracking-widest uppercase text-[10px] font-medium">Client</span>
+                  <Building2 size={14} className="text-ink-dull" />
+                  <span className="text-ink-dull tracking-widest uppercase text-[10px] font-medium">Client</span>
                   {item.websiteUrl ? (
                     <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer"
-                      className="group flex items-center gap-1 text-white font-medium hover:text-[#a1a1aa] transition-colors">
+                      className="group flex items-center gap-1 text-ink font-medium hover:text-ink-dim transition-colors">
                       {item.clientName}
                       <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                     </a>
                   ) : (
-                    <span className="text-white font-medium">{item.clientName}</span>
+                    <span className="text-ink font-medium">{item.clientName}</span>
                   )}
                 </div>
               )}
-              {item.clientName && item.liveUrl && <span className="w-1 h-1 rounded-full bg-[#2a2a2a]" />}
+              {item.clientName && item.liveUrl && <span className="w-1 h-1 rounded-full bg-ink-faint" />}
               {item.liveUrl && (
                 <a href={item.liveUrl} target="_blank" rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide transition-all duration-200 hover:bg-white hover:text-black hover:border-white"
@@ -254,17 +255,17 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
 
               {/* Overview */}
               <div>
-                <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-4">Project Overview</p>
-                <p className="text-[#a1a1aa] leading-[1.85] text-[17px]">{item.longDescription}</p>
+                <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-4">Project Overview</p>
+                <p className="text-ink-dim leading-[1.85] text-[17px]">{item.longDescription}</p>
               </div>
 
               {/* Tech stack */}
               <div>
-                <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-5">Technology Stack</p>
+                <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-5">Technology Stack</p>
                 <div className="flex flex-wrap gap-2.5">
                   {item.tags.map((tag) => (
                     <span key={tag}
-                      className="group relative inline-block px-4 py-2 rounded-xl border border-[#222] bg-[#0d0d0d] text-sm text-white font-medium tracking-wide hover:border-[#333] transition-colors cursor-default overflow-hidden">
+                      className="group relative inline-block px-4 py-2 rounded-xl border border-line bg-elevated text-sm text-ink font-medium tracking-wide hover:border-line-hi transition-colors cursor-default overflow-hidden">
                       <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl"
                         style={{ background: `radial-gradient(circle at center, ${accent}14, transparent 70%)` }} />
                       <span className="relative z-10">{tag}</span>
@@ -276,13 +277,13 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
               {/* Gallery — click opens lightbox */}
               {item.images && item.images.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-5">Project Gallery</p>
+                  <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-5">Project Gallery</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {item.images.map((src, i) => (
                       <button
                         key={i}
                         onClick={() => setLightboxIndex(i)}
-                        className="group relative rounded-xl overflow-hidden border border-[#1a1a1a] hover:border-[#333] transition-colors aspect-video block bg-[#0d0d0d] w-full"
+                        className="group relative rounded-xl overflow-hidden border border-line-sub hover:border-line-hi transition-colors aspect-video block bg-elevated w-full"
                       >
                         <img
                           src={src}
@@ -308,7 +309,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
 
               {/* Highlights */}
               <div>
-                <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-5">Delivery Highlights</p>
+                <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-5">Delivery Highlights</p>
                 <div className="space-y-4">
                   {[
                     'Production-grade architecture with full system documentation',
@@ -317,7 +318,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
                   ].map((point, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="w-1.5 h-1.5 rounded-full mt-[9px] flex-shrink-0" style={{ background: accent }} />
-                      <p className="text-[#71717a] leading-relaxed">{point}</p>
+                      <p className="text-ink-dim leading-relaxed">{point}</p>
                     </div>
                   ))}
                 </div>
@@ -328,26 +329,26 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
             <aside className="space-y-5">
 
               {/* Meta card */}
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] divide-y divide-[#141414] overflow-hidden">
+              <div className="rounded-2xl border border-line-sub bg-elevated divide-y divide-line-sub overflow-hidden">
 
                 {/* Category */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Category</span>
-                  <span className="text-sm text-white font-medium text-right">{CATEGORY_LABELS[item.mainCategory]}</span>
+                  <span className="text-[11px] text-ink-dull tracking-widest uppercase shrink-0">Category</span>
+                  <span className="text-sm text-ink font-medium text-right">{CATEGORY_LABELS[item.mainCategory]}</span>
                 </div>
 
                 {/* Year */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Year</span>
-                  <span className="text-sm text-white font-medium text-right">
+                  <span className="text-[11px] text-ink-dull tracking-widest uppercase shrink-0">Year</span>
+                  <span className="text-sm text-ink font-medium text-right">
                     {new Date(item.createdAt).getFullYear()}
                   </span>
                 </div>
 
                 {/* Scope */}
                 <div className="px-5 py-4 flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase shrink-0">Scope</span>
-                  <span className="text-sm text-white font-medium text-right">
+                  <span className="text-[11px] text-ink-dull tracking-widest uppercase shrink-0">Scope</span>
+                  <span className="text-sm text-ink font-medium text-right">
                     {{
                       WEBSITES:              'Full Build',
                       APPS_PLUGINS:          'Custom Development',
@@ -360,7 +361,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
                 {/* Built with — actual tag pills */}
                 {item.tags.length > 0 && (
                   <div className="px-5 py-4">
-                    <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase block mb-3">Built with</span>
+                    <span className="text-[11px] text-ink-dull tracking-widest uppercase block mb-3">Built with</span>
                     <div className="flex flex-wrap gap-1.5">
                       {item.tags.map((tag) => (
                         <span
@@ -382,7 +383,7 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
               {/* Visit Website only (Live Preview is already in title block) */}
               {item.websiteUrl && (
                 <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer"
-                  className="group flex items-center gap-2.5 w-full px-4 py-3 rounded-xl border border-[#222] bg-[#0d0d0d] text-sm text-[#a1a1aa] hover:text-white hover:border-[#333] transition-all">
+                  className="group flex items-center gap-2.5 w-full px-4 py-3 rounded-xl border border-line bg-elevated text-sm text-ink-dim hover:text-ink hover:border-line-hi transition-all">
                   <Globe size={14} className="flex-shrink-0" style={{ color: accent }} />
                   <span className="flex-1 truncate">Visit Website</span>
                   <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
@@ -390,20 +391,20 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
               )}
 
               {/* CTA */}
-              <div className="rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] p-5">
-                <p className="text-xs text-[#71717a] leading-relaxed mb-4">
+              <div className="rounded-2xl border border-line-sub bg-elevated p-5">
+                <p className="text-xs text-ink-dim leading-relaxed mb-4">
                   Interested in a similar system for your business?
                 </p>
                 <MagneticButton className="w-full">
                   <Link href="/#contact"
-                    className="group flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-white text-black text-sm font-semibold tracking-wide hover:bg-[#e4e4e7] transition-colors">
+                    className="group flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-cta text-cta-fg text-sm font-semibold tracking-wide hover:opacity-85 transition-colors">
                     Start a Project
                     <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </MagneticButton>
               </div>
 
-              <p className="text-[11px] text-[#2a2a2a] leading-relaxed px-1">
+              <p className="text-[11px] text-ink-faint leading-relaxed px-1">
                 OY Labs Ltd — all projects delivered to production standard with full handoff documentation.
               </p>
             </aside>
@@ -411,8 +412,8 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
 
           {/* ── Related ────────────────────────────────────────────────── */}
           {(related.length > 0 || nextItem) && (
-            <div className="mt-14 sm:mt-24 pt-10 sm:pt-16 border-t border-[#111]">
-              <p className="text-[10px] text-[#71717a] tracking-[0.3em] uppercase font-medium mb-10">
+            <div className="mt-14 sm:mt-24 pt-10 sm:pt-16 border-t border-line-sub">
+              <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-10">
                 {related.length > 0 ? 'Related Projects' : 'Next Project'}
               </p>
               <div className="grid sm:grid-cols-2 gap-5">
@@ -421,16 +422,16 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
                   return (
                     <TiltCard key={rel.id} maxTilt={5}>
                       <Link href={`/portfolio/${rel.id}`}>
-                        <div className="group relative rounded-2xl border border-[#1a1a1a] bg-[#0d0d0d] p-6 hover:border-[#2a2a2a] transition-all duration-300 overflow-hidden">
+                        <div className="group relative rounded-2xl border border-line-sub bg-elevated p-6 hover:border-line transition-all duration-300 overflow-hidden">
                           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                             style={{ background: `radial-gradient(400px at 50% 50%, ${ra}09, transparent)` }} />
                           <span className="inline-block text-xs px-2.5 py-1 rounded-full font-medium tracking-wide mb-3"
                             style={{ backgroundColor: `${ra}18`, color: ra, border: `1px solid ${ra}25` }}>
                             {CATEGORY_LABELS[rel.mainCategory]}
                           </span>
-                          <h3 className="text-base font-semibold text-white tracking-tight leading-snug mb-2">{rel.title}</h3>
-                          <p className="text-xs text-[#71717a] line-clamp-2 mb-4">{rel.description}</p>
-                          <span className="inline-flex items-center gap-1 text-xs text-[#71717a] group-hover:text-white transition-colors">
+                          <h3 className="text-base font-semibold text-ink tracking-tight leading-snug mb-2">{rel.title}</h3>
+                          <p className="text-xs text-ink-dim line-clamp-2 mb-4">{rel.description}</p>
+                          <span className="inline-flex items-center gap-1 text-xs text-ink-dim group-hover:text-ink transition-colors">
                             View Case Study <ArrowUpRight size={11} />
                           </span>
                         </div>

@@ -9,8 +9,7 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 
 export const metadata: Metadata = {
   title: 'OY Labs — Technical Systems Architecture',
-  description:
-    'High-end Technical Systems Architecture, Custom Web/Mobile Applications, and Serverless Automation Workflows.',
+  description: 'High-end Technical Systems Architecture, Custom Web/Mobile Applications, and Serverless Automation Workflows.',
   keywords: ['systems architecture', 'web applications', 'serverless', 'automation', 'mobile apps'],
   openGraph: {
     title: 'OY Labs — Technical Systems Architecture',
@@ -21,8 +20,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-[#000000] text-white antialiased">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('oy-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen antialiased">
         <CursorGlow />
         <Navbar />
         <main>{children}</main>

@@ -6,12 +6,13 @@ import { ArrowRight, Mail, Globe, CheckCircle, AlertCircle, Loader2 } from 'luci
 import { Turnstile } from '@marsidev/react-turnstile';
 import SectionAtmosphere from './effects/SectionAtmosphere';
 import { submitContactForm } from '@/app/actions';
+import { useTheme } from '@/hooks/useTheme';
 
 const EASE = { type: 'spring', stiffness: 90, damping: 22, mass: 0.8 } as const;
 
 const inputCls =
-  'w-full bg-[#0a0a0a] border border-[#222] rounded-lg px-4 py-3 text-sm text-white placeholder-[#3f3f46] focus:outline-none focus:border-[#444] transition-colors';
-const labelCls = 'block text-xs text-[#71717a] tracking-widest uppercase mb-2';
+  'w-full bg-input border border-line rounded-lg px-4 py-3 text-sm text-ink placeholder-ink-dull focus:outline-none focus:border-line-hi transition-colors';
+const labelCls = 'block text-xs text-ink-dim tracking-widest uppercase mb-2';
 
 export default function Contact() {
   const leftRef  = useRef<HTMLDivElement>(null);
@@ -24,6 +25,7 @@ export default function Contact() {
   const [submitted,   setSubmitted]   = useState(false);
   const [isPending,   startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
+  const { isDark } = useTheme();
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
@@ -66,20 +68,20 @@ export default function Contact() {
             animate={leftIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 52 }}
             transition={EASE}
           >
-            <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Get In Touch</span>
-            <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+            <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">Get In Touch</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-ink leading-tight">
               Ready to Build
               <br />
-              <span className="text-[#71717a]">Something Real?</span>
+              <span className="text-ink-dim">Something Real?</span>
             </h2>
-            <p className="mt-6 text-[#71717a] leading-relaxed">
+            <p className="mt-6 text-ink-dim leading-relaxed">
               Tell us about your project. We respond within 24 hours and scope
               engagements with precision before a single line of code is written.
             </p>
             <div className="mt-8 flex flex-col gap-4">
               <a
                 href="mailto:hi@oylabs.co"
-                className="flex items-center gap-3 text-[#71717a] hover:text-white transition-colors group"
+                className="flex items-center gap-3 text-ink-dim hover:text-ink transition-colors group"
               >
                 <Mail size={16} />
                 <span className="text-sm tracking-wide group-hover:tracking-wider transition-all">
@@ -88,7 +90,7 @@ export default function Contact() {
               </a>
               <a
                 href="https://oylabs.co"
-                className="flex items-center gap-3 text-[#71717a] hover:text-white transition-colors group"
+                className="flex items-center gap-3 text-ink-dim hover:text-ink transition-colors group"
               >
                 <Globe size={16} />
                 <span className="text-sm tracking-wide group-hover:tracking-wider transition-all">
@@ -104,7 +106,7 @@ export default function Contact() {
             initial={{ opacity: 0, y: 52 }}
             animate={rightIn ? { opacity: 1, y: 0 } : { opacity: 0, y: 52 }}
             transition={{ ...EASE, delay: 0.1 }}
-            className="rounded-2xl border border-[#222] bg-[#111] p-5 sm:p-8 overflow-hidden"
+            className="rounded-2xl border border-line bg-panel p-5 sm:p-8 overflow-hidden"
           >
             <AnimatePresence mode="wait">
 
@@ -118,18 +120,18 @@ export default function Contact() {
                   transition={EASE}
                   className="flex flex-col items-center text-center py-8 gap-5"
                 >
-                  <div className="w-14 h-14 rounded-full border border-[#1a1a1a] bg-[#0d0d0d] flex items-center justify-center">
-                    <CheckCircle size={24} className="text-white" />
+                  <div className="w-14 h-14 rounded-full border border-line bg-elevated flex items-center justify-center">
+                    <CheckCircle size={24} className="text-ink" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white tracking-tight">Brief received.</h3>
-                    <p className="mt-2 text-sm text-[#71717a] leading-relaxed max-w-xs mx-auto">
+                    <h3 className="text-lg font-semibold text-ink tracking-tight">Brief received.</h3>
+                    <p className="mt-2 text-sm text-ink-dim leading-relaxed max-w-xs mx-auto">
                       Check your inbox — a confirmation is on its way. We'll follow up within 24 hours.
                     </p>
                   </div>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-xs text-[#3f3f46] hover:text-[#71717a] transition-colors tracking-widest uppercase"
+                    className="text-xs text-ink-dull hover:text-ink-dim transition-colors tracking-widest uppercase"
                   >
                     Send another
                   </button>
@@ -208,7 +210,7 @@ export default function Contact() {
                         onSuccess={setToken}
                         onError={() => setError('Security check failed. Please refresh and try again.')}
                         onExpire={() => setToken('')}
-                        options={{ theme: 'dark', size: 'normal' }}
+                        options={{ theme: isDark ? 'dark' : 'light', size: 'normal' }}
                       />
                     </div>
                   )}
@@ -225,7 +227,7 @@ export default function Contact() {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white text-black text-sm font-semibold tracking-wide hover:bg-[#e4e4e7] transition-all duration-200 active:scale-[0.98] disabled:opacity-50 group"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-cta text-cta-fg text-sm font-semibold tracking-wide hover:opacity-85 transition-all duration-200 active:scale-[0.98] disabled:opacity-50 group"
                   >
                     {isPending ? (
                       <>

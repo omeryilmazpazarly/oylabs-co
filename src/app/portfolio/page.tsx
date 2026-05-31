@@ -20,11 +20,11 @@ export default function PortfolioPage() {
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-10 sm:mb-16">
-            <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Our Work</span>
-            <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-none">
+            <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">Our Work</span>
+            <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink leading-none">
               Portfolio
             </h1>
-            <p className="mt-4 text-[#71717a] max-w-xl leading-relaxed">
+            <p className="mt-4 text-ink-dim max-w-xl leading-relaxed">
               A curated selection of technical systems, custom applications, and platform engineering projects — each scoped, built, and shipped to production standard.
             </p>
           </div>

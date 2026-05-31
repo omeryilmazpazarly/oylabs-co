@@ -25,16 +25,16 @@ function StackRow({ row, index }: { row: typeof STACK_ROWS[0]; index: number }) 
       initial={{ opacity: 0, x: -36 }}
       animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -36 }}
       transition={{ ...EASE, delay: index * 0.06 }}
-      className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 py-5 sm:py-6 border-b border-[#111] group hover:border-[#1a1a1a] transition-colors"
+      className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 py-5 sm:py-6 border-b border-line-sub group hover:border-line transition-colors"
     >
       <div className="w-full sm:w-36 flex-shrink-0">
-        <span className="text-[11px] text-[#3f3f46] tracking-[0.2em] uppercase font-medium group-hover:text-[#71717a] transition-colors">
+        <span className="text-[11px] text-ink-dull tracking-[0.2em] uppercase font-medium group-hover:text-ink-dim transition-colors">
           {row.category}
         </span>
       </div>
       <div className="flex flex-wrap gap-2.5">
         {row.items.map((item) => (
-          <span key={item} className="text-sm text-[#71717a] hover:text-white transition-colors cursor-default tracking-wide">
+          <span key={item} className="text-sm text-ink-dim hover:text-ink transition-colors cursor-default tracking-wide">
             {item}
           </span>
         ))}
@@ -51,13 +51,13 @@ export default function TechStack() {
 
         <div className="mb-10 sm:mb-16 space-y-2">
           <ScrollReveal direction="down">
-            <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">
+            <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">
               Technical Arsenal
             </span>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.07}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
-              The Core <span className="text-[#71717a]">Stack</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-ink">
+              The Core <span className="text-ink-dim">Stack</span>
             </h2>
           </ScrollReveal>
         </div>

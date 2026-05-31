@@ -77,7 +77,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
     if (!card) return;
     const rect = card.getBoundingClientRect();
     setGlowStyle({
-      background: `radial-gradient(400px circle at ${e.clientX - rect.left}px ${e.clientY - rect.top}px, rgba(255,255,255,0.06), transparent 70%)`,
+      background: `radial-gradient(400px circle at ${e.clientX - rect.left}px ${e.clientY - rect.top}px, var(--_overlay), transparent 70%)`,
     });
   }, []);
 
@@ -92,7 +92,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setGlowStyle({})}
-        className="relative group rounded-2xl border border-[#222] bg-[#111] p-5 sm:p-8 overflow-hidden cursor-default h-full flex flex-col hover:border-[#333] transition-colors duration-300"
+        className="relative group rounded-2xl border border-line bg-panel p-5 sm:p-8 overflow-hidden cursor-default h-full flex flex-col hover:border-line-hi transition-colors duration-300"
       >
         {/* Mouse glow */}
         <div className="absolute inset-0 pointer-events-none transition-all duration-300" style={glowStyle} />
@@ -103,21 +103,21 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           {/* Header row */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center text-white group-hover:border-[#333] transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-elevated border border-line flex items-center justify-center text-ink group-hover:border-line-hi transition-colors">
                 {service.icon}
               </div>
-              <span className="text-xs text-[#3f3f46] font-mono tracking-widest">{service.label}</span>
+              <span className="text-xs text-ink-dull font-mono tracking-widest">{service.label}</span>
             </div>
-            <ArrowUpRight size={16} className="text-[#3f3f46] group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
+            <ArrowUpRight size={16} className="text-ink-dull group-hover:text-ink group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
           </div>
 
-          <h3 className="text-lg font-semibold text-white mb-3 tracking-tight">{service.title}</h3>
-          <p className="text-sm text-[#71717a] leading-relaxed mb-6 flex-1">{service.description}</p>
+          <h3 className="text-lg font-semibold text-ink mb-3 tracking-tight">{service.title}</h3>
+          <p className="text-sm text-ink-dim leading-relaxed mb-6 flex-1">{service.description}</p>
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
             {service.tags.map((tag) => (
-              <span key={tag} className="text-xs text-[#71717a] border border-[#222] rounded-md px-2.5 py-1 bg-[#0a0a0a] tracking-wide group-hover:border-[#333] transition-colors">
+              <span key={tag} className="text-xs text-ink-dim border border-line rounded-md px-2.5 py-1 bg-input tracking-wide group-hover:border-line-hi transition-colors">
                 {tag}
               </span>
             ))}
@@ -164,15 +164,15 @@ export default function Services() {
         {/* Header */}
         <div className="mb-10 sm:mb-16 space-y-2">
           <ScrollReveal direction="down">
-            <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
+            <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">Core Capabilities</span>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.07}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
-              What We <span className="text-[#71717a]">Engineer</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-ink">
+              What We <span className="text-ink-dim">Engineer</span>
             </h2>
           </ScrollReveal>
           <ScrollReveal direction="up" delay={0.13}>
-            <p className="text-[#71717a] max-w-xl leading-relaxed pt-2">
+            <p className="text-ink-dim max-w-xl leading-relaxed pt-2">
               Six specialisation domains — from custom Shopify apps and WordPress plugins to enterprise automation — each built to production-grade standards.
             </p>
           </ScrollReveal>
@@ -211,21 +211,21 @@ export default function Services() {
                   key={i}
                   onClick={() => goTo(i)}
                   className="relative h-1.5 rounded-full transition-all duration-300 focus:outline-none"
-                  style={{ width: i === page ? 28 : 6, background: i === page ? '#fff' : '#333' }}
+                  style={{ width: i === page ? 28 : 6, background: i === page ? 'var(--_ink)' : 'var(--_line-hi)' }}
                   aria-label={`Page ${i + 1}`}
                 />
               ))}
-              <span className="ml-3 text-[11px] text-[#3f3f46] tracking-widest tabular-nums">
+              <span className="ml-3 text-[11px] text-ink-dull tracking-widest tabular-nums">
                 {page + 1} / {totalPages}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={goPrev}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200">
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-line text-ink-dim hover:text-ink hover:border-line-hi transition-all duration-200">
                 <ChevronLeft size={15} />
               </button>
               <button onClick={goNext}
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#222] text-[#71717a] hover:text-white hover:border-[#444] transition-all duration-200">
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-line text-ink-dim hover:text-ink hover:border-line-hi transition-all duration-200">
                 <ChevronRight size={15} />
               </button>
             </div>

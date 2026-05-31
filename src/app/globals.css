@@ -1,46 +1,95 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg-base:        #000000;
-  --color-bg-card:        #111111;
-  --color-bg-elevated:    #161616;
-  --color-border:         #222222;
-  --color-border-subtle:  #1a1a1a;
-  --color-text-primary:   #ffffff;
-  --color-text-secondary: #71717a;
-  --color-text-muted:     #3f3f46;
-  --color-accent:         #ffffff;
-  --color-accent-dim:     #d4d4d8;
-
   --font-sans: var(--font-geist-sans), 'Inter', system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
+
+  /* Semantic theme tokens — reference CSS vars so they respond to data-theme */
+  --color-page:       var(--_page);
+  --color-panel:      var(--_panel);
+  --color-input:      var(--_input);
+  --color-elevated:   var(--_elevated);
+  --color-line:       var(--_line);
+  --color-line-sub:   var(--_line-sub);
+  --color-line-hi:    var(--_line-hi);
+  --color-ink:        var(--_ink);
+  --color-ink-dim:    var(--_ink-dim);
+  --color-ink-dull:   var(--_ink-dull);
+  --color-ink-faint:  var(--_ink-faint);
+  --color-ink-ghost:  var(--_ink-ghost);
+  --color-cta:        var(--_cta);
+  --color-cta-fg:     var(--_cta-fg);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+/* Dark defaults */
+:root {
+  --_page:      #000000;
+  --_panel:     #111111;
+  --_input:     #0a0a0a;
+  --_elevated:  #0d0d0d;
+  --_line:      #222222;
+  --_line-sub:  #1a1a1a;
+  --_line-hi:   #333333;
+  --_ink:       #ffffff;
+  --_ink-dim:   #71717a;
+  --_ink-dull:  #3f3f46;
+  --_ink-faint: #2a2a2a;
+  --_ink-ghost: #1a1a1a;
+  --_cta:       #ffffff;
+  --_cta-fg:    #000000;
+  --_grid-line: rgba(255,255,255,0.025);
+  --_overlay:   rgba(255,255,255,0.04);
 }
+
+/* Light overrides */
+html[data-theme="light"] {
+  --_page:      #f9f9f9;
+  --_panel:     #ffffff;
+  --_input:     #f4f4f5;
+  --_elevated:  #ececee;
+  --_line:      #e4e4e7;
+  --_line-sub:  #efefef;
+  --_line-hi:   #d4d4d8;
+  --_ink:       #09090b;
+  --_ink-dim:   #52525b;
+  --_ink-dull:  #a1a1aa;
+  --_ink-faint: #c4c4c7;
+  --_ink-ghost: #e4e4e7;
+  --_cta:       #09090b;
+  --_cta-fg:    #ffffff;
+  --_grid-line: rgba(0,0,0,0.055);
+  --_overlay:   rgba(0,0,0,0.04);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
 
 html {
   scroll-behavior: smooth;
   scroll-snap-type: y proximity;
-  scroll-padding-top: 64px; /* height of fixed navbar */
+  scroll-padding-top: 64px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: var(--_page);
+  color: var(--_ink);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 ::selection {
-  background: rgba(255,255,255,0.15);
-  color: #ffffff;
+  background: rgba(113,113,122,0.25);
+  color: inherit;
 }
 
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #444; }
+::-webkit-scrollbar-track { background: var(--_page); }
+::-webkit-scrollbar-thumb { background: var(--_line-hi); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--_ink-dull); }

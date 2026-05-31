@@ -32,14 +32,14 @@ export default function SelectedWorkSection({ items }: { items: PortfolioItem[] 
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <span className="text-xs text-[#71717a] tracking-[0.3em] uppercase font-medium">
+              <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">
                 Selected Work
               </span>
               <motion.h2
                 style={{ color: headingColor }}
                 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight"
               >
-                Recent <span className="text-[#71717a]">Projects</span>
+                Recent <span className="text-ink-dim">Projects</span>
               </motion.h2>
             </div>
 
