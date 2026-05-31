@@ -42,15 +42,10 @@ export default function Hero() {
         variants={{ visible: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } } }}
         className="relative z-10 max-w-5xl mx-auto px-0 text-center"
       >
-        <motion.div variants={fadeUp(0)} className="flex flex-wrap items-center justify-center gap-2 mb-6 sm:mb-8">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-panel/80 backdrop-blur-sm text-[10px] sm:text-xs text-ink-dim tracking-widest uppercase font-medium">
-            Technical Systems Architecture
-          </div>
-          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full backdrop-blur-sm text-xs font-semibold tracking-wider"
-            style={{ backgroundColor: 'rgba(0,128,96,0.18)', color: '#00c48c', border: '1px solid rgba(0,196,140,0.28)' }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00c48c] animate-pulse" />
-            Shopify Partner
-          </div>
+        <motion.div variants={fadeUp(0)} className="mb-7 sm:mb-9">
+          <span className="text-[11px] text-ink-dull tracking-[0.28em] uppercase select-none">
+            Technical Agency&nbsp;&nbsp;·&nbsp;&nbsp;Shopify Partner
+          </span>
         </motion.div>
 
         <motion.h1
