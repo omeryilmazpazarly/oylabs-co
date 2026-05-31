@@ -96,28 +96,33 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                     <div className="w-9 h-9 rounded-xl opacity-30" style={{ background: accent }} />
                   </div>
                 )}
-                {/* Dark scrim so badges are always legible over photos */}
-                {item.coverImage && (
-                  <div className="absolute inset-0 bg-black/30" />
-                )}
+                {/* Subtle gradient scrim — darkens bottom edge so title area fades cleanly */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
+
                 {/* Overlay badges — always shown on top */}
-                <div className="absolute top-3.5 left-3.5 text-[10px] font-mono tracking-widest text-white/40 drop-shadow-md tabular-nums">
+                <div className="absolute top-3.5 left-3.5 text-[10px] font-mono tracking-widest text-white/35 tabular-nums">
                   {String(index + 1).padStart(2, '0')}
                 </div>
-                {/* Category badge — icon + short label, accent-tinted glassy pill */}
+
+                {/* Category badge — dark frosted glass, white text, small accent dot */}
                 {(() => {
-                  const { label, Icon } = CATEGORY_BADGE[item.mainCategory];
+                  const { label } = CATEGORY_BADGE[item.mainCategory];
                   return (
                     <div
-                      className="absolute top-3.5 right-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium tracking-wide backdrop-blur-md"
+                      className="absolute top-3.5 right-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium tracking-wide"
                       style={{
-                        backgroundColor: `${accent}22`,
-                        border: `1px solid ${accent}55`,
-                        color: accent,
-                        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                        backgroundColor: 'rgba(0,0,0,0.58)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: 'rgba(255,255,255,0.88)',
                       }}
                     >
-                      <Icon size={11} />
+                      {/* Coloured dot — only accent colour touch on the badge */}
+                      <span
+                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: accent }}
+                      />
                       {label}
                     </div>
                   );
@@ -139,12 +144,7 @@ function PortfolioCard({ item, index }: { item: PortfolioItem; index: number }) 
                   {item.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="text-[11px] font-medium rounded-md px-2.5 py-1 tracking-wide transition-all duration-200"
-                      style={{
-                        backgroundColor: `${accent}0f`,
-                        border: `1px solid ${accent}28`,
-                        color: `${accent}cc`,
-                      }}
+                      className="text-[11px] rounded-md px-2.5 py-1 tracking-wide border border-line-sub bg-input text-ink-dim group-hover:border-line transition-colors duration-200"
                     >
                       {tag}
                     </span>
