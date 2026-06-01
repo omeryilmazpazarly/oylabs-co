@@ -51,6 +51,7 @@ const EDGES: [string, string][] = [
   ['api',        'cloud'],
   ['crm',        'systems'],
   ['mobile',     'cloud'],
+  ['systems',    'cloud'],
 ];
 
 export default function Hero() {
