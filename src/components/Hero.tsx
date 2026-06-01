@@ -19,34 +19,38 @@ function fadeUp(delay = 0) {
   };
 }
 
-const STACK = [
-  {
-    title:  'Carmen Perfumes',
-    client: 'carmenperfumes.ae',
-    type:   'Shopify Store',
-    accent: '#0ea5e9',
-    image:  'https://omeryilmaz.xyz/uploads/project-1769553834432-78891718.jpg',
-  },
-  {
-    title:  'Liberty Pack',
-    client: 'libertypack.qa',
-    type:   'E-commerce',
-    accent: '#10b981',
-    image:  'https://omeryilmaz.xyz/uploads/project-1769553807042-8096702.png',
-  },
-  {
-    title:  'Lase Tech',
-    client: 'lasetech.com',
-    type:   'Framer Site',
-    accent: '#7c3aed',
-    image:  'https://omeryilmaz.xyz/uploads/project-1769553818706-277315509.png',
-  },
-];
-
 const MARQUEE = [
   'Systems Architecture', 'Serverless Automation', 'Mobile Applications',
   'API Engineering', 'E-Commerce Platforms', 'Cloud Infrastructure',
   'Zoho Integration', 'Headless Commerce',
+];
+
+/* ── Graph data ───────────────────────────────────────────────── */
+const NODES = [
+  { id: 'shopify',    label: 'Shopify',    x: 228, y:  52, color: '#10b981', r: 16 },
+  { id: 'wordpress',  label: 'WordPress',  x:  68, y: 110, color: '#0ea5e9', r: 13 },
+  { id: 'automation', label: 'Automation', x: 390, y: 108, color: '#f59e0b', r: 13 },
+  { id: 'api',        label: 'API Layer',  x: 228, y: 185, color: '#ffffff', r: 15 },
+  { id: 'crm',        label: 'CRM',        x:  72, y: 238, color: '#7c3aed', r: 13 },
+  { id: 'mobile',     label: 'Mobile',     x: 390, y: 238, color: '#0ea5e9', r: 13 },
+  { id: 'systems',    label: 'Systems',    x: 160, y: 310, color: '#10b981', r: 12 },
+  { id: 'cloud',      label: 'Cloud',      x: 300, y: 310, color: '#7c3aed', r: 12 },
+] as const;
+
+const EDGES: [string, string][] = [
+  ['shopify',    'wordpress'],
+  ['shopify',    'automation'],
+  ['shopify',    'api'],
+  ['wordpress',  'api'],
+  ['wordpress',  'crm'],
+  ['automation', 'api'],
+  ['automation', 'mobile'],
+  ['api',        'crm'],
+  ['api',        'mobile'],
+  ['api',        'systems'],
+  ['api',        'cloud'],
+  ['crm',        'systems'],
+  ['mobile',     'cloud'],
 ];
 
 export default function Hero() {
@@ -115,8 +119,7 @@ export default function Hero() {
                 </MagneticButton>
               </motion.div>
 
-              <motion.div variants={fadeUp(4)}
-                className="flex items-center gap-6 sm:gap-8">
+              <motion.div variants={fadeUp(4)} className="flex items-center gap-6 sm:gap-8">
                 {[
                   { value: '50+',   label: 'Projects Delivered' },
                   { value: '12+',   label: 'Enterprise Clients'  },
@@ -139,14 +142,14 @@ export default function Hero() {
               </motion.div>
             </motion.div>
 
-            {/* Right — interactive card stack */}
+            {/* Right — systems graph */}
             <motion.div
               initial={{ opacity: 0, x: 32 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9, ease: EASE, delay: 0.35 }}
               className="hidden lg:block"
             >
-              <CardStack />
+              <SystemsGraph />
             </motion.div>
 
           </div>
@@ -173,45 +176,16 @@ export default function Hero() {
   );
 }
 
-/* ── Interactive 3-D card stack ───────────────────────────────── */
-function CardStack() {
+/* ── Systems graph ────────────────────────────────────────────── */
+function SystemsGraph() {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  /* Normalised mouse offset: ±0.5 relative to container centre */
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
-
-  /* Spring-smooth for weighted, physical feel */
-  const cfg = { stiffness: 85, damping: 18, mass: 0.9 };
+  const cfg = { stiffness: 65, damping: 20, mass: 1 };
   const sX  = useSpring(rawX, cfg);
   const sY  = useSpring(rawY, cfg);
-
-  /* Whole-stack 3-D tilt */
-  const rotateY = useTransform(sX, [-0.5, 0.5], [-10,  10]);
-  const rotateX = useTransform(sY, [-0.5, 0.5], [  7,  -7]);
-
-  /* Per-depth parallax: front card moves most */
-  const pFX = useTransform(sX, [-0.5, 0.5], [-22, 22]);
-  const pFY = useTransform(sY, [-0.5, 0.5], [-14, 14]);
-  const pMX = useTransform(sX, [-0.5, 0.5], [-10, 10]);
-  const pMY = useTransform(sY, [-0.5, 0.5], [ -6,  6]);
-  const pBX = useTransform(sX, [-0.5, 0.5], [ -4,  4]);
-  const pBY = useTransform(sY, [-0.5, 0.5], [ -2,  2]);
-
-  /* Glare — radial highlight that chases the cursor on the front card */
-  const glareX = useTransform(sX, [-0.5, 0.5], [0, 100]);
-  const glareY = useTransform(sY, [-0.5, 0.5], [0, 100]);
-  const glareBg = useTransform(
-    [glareX, glareY] as MotionValue<number>[],
-    ([gx, gy]: number[]) =>
-      `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.09) 0%, transparent 58%)`,
-  );
-
-  /* Chips float on a separate plane — opposite direction */
-  const chipRX = useTransform(sX, [-0.5, 0.5], [ 16, -16]);
-  const chipRY = useTransform(sY, [-0.5, 0.5], [ 10, -10]);
-  const chipLX = useTransform(sX, [-0.5, 0.5], [-12,  12]);
-  const chipLY = useTransform(sY, [-0.5, 0.5], [ -8,   8]);
+  const rotateY = useTransform(sX, [-0.5, 0.5], [-7, 7]);
+  const rotateX = useTransform(sY, [-0.5, 0.5], [5, -5]);
 
   function onMouseMove(e: React.MouseEvent) {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -221,137 +195,181 @@ function CardStack() {
   }
   function onMouseLeave() { rawX.set(0); rawY.set(0); }
 
+  /* Stagger each node's entrance */
+  const nodeDelays = [0.55, 0.65, 0.70, 0.80, 0.90, 0.95, 1.0, 1.05];
+
   return (
     <div
       ref={containerRef}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
       className="relative select-none cursor-default"
-      style={{ height: 380, perspective: 1000 }}
+      style={{ height: 420, perspective: 960 }}
     >
-      {/* Tilting wrapper */}
       <motion.div
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-        className="relative w-full h-full"
+        className="w-full h-full"
       >
-        {/* Back card */}
-        <motion.div style={{ x: pBX, y: pBY, zIndex: 1 }}
-          className="absolute inset-x-10 top-10">
-          <PreviewCard project={STACK[2]} />
-        </motion.div>
-
-        {/* Mid card */}
-        <motion.div style={{ x: pMX, y: pMY, zIndex: 2 }}
-          className="absolute inset-x-5 top-5">
-          <PreviewCard project={STACK[1]} />
-        </motion.div>
-
-        {/* Front card — with glare */}
-        <motion.div style={{ x: pFX, y: pFY, zIndex: 3 }}
-          className="absolute inset-x-0 top-0">
-          <PreviewCard project={STACK[0]} featured glareBg={glareBg} />
-        </motion.div>
-      </motion.div>
-
-      {/* Context chips — floating in front of the stack */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.85 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: EASE, delay: 0.9 }}
-        style={{
-          x: chipRX, y: chipRY,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }}
-        className="absolute -right-4 top-20 z-20 flex items-center gap-2 px-3 py-2 rounded-xl border border-line bg-panel/95 shadow-md"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse flex-shrink-0" />
-        <span className="text-[11px] font-medium text-ink-dim whitespace-nowrap">All systems live</span>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.85 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: EASE, delay: 1.1 }}
-        style={{
-          x: chipLX, y: chipLY,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-        }}
-        className="absolute -left-4 bottom-8 z-20 flex items-center gap-2.5 px-3 py-2 rounded-xl border border-line bg-panel/95 shadow-md"
-      >
-        <div className="w-5 h-5 rounded-md bg-[#0ea5e9]/15 border border-[#0ea5e9]/25 flex items-center justify-center flex-shrink-0">
-          <span className="text-[8px] text-[#0ea5e9] font-bold leading-none">↑</span>
-        </div>
-        <div>
-          <p className="text-[11px] font-medium text-ink leading-none">Carmen Perfumes</p>
-          <p className="text-[10px] text-ink-dull mt-0.5 leading-none">Deployed 3 days ago</p>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-/* ── Single preview card ──────────────────────────────────────── */
-function PreviewCard({
-  project,
-  featured = false,
-  glareBg,
-}: {
-  project: (typeof STACK)[number];
-  featured?: boolean;
-  glareBg?: MotionValue<string>;
-}) {
-  return (
-    <div
-      className="rounded-2xl overflow-hidden"
-      style={{
-        border:     `1px solid ${featured ? 'var(--_line-hi)' : 'var(--_line)'}`,
-        background: 'var(--_panel)',
-        boxShadow:  featured
-          ? '0 24px 64px rgba(0,0,0,0.55), 0 6px 20px rgba(0,0,0,0.35)'
-          : '0 8px 24px rgba(0,0,0,0.3)',
-      }}
-    >
-      <div className="relative overflow-hidden" style={{ height: 178 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={project.image} alt={project.title}
-          className="w-full h-full object-cover" />
-
-        {/* Gradient scrim */}
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)' }} />
-
-        {/* Specular glare — front card only, follows mouse */}
-        {featured && glareBg && (
-          <motion.div className="absolute inset-0 pointer-events-none"
-            style={{ background: glareBg }} />
-        )}
-
-        {/* Type badge */}
         <div
-          className="absolute top-3 right-3 text-[10px] font-medium px-2.5 py-1 rounded-full"
+          className="absolute inset-0 rounded-2xl overflow-hidden"
           style={{
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            backdropFilter:  'blur(8px)',
-            border:          '1px solid rgba(255,255,255,0.11)',
-            color:           'rgba(255,255,255,0.85)',
+            background: 'var(--_panel)',
+            border: '1px solid var(--_line-hi)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.55), 0 6px 20px rgba(0,0,0,0.35)',
           }}
         >
-          {project.type}
-        </div>
-      </div>
+          {/* Dot-grid background */}
+          <div className="absolute inset-0 opacity-25"
+            style={{
+              backgroundImage: 'radial-gradient(circle, var(--_line-hi) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
 
-      {/* Footer */}
-      <div className="px-4 py-3 flex items-center justify-between gap-3"
-        style={{ borderTop: '1px solid var(--_line-sub)' }}>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-ink truncate">{project.title}</p>
-          <p className="text-[11px] text-ink-dull mt-0.5 truncate">{project.client}</p>
+          {/* Chrome bar */}
+          <div
+            className="absolute top-0 inset-x-0 h-9 flex items-center px-4 gap-2 border-b"
+            style={{ background: 'var(--_elevated)', borderColor: 'var(--_line)' }}
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+            <span className="ml-3 text-[11px] font-mono text-ink-dull tracking-wide">
+              systems.architecture — live
+            </span>
+            <div className="ml-auto flex items-center gap-1.5">
+              <motion.span
+                className="w-1.5 h-1.5 rounded-full bg-[#10b981]"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-[10px] font-mono text-ink-dull">connected</span>
+            </div>
+          </div>
+
+          {/* SVG graph — starts right under the chrome bar */}
+          <svg
+            viewBox="0 0 460 356"
+            className="absolute left-0 right-0"
+            style={{ top: 36, bottom: 36, height: 'calc(100% - 72px)', width: '100%' }}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {/* Edges — rendered behind nodes */}
+            {EDGES.map(([aId, bId], i) => {
+              const a = NODES.find(n => n.id === aId)!;
+              const b = NODES.find(n => n.id === bId)!;
+              const len = Math.hypot(b.x - a.x, b.y - a.y);
+              const dashLen   = len * 0.12;
+              const gapLen    = len - dashLen;
+              return (
+                <g key={i}>
+                  {/* Static base line */}
+                  <line
+                    x1={a.x} y1={a.y}
+                    x2={b.x} y2={b.y}
+                    stroke="var(--_line-hi)"
+                    strokeWidth="0.75"
+                  />
+                  {/* Flowing particle */}
+                  <motion.line
+                    x1={a.x} y1={a.y}
+                    x2={b.x} y2={b.y}
+                    stroke={a.color}
+                    strokeWidth="1.5"
+                    strokeOpacity="0.55"
+                    strokeDasharray={`${dashLen} ${gapLen}`}
+                    animate={{ strokeDashoffset: [0, -len] }}
+                    transition={{
+                      duration: 1.8 + (i % 5) * 0.35,
+                      repeat: Infinity,
+                      ease: 'linear',
+                      delay: i * 0.18,
+                    }}
+                  />
+                </g>
+              );
+            })}
+
+            {/* Nodes */}
+            {NODES.map((node, idx) => (
+              <motion.g
+                key={node.id}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: EASE, delay: nodeDelays[idx] }}
+                style={{ originX: `${node.x}px`, originY: `${node.y}px` }}
+              >
+                {/* Outer pulse ring */}
+                <motion.circle
+                  cx={node.x} cy={node.y}
+                  r={node.r + 8}
+                  fill="none"
+                  stroke={node.color}
+                  strokeWidth="0.75"
+                  animate={{ r: [node.r + 6, node.r + 16], opacity: [0.25, 0] }}
+                  transition={{
+                    duration: 2.8,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                    delay: idx * 0.4,
+                  }}
+                />
+                {/* Node fill */}
+                <circle
+                  cx={node.x} cy={node.y}
+                  r={node.r}
+                  fill="var(--_elevated)"
+                  stroke={node.color}
+                  strokeWidth="1.25"
+                  strokeOpacity="0.6"
+                />
+                {/* Inner glow disc */}
+                <circle
+                  cx={node.x} cy={node.y}
+                  r={node.r * 0.45}
+                  fill={node.color}
+                  fillOpacity="0.25"
+                />
+                {/* Center dot — pulses independently */}
+                <motion.circle
+                  cx={node.x} cy={node.y}
+                  r={node.r * 0.2}
+                  fill={node.color}
+                  animate={{ opacity: [1, 0.35, 1], r: [node.r * 0.2, node.r * 0.28, node.r * 0.2] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.3 }}
+                />
+                {/* Label */}
+                <text
+                  x={node.x}
+                  y={node.y + node.r + 13}
+                  textAnchor="middle"
+                  fontSize="9.5"
+                  fontFamily="var(--font-mono)"
+                  letterSpacing="0.04em"
+                  fill="var(--_ink-dull)"
+                >
+                  {node.label}
+                </text>
+              </motion.g>
+            ))}
+          </svg>
+
+          {/* Status footer */}
+          <div
+            className="absolute bottom-0 inset-x-0 h-9 flex items-center px-4 gap-3 border-t"
+            style={{ background: 'var(--_elevated)', borderColor: 'var(--_line)' }}
+          >
+            <span className="text-[10px] font-mono text-ink-ghost">8 services</span>
+            <span className="text-[10px] font-mono text-ink-ghost">·</span>
+            <span className="text-[10px] font-mono text-ink-ghost">13 integrations</span>
+            <span className="ml-auto flex items-center gap-1.5">
+              {(['#10b981', '#0ea5e9', '#f59e0b', '#7c3aed'] as const).map((c, i) => (
+                <span key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
+              ))}
+            </span>
+          </div>
         </div>
-        <span className="w-2 h-2 rounded-full flex-shrink-0"
-          style={{ backgroundColor: project.accent }} />
-      </div>
+      </motion.div>
     </div>
   );
 }
