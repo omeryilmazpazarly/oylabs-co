@@ -2,28 +2,68 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, ArrowUpRight, Sparkles, Layers } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
-const NAV_LINKS = [
+/* ── Mega-menu data — add new columns here ──────────────────────── */
+const SHOPIFY_MEGA: {
+  title: string;
+  items: { label: string; description: string; href: string; icon: React.ReactNode }[];
+}[] = [
+  {
+    title: 'Apps',
+    items: [
+      {
+        label: 'Greet',
+        description: 'Multi-step onboarding popup. Saves preferences to Shopify customer profiles.',
+        href: '/apps/greet',
+        icon: <Sparkles size={14} />,
+      },
+      {
+        label: 'SwatchBoost',
+        description: 'Multi-colour upsell with live bulk discounts. Native RTL & Arabic support.',
+        href: '/apps/SwatchBoost',
+        icon: <Layers size={14} />,
+      },
+    ],
+  },
+];
+
+const PLAIN_LINKS = [
   { href: '/#systems',  label: 'Systems'   },
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/#stack',    label: 'Core Stack'},
   { href: '/#contact',  label: 'Contact'   },
 ];
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 export default function Navbar() {
   const pathname = usePathname();
-  const [scrolled,   setScrolled]   = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled,    setScrolled]    = useState(false);
+  const [mobileOpen,  setMobileOpen]  = useState(false);
+  const [shopifyOpen, setShopifyOpen] = useState(false);
+  const [mobileShopifyOpen, setMobileShopifyOpen] = useState(false);
+  const shopifyRef = useRef<HTMLDivElement>(null);
   const { isDark, toggleTheme, mounted } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  /* Close mega menu on outside click */
+  useEffect(() => {
+    function onPointerDown(e: PointerEvent) {
+      if (shopifyRef.current && !shopifyRef.current.contains(e.target as Node)) {
+        setShopifyOpen(false);
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
   }, []);
 
   const isHome   = pathname === '/';
@@ -42,6 +82,7 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+
           {/* Brand */}
           <Link href="/" className="flex items-center gap-0 select-none group">
             <span className="text-ink font-bold text-lg tracking-tight group-hover:opacity-80 transition-opacity">OY</span>
@@ -50,7 +91,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
+            {PLAIN_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -63,6 +104,91 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Shopify mega-menu trigger */}
+            <div
+              ref={shopifyRef}
+              className="relative"
+              onMouseEnter={() => setShopifyOpen(true)}
+              onMouseLeave={() => setShopifyOpen(false)}
+            >
+              <button
+                onClick={() => setShopifyOpen((v) => !v)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm rounded-md transition-all duration-200 tracking-wide ${
+                  shopifyOpen ? 'text-ink bg-ink/8' : 'text-ink-dim hover:text-ink hover:bg-ink/5'
+                }`}
+              >
+                Shopify
+                <motion.svg
+                  width="10" height="10" viewBox="0 0 10 10" fill="none"
+                  animate={{ rotate: shopifyOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="opacity-50"
+                >
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </motion.svg>
+              </button>
+
+              {/* Mega panel */}
+              <AnimatePresence>
+                {shopifyOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0,  scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: EASE }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[280px] rounded-2xl border border-line bg-panel shadow-xl overflow-hidden"
+                    style={{ boxShadow: '0 20px 48px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3)' }}
+                  >
+                    {/* Inner padding */}
+                    <div className="p-3 flex gap-3">
+                      {SHOPIFY_MEGA.map((col) => (
+                        <div key={col.title} className="flex-1 min-w-[200px]">
+                          {/* Column header */}
+                          <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-ink-dull px-3 py-2">
+                            {col.title}
+                          </p>
+                          {col.items.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setShopifyOpen(false)}
+                              className="group flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-ink/5 transition-colors duration-150"
+                            >
+                              <span className="mt-0.5 w-6 h-6 rounded-md bg-ink/6 border border-line flex items-center justify-center flex-shrink-0 text-ink-dull group-hover:text-ink group-hover:border-line-hi transition-colors">
+                                {item.icon}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-ink leading-none mb-1 flex items-center gap-1">
+                                  {item.label}
+                                  <ArrowUpRight size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                </p>
+                                <p className="text-[11px] text-ink-dull leading-relaxed">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer bar */}
+                    <div className="border-t border-line-sub px-5 py-2.5 flex items-center justify-between">
+                      <span className="text-[10px] text-ink-ghost tracking-wide">Shopify Partner</span>
+                      <Link
+                        href="/portfolio?filter=APPS_PLUGINS"
+                        onClick={() => setShopifyOpen(false)}
+                        className="text-[11px] text-ink-dull hover:text-ink flex items-center gap-1 transition-colors"
+                      >
+                        View all apps
+                        <ArrowUpRight size={10} />
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
 
           {/* Right side: theme toggle + CTA */}
@@ -136,16 +262,61 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="fixed top-16 left-0 right-0 z-40 bg-panel/95 backdrop-blur-md border-b border-line px-6 py-5 flex flex-col gap-1 md:hidden"
           >
-            {NAV_LINKS.map((link) => (
+            {PLAIN_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-ink-dim hover:text-ink text-sm tracking-wide transition-colors py-3 border-b border-line-sub last:border-0"
+                className="text-ink-dim hover:text-ink text-sm tracking-wide transition-colors py-3 border-b border-line-sub"
               >
                 {link.label}
               </Link>
             ))}
+
+            {/* Shopify accordion */}
+            <div className="border-b border-line-sub">
+              <button
+                onClick={() => setMobileShopifyOpen((v) => !v)}
+                className="w-full flex items-center justify-between text-ink-dim hover:text-ink text-sm tracking-wide transition-colors py-3"
+              >
+                Shopify
+                <motion.svg
+                  width="10" height="10" viewBox="0 0 10 10" fill="none"
+                  animate={{ rotate: mobileShopifyOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="opacity-50"
+                >
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </motion.svg>
+              </button>
+              <AnimatePresence>
+                {mobileShopifyOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pb-3 pl-3 flex flex-col gap-1">
+                      <p className="text-[10px] tracking-[0.18em] uppercase text-ink-ghost py-1.5 font-semibold">Apps</p>
+                      {SHOPIFY_MEGA[0].items.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => { setMobileOpen(false); setMobileShopifyOpen(false); }}
+                          className="flex items-center gap-2 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
+                        >
+                          <span className="text-ink-dull">{item.icon}</span>
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <Link
               href="/#contact"
               onClick={() => setMobileOpen(false)}
