@@ -59,6 +59,8 @@ const PLAIN_LINKS = [
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+const APP_CHROME_PREFIXES = ['/console', '/login', '/connect'];
+
 export default function Navbar() {
   const pathname = usePathname();
   const [scrolled,    setScrolled]    = useState(false);
@@ -86,6 +88,9 @@ export default function Navbar() {
     document.addEventListener('pointerdown', onPointerDown);
     return () => document.removeEventListener('pointerdown', onPointerDown);
   }, []);
+
+  // The staff console, sign-in and client connect flow have their own chrome.
+  if (APP_CHROME_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
 
   const isHome   = pathname === '/';
   const solidBar = !isHome || scrolled;
