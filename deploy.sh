@@ -57,18 +57,29 @@ rsync -a --exclude uploads public/ "$STANDALONE/public/"
 rsync -a .next/static/ "$STANDALONE/.next/static/"
 
 # 5. Point the runtime at the persistent data (server.js chdir's into standalone).
+#    The build just recreated standalone/, so a real directory here can only be a
+#    traced copy made by the build; remove it so the link isn't created inside it.
+for link in "$STANDALONE/data" "$STANDALONE/public/uploads"; do
+  if [ -e "$link" ] && [ ! -L "$link" ]; then rm -rf "$link"; fi
+done
 ln -sfn "$DATA_DIR" "$STANDALONE/data"
+ln -sfn "$UPLOADS_DIR" "$STANDALONE/public/uploads"
+# Guard against the July failure mode: a link created inside the real uploads folder.
+if [ -L "$UPLOADS_DIR/uploads" ]; then rm "$UPLOADS_DIR/uploads"; fi
 # The app runs as root under pm2. Create messaging.db as ubuntu first: SQLite
 # gives its -wal/-shm files the database file's owner, so backups and
 # scripts/create-staff-user.mjs keep working as ubuntu.
 [ -e "$DATA_DIR/messaging.db" ] || touch "$DATA_DIR/messaging.db"
 sudo chown ubuntu:ubuntu "$DATA_DIR"/messaging.db*
-ln -sfn "$UPLOADS_DIR" "$STANDALONE/public/uploads"
 
-# 6. Restart and smoke-test.
-$PM2 restart oylabs
-sleep 3
-code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/portfolio)
+# 6. Restart and smoke-test (the app can take a few seconds to start).
+$PM2 restart oylabs --update-env
+code=000
+for _ in $(seq 1 30); do
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/portfolio || true)
+  [ "$code" = "200" ] && break
+  sleep 1
+done
 echo "smoke test: /portfolio -> $code"
-[ "$code" = "200" ] || { echo "ABORT: app not healthy after restart" >&2; exit 1; }
+[ "$code" = "200" ] || { echo "ABORT: app not healthy after restart. Check: sudo tail -50 /root/.pm2/logs/oylabs-error.log" >&2; exit 1; }
 echo "Deployed. Verify https://oylabs.co/portfolio and an /uploads/ image."
