@@ -36,10 +36,18 @@ A     www.oylabs.co  34.239.24.172
 - **App Path:** `/var/www/oylabs/`
 - **Deploy Log:** `/var/log/oylabs-deploy.log`
 
-## Admin Panel
-URL: `http://34.239.24.172/admin`
-Default PIN: `0y1abs`
-Override: set `NEXT_PUBLIC_ADMIN_PIN` in `.env.production` and rebuild.
+## Admin Panel & Console
+- Staff sign in at `https://oylabs.co/login` (individual accounts; the old PIN is gone).
+- Portfolio admin: `/admin`. Messaging console: `/console`.
+- Create or reset a login on the server (after the app has started once):
+  `cd /var/www/oylabs && node scripts/create-staff-user.mjs --email you@oylabs.co --name "Your Name"`
+
+## Messaging integration (Meta Messenger + Instagram)
+See `docs/messaging-system.md` (env vars, deploy notes, operations) and
+`docs/meta-onboarding-checklist.md`. Requires `TOKEN_ENCRYPTION_KEY`, `META_APP_ID`,
+`META_APP_SECRET`, `META_VERIFY_TOKEN`, `META_LOGIN_CONFIG_ID`, `APP_BASE_URL` in
+`.env.production` (template: `.env.example.messaging`). Its database is
+`/var/www/oylabs/data/messaging.db`, backed up by `deploy.sh`.
 
 ## Persistent Data Layout (IMPORTANT)
 The app runs in Next `output: 'standalone'` mode; `server.js` chdir's into
@@ -49,7 +57,7 @@ symlinked in:
 
 | Data | Source of truth | Symlink (runtime path) |
 |---|---|---|
-| SQLite DB | `/var/www/oylabs/data/portfolio.db` | `.next/standalone/data → /var/www/oylabs/data` |
+| SQLite DBs | `/var/www/oylabs/data/portfolio.db`, `data/messaging.db` | `.next/standalone/data → /var/www/oylabs/data` |
 | Uploads | `/var/www/oylabs/public/uploads/` | `.next/standalone/public/uploads → /var/www/oylabs/public/uploads` |
 
 Nginx serves `/uploads/` directly from `/var/www/oylabs/public/uploads/`

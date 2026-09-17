@@ -19,9 +19,17 @@ PM2="sudo /root/.nvm/versions/node/v20.20.2/bin/node /root/.nvm/versions/node/v2
 
 cd "$APP_DIR"
 
-# 1. Backup the live DB before anything else.
+# 1. Backup the live DBs before anything else.
+STAMP="$(date +%Y%m%d-%H%M%S)"
 sudo mkdir -p /var/backups/oylabs
-sudo cp -a "$DATA_DIR/portfolio.db" "/var/backups/oylabs/portfolio.db.$(date +%Y%m%d-%H%M%S)"
+sudo cp -a "$DATA_DIR/portfolio.db" "/var/backups/oylabs/portfolio.db.$STAMP"
+# messaging.db is written continuously (WAL), so use SQLite's online backup, not cp.
+if [ -f "$DATA_DIR/messaging.db" ]; then
+  node -e "require('better-sqlite3')(process.argv[1]).backup(process.argv[2]).then(() => console.log('messaging.db backed up'))" \
+    "$DATA_DIR/messaging.db" "/tmp/messaging.db.$STAMP"
+  sudo mv "/tmp/messaging.db.$STAMP" "/var/backups/oylabs/messaging.db.$STAMP"
+  sudo chmod 600 "/var/backups/oylabs/messaging.db.$STAMP"
+fi
 
 # 2. Preflight: if standalone/data is a REAL directory (not a symlink), the
 #    build would destroy live data. Never proceed automatically.
@@ -47,6 +55,11 @@ rsync -a .next/static/ "$STANDALONE/.next/static/"
 
 # 5. Point the runtime at the persistent data (server.js chdir's into standalone).
 ln -sfn "$DATA_DIR" "$STANDALONE/data"
+# The app runs as root under pm2. Create messaging.db as ubuntu first: SQLite
+# gives its -wal/-shm files the database file's owner, so backups and
+# scripts/create-staff-user.mjs keep working as ubuntu.
+[ -e "$DATA_DIR/messaging.db" ] || touch "$DATA_DIR/messaging.db"
+sudo chown ubuntu:ubuntu "$DATA_DIR"/messaging.db*
 ln -sfn "$UPLOADS_DIR" "$STANDALONE/public/uploads"
 
 # 6. Restart and smoke-test.
