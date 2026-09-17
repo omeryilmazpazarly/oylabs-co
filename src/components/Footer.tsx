@@ -4,10 +4,12 @@ const NAV_LINKS = [
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/#systems', label: 'Services' },
   { href: '/tech-provider', label: 'Messaging Integration' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/#contact', label: 'Contact' },
 ];
 
 const LEGAL_LINKS = [
+  { href: '/login', label: 'Client login' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/terms', label: 'Terms' },
   { href: '/data-deletion', label: 'Data Deletion' },

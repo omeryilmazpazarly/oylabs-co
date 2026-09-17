@@ -7,13 +7,17 @@ import { env, metaConfigured } from '@/lib/messaging/env';
 import { PAGE_SUBSCRIBED_FIELDS } from '@/lib/messaging/graph';
 import { Badge, Card, EmptyState, Notice, PageHeader, Stat, primaryBtn, relativeTime } from '@/components/console/ui';
 import { CopyButton } from '@/components/console/client';
+import { BillingBadge } from '@/components/console/billing';
+import { now } from '@/lib/messaging/db';
 
 const REQUIRED_ENV = ['META_APP_ID', 'META_APP_SECRET', 'META_VERIFY_TOKEN', 'META_LOGIN_CONFIG_ID', 'TOKEN_ENCRYPTION_KEY', 'APP_BASE_URL'];
+const STRIPE_ENV = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
 
 export default async function ConsoleOverviewPage() {
   await requireStaff();
   const workspaces = listWorkspaces();
   const o = consoleOverview();
+  const nowMs = now();
   const base = env.appBaseUrl();
   const metaUrls = [
     { label: 'Webhook callback URL', value: `${base}/api/meta/webhook` },
@@ -22,6 +26,7 @@ export default async function ConsoleOverviewPage() {
     { label: 'Deauthorize callback URL', value: `${base}/api/meta/deauthorize` },
     { label: 'Privacy policy URL', value: `${base}/privacy` },
     { label: 'Terms of service URL', value: `${base}/terms` },
+    { label: 'Stripe webhook endpoint', value: `${base}/api/stripe/webhook` },
   ];
 
   return (
@@ -38,6 +43,15 @@ export default async function ConsoleOverviewPage() {
           <Notice tone="amber">
             Meta isn&rsquo;t configured on this server yet, so connecting Pages, webhooks and sending are disabled. Missing:{' '}
             {REQUIRED_ENV.filter((v) => !process.env[v]).map((v) => <code key={v} className="mx-0.5 rounded bg-elevated px-1 py-0.5 font-mono text-xs">{v}</code>)}
+          </Notice>
+        </div>
+      )}
+
+      {STRIPE_ENV.some((v) => !process.env[v]) && (
+        <div className="mb-6">
+          <Notice tone="amber">
+            Stripe isn&rsquo;t configured, so clients can&rsquo;t subscribe. Missing:{' '}
+            {STRIPE_ENV.filter((v) => !process.env[v]).map((v) => <code key={v} className="mx-0.5 rounded bg-elevated px-1 py-0.5 font-mono text-xs">{v}</code>)}
           </Notice>
         </div>
       )}
@@ -75,6 +89,7 @@ export default async function ConsoleOverviewPage() {
                     <div className="min-w-0">
                       <div className="truncate text-sm font-medium text-ink">{w.name}</div>
                       <div className="mt-1 flex flex-wrap gap-1.5">
+                        <BillingBadge w={w} nowMs={nowMs} />
                         <Badge tone={w.active_connections ? 'green' : 'gray'}>{w.active_connections} connected</Badge>
                         {w.attention_connections > 0 && <Badge tone="amber">{w.attention_connections} need reconnect</Badge>}
                         {w.dead_deliveries > 0 && <Badge tone="red">{w.dead_deliveries} failed deliveries</Badge>}

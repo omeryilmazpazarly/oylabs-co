@@ -187,6 +187,16 @@ export default function PrivacyPage() {
               Console account details for authorised staff, including a hashed version of the password (we never
               store passwords in readable form).
             </li>
+            <li>
+              <Strong>Client accounts:</Strong>{' '}when you sign up or are invited to a workspace, your name, email
+              address, business name, a hashed password, your role (owner or member), and when you signed in.
+            </li>
+            <li>
+              <Strong>Subscriptions and payments:</Strong>{' '}your plan, billing period, trial and renewal dates and
+              subscription status. Payments are processed by Stripe: your card details go directly to Stripe and are
+              never seen or stored by OY Labs. Stripe shares with us the billing name, email, address and the last
+              four digits and expiry of the card so we can show them in your account and on invoices.
+            </li>
           </ul>
 
           <SubHeading>Data from the Meta Platform</SubHeading>
@@ -270,8 +280,12 @@ export default function PrivacyPage() {
                 'Legitimate interests (answering people who contact us and running our business), or steps taken at your request before entering into a contract',
               ],
               [
-                'Providing the service to client businesses: workspaces, staff console accounts and Page connections',
+                'Providing the service to client businesses: accounts, workspaces, team invitations, staff console accounts and Page connections, and sending service emails (email confirmation, password reset, invitations)',
                 'Performance of our contract with the client business',
+              ],
+              [
+                'Taking payment for subscriptions, running free trials, sending invoices and handling failed payments',
+                'Performance of our contract, and legal obligation (keeping tax and accounting records)',
               ],
               [
                 'Delivering messages between a client business and its customers',
@@ -314,7 +328,8 @@ export default function PrivacyPage() {
             head={['Provider', 'What they do', 'Location']}
             rows={[
               ['Amazon Web Services', 'Hosting for our website, service and databases', 'United States (us-east-1)'],
-              ['Resend', 'Sending contact form emails and confirmations', 'May include the United States'],
+              ['Resend', 'Sending contact form emails, account emails and confirmations', 'May include the United States'],
+              ['Stripe', 'Subscription payments, card processing, invoices and fraud prevention (Stripe acts as an independent controller for payment card data)', 'United States and other countries'],
               ['Cloudflare', 'Turnstile spam protection on our forms', 'May include the United States'],
               ['Google Workspace', 'Our company email mailbox', 'May include the United States'],
             ]}
@@ -357,6 +372,8 @@ export default function PrivacyPage() {
                 '12 months',
               ],
               ['Server logs (no message content)', 'Up to 30 days'],
+              ['Client account details (name, email, role)', 'While the account is active, and deleted within 30 days after you ask us to close it'],
+              ['Subscription, invoice and payment records', 'For 6 years after the end of the financial year they relate to, as UK tax law requires'],
               [
                 'Contact form submissions and enquiry emails',
                 'As long as needed to respond and for our business relationship, up to 24 months',
@@ -439,6 +456,8 @@ export default function PrivacyPage() {
             head={['Name / technology', 'Purpose', 'Type']}
             rows={[
               ['Staff session cookie', 'Keeps authorised staff signed in to the OY Labs console', 'Strictly necessary'],
+              ['Account session cookie', 'Keeps you signed in to your OY Labs account for up to 30 days', 'Strictly necessary'],
+              ['Stripe (on Stripe’s own checkout and billing pages)', 'Payment security and fraud prevention when you pay or manage billing', 'Strictly necessary'],
               [
                 'Connection security cookie',
                 'A short-lived cookie that protects the Facebook connection flow against forged requests',

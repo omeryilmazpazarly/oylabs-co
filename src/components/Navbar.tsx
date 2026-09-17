@@ -59,7 +59,7 @@ const PLAIN_LINKS = [
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-const APP_CHROME_PREFIXES = ['/console', '/login', '/connect'];
+const APP_CHROME_PREFIXES = ['/console', '/login', '/connect', '/app', '/signup', '/forgot-password', '/reset-password', '/verify-email', '/invite'];
 
 export default function Navbar() {
   const pathname = usePathname();

@@ -11,6 +11,8 @@ const MESSAGES: Record<string, { title: string; body: string }> = {
   invalid: { title: 'This link is not valid', body: 'Check you copied the whole link, or ask for a new one.' },
   no_pages: { title: 'No Pages were shared', body: 'During Facebook sign-in, select the business and at least one Page you administer, then try your link again.' },
   page: { title: 'That Page can’t be connected here', body: 'It may already be connected to another OY Labs client. Contact hi@oylabs.co.' },
+  limit: { title: 'Your plan’s Page limit is reached', body: 'Nothing new was connected. Upgrade your plan under Billing in your OY Labs account, then connect the Page again.' },
+  billing: { title: 'No active subscription', body: 'Choose a plan or update billing in your OY Labs account, then connect the Page again.' },
   meta: { title: 'Facebook returned an error', body: 'Please try again in a few minutes. If it keeps happening, contact hi@oylabs.co.' },
 };
 

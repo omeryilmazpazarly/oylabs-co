@@ -4,17 +4,19 @@ How a client system (first: Minhaj Kids) receives Messenger and Instagram messag
 
 ## Credentials
 
-OY Labs staff create a workspace for you in the console and give you:
+Everything is in your OY Labs account at **https://oylabs.co/app/developers**:
 
 | Value | Example | Where to keep it |
 |---|---|---|
 | API key | `oyk_7Ygqqp8XjnHMzny2` | env, e.g. `OYLABS_API_KEY` |
-| API secret | `oys_…` (43+ chars) | env, e.g. `OYLABS_API_SECRET` — secret, shown once |
+| API secret | `oys_…` (43+ chars) | env, e.g. `OYLABS_API_SECRET`. It's secret and shown once; a workspace owner can **Rotate API secret** to get a new one. |
 | Workspace ID | `1` | arrives as `clientId` on every event |
 
-You also give OY Labs one HTTPS URL to receive events, e.g. `https://minhaj.kids/api/integrations/oylabs/webhook`.
+Set your **Forwarding webhook** URL on the same page, e.g. `https://minhaj.kids/api/integrations/oylabs/webhook`, then use **Send signed test event** to check your endpoint.
 
-If the secret leaks, ask OY Labs to rotate it. The old secret stops working immediately, for both directions.
+If the secret leaks, rotate it. The old secret stops working immediately in both directions.
+
+Forwarding and sending require an active plan (trial, paid, or within 7 days of a failed payment). While billing is inactive, inbound messages are still stored and are forwarded once billing is active again.
 
 ## 1. Receiving events (OY Labs → you)
 
@@ -182,6 +184,7 @@ export async function sendViaOylabs({ channel, recipientId, text }) {
 | 404 | `connection_not_found` | No active Page (or no linked Instagram account) for this channel. |
 | 404 | `conversation_not_found` | This person never messaged the business, so Meta forbids messaging them. |
 | 409 | `reconnect_needed` | Meta rejected the token (password change, removed access, expired). A Page admin must reconnect. Don't retry until then. |
+| 402 | `subscription_inactive` | No active plan (trial ended, cancelled, or payment failed more than 7 days ago). An owner must update billing. |
 | 413 | `payload_too_large` | Body over 64 KB. |
 | 422 | `outside_messaging_window` | More than 24 h since the customer's last message. Wait for them to write again. |
 | 422 | `human_agent_not_approved` | `HUMAN_AGENT` was requested but isn't enabled. |
@@ -199,9 +202,9 @@ export async function sendViaOylabs({ channel, recipientId, text }) {
 
 ## 4. Connecting, reconnecting, disconnecting
 
-- **Connect:** OY Labs sends a single-use link (valid 7 days) to someone who is an admin of your Facebook Page. They sign in with Facebook, share your business and Page, and choose the Page. The linked Instagram professional account is picked up automatically. For Instagram, also turn on *Allow access to messages* (Instagram app → Settings → Messages and story replies → Message controls → Connected tools).
-- **Reconnect:** when sends return `reconnect_needed`, ask OY Labs for a new link. The Page admin goes through the same flow; history and IDs are kept.
-- **Disconnect:** ask OY Labs, or remove the OY Labs app in Facebook Settings → Business Integrations (Meta Business Suite → Settings → Integrations). OY Labs unsubscribes from the Page and deletes its tokens.
+- **Connect:** a workspace owner clicks **Connect Facebook & Instagram** under Connections in the OY Labs account (or opens a single-use link from OY Labs, valid 7 days). Sign in with a Facebook account that administers the Page, share your business and Page, and choose the Page. The linked Instagram professional account is picked up automatically. Your plan sets how many Pages you can connect. For Instagram, also turn on *Allow access to messages* (Instagram app → Settings → Messages and story replies → Message controls → Connected tools).
+- **Reconnect:** when sends return `reconnect_needed`, click Connect again and choose the same Page. History and IDs are kept, and it doesn't use an extra Page from your plan.
+- **Disconnect:** click Disconnect under Connections, or remove the OY Labs app in Facebook Settings → Business Integrations (Meta Business Suite → Settings → Integrations). OY Labs unsubscribes from the Page and deletes its tokens.
 
 ## 5. Data held by OY Labs
 

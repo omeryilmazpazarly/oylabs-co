@@ -116,3 +116,21 @@ button, a, [role="button"] {
 ::-webkit-scrollbar-track { background: var(--_page); }
 ::-webkit-scrollbar-thumb { background: var(--_line-hi); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--_ink-dull); }
+
+/* ── Rendered Markdown (API guide) ─────────────────────────────────────── */
+.api-guide { color: var(--_ink-dim); font-size: 15px; line-height: 1.75; }
+.api-guide h1 { color: var(--_ink); font-size: 2.25rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.5rem; }
+.api-guide h2 { color: var(--_ink); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 3rem 0 1rem; padding-top: 1.5rem; border-top: 1px solid var(--_line-sub); }
+.api-guide h3 { color: var(--_ink); font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+.api-guide p, .api-guide ul, .api-guide ol { margin: 0 0 1rem; }
+.api-guide ul { list-style: disc; padding-left: 1.25rem; }
+.api-guide ol { list-style: decimal; padding-left: 1.25rem; }
+.api-guide li { margin: 0.35rem 0; }
+.api-guide strong { color: var(--_ink); font-weight: 600; }
+.api-guide a { color: var(--_ink); text-decoration: underline; }
+.api-guide code { font-family: var(--font-mono); font-size: 0.85em; color: var(--_ink); background: var(--_elevated); border: 1px solid var(--_line); border-radius: 5px; padding: 0.1em 0.35em; }
+.api-guide pre { background: var(--_input); border: 1px solid var(--_line); border-radius: 12px; padding: 1rem 1.1rem; overflow-x: auto; margin: 0 0 1.25rem; font-size: 13px; line-height: 1.6; }
+.api-guide pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+.api-guide table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin: 0 0 1.25rem; font-size: 13.5px; }
+.api-guide th, .api-guide td { border-bottom: 1px solid var(--_line-sub); padding: 0.55rem 0.75rem 0.55rem 0; text-align: left; vertical-align: top; }
+.api-guide th { color: var(--_ink); font-weight: 600; white-space: nowrap; }

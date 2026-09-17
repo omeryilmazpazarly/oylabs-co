@@ -4,14 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { assertStaff, destroySession } from '@/lib/auth/session';
 import {
-  createWorkspace, getWorkspace, rotateWorkspaceSecret, updateWorkspace,
+  createWorkspace, getWorkspace, rotateWorkspaceSecret, setComplimentary, updateWorkspace,
 } from '@/lib/messaging/workspaces';
+import { AccountError, inviteMember, removeMember, revokeInvite } from '@/lib/accounts/accounts';
 import { createConnectLink, disconnectConnection, getConnection, revokeConnectLink } from '@/lib/messaging/connections';
 import { retryDelivery, sendTestDelivery } from '@/lib/messaging/deliveries';
 import { sendMessage, SendError } from '@/lib/messaging/send';
 import { getConversation } from '@/lib/messaging/conversations';
 import { deleteConversationData } from '@/lib/messaging/deletion';
 import { errorSummary, log } from '@/lib/log';
+import type { ReplyState } from '@/components/messaging/ReplyBox';
+import type { FormResult, LinkState, SecretState } from '@/components/messaging/types';
 
 const id = (fd: FormData, key: string) => {
   const value = Number(fd.get(key));
@@ -21,7 +24,7 @@ const id = (fd: FormData, key: string) => {
 
 export async function logoutAction() {
   await destroySession();
-  redirect('/login');
+  redirect('/console/login');
 }
 
 /* ── Workspaces ──────────────────────────────────────────────────────── */
@@ -34,7 +37,12 @@ export type CreateWorkspaceState =
 export async function createWorkspaceAction(_prev: CreateWorkspaceState, fd: FormData): Promise<CreateWorkspaceState> {
   await assertStaff();
   try {
-    const { workspace, apiSecret } = createWorkspace(String(fd.get('name') ?? ''), String(fd.get('forwardUrl') ?? ''));
+    const complimentary = fd.get('complimentary') === 'on';
+    const limitRaw = String(fd.get('pageLimit') ?? '').trim();
+    const { workspace, apiSecret } = createWorkspace(String(fd.get('name') ?? ''), String(fd.get('forwardUrl') ?? ''), {
+      complimentary,
+      pageLimit: complimentary && limitRaw ? Number(limitRaw) : null,
+    });
     revalidatePath('/console');
     return { status: 'created', workspaceId: workspace.id, apiKey: workspace.api_key, apiSecret };
   } catch (err) {
@@ -42,7 +50,6 @@ export async function createWorkspaceAction(_prev: CreateWorkspaceState, fd: For
   }
 }
 
-export type FormResult = { status: 'idle' } | { status: 'error'; message: string } | { status: 'ok'; message: string };
 
 export async function updateWorkspaceAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
   await assertStaff();
@@ -66,7 +73,6 @@ export async function testDeliveryAction(_prev: FormResult, fd: FormData): Promi
     : { status: 'error', message: `Failed — ${result.error ?? 'no response'}.` };
 }
 
-export type SecretState = { status: 'idle' } | { status: 'rotated'; secret: string };
 
 export async function rotateSecretAction(_prev: SecretState, fd: FormData): Promise<SecretState> {
   const staff = await assertStaff();
@@ -78,7 +84,6 @@ export async function rotateSecretAction(_prev: SecretState, fd: FormData): Prom
 
 /* ── Connections ─────────────────────────────────────────────────────── */
 
-export type LinkState = { status: 'idle' } | { status: 'created'; url: string; expiresAt: number };
 
 export async function createConnectLinkAction(_prev: LinkState, fd: FormData): Promise<LinkState> {
   const staff = await assertStaff();
@@ -120,7 +125,6 @@ export async function retryDeliveryAction(fd: FormData) {
 
 /* ── Inbox ───────────────────────────────────────────────────────────── */
 
-export type ReplyState = { status: 'idle' } | { status: 'error'; message: string } | { status: 'sent'; at: number };
 
 export async function sendReplyAction(_prev: ReplyState, fd: FormData): Promise<ReplyState> {
   const staff = await assertStaff();
@@ -152,4 +156,52 @@ export async function deleteConversationAction(fd: FormData) {
   const code = deleteConversationData(conversation.id);
   log.info('conversation.deleted', { conversationId: conversation.id, staffId: staff.id });
   redirect(`/console/inbox?w=${conversation.workspace_id}&deleted=${code ?? ''}`);
+}
+
+/* ── Billing overrides & client team (staff) ─────────────────────────── */
+
+export async function setComplimentaryAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  const staff = await assertStaff();
+  try {
+    const workspaceId = id(fd, 'workspaceId');
+    const complimentary = fd.get('complimentary') === 'on';
+    const limitRaw = String(fd.get('pageLimit') ?? '').trim();
+    setComplimentary(workspaceId, complimentary, limitRaw === '' ? null : Number(limitRaw));
+    log.info('billing.override.updated', { workspaceId, complimentary, staffId: staff.id });
+    revalidatePath(`/console/workspaces/${workspaceId}`);
+    return { status: 'ok', message: 'Saved.' };
+  } catch (err) {
+    return { status: 'error', message: errorSummary(err) };
+  }
+}
+
+export async function inviteClientAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  await assertStaff();
+  try {
+    const workspaceId = id(fd, 'workspaceId');
+    const role = fd.get('role') === 'member' ? 'member' : 'owner';
+    await inviteMember(workspaceId, String(fd.get('email') ?? ''), role, 'OY Labs');
+    revalidatePath(`/console/workspaces/${workspaceId}`);
+    return { status: 'ok', message: 'Invitation sent.' };
+  } catch (err) {
+    return { status: 'error', message: err instanceof AccountError ? err.message : 'Could not send the invitation.' };
+  }
+}
+
+export async function staffRemoveMemberAction(fd: FormData) {
+  await assertStaff();
+  const workspaceId = id(fd, 'workspaceId');
+  try {
+    removeMember(workspaceId, id(fd, 'userId'));
+  } catch (err) {
+    if (!(err instanceof AccountError)) throw err;
+  }
+  revalidatePath(`/console/workspaces/${workspaceId}`);
+}
+
+export async function staffRevokeInviteAction(fd: FormData) {
+  await assertStaff();
+  const workspaceId = id(fd, 'workspaceId');
+  revokeInvite(workspaceId, String(fd.get('tokenHash') ?? ''));
+  revalidatePath(`/console/workspaces/${workspaceId}`);
 }

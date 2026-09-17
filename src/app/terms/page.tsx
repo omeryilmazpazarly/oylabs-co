@@ -205,19 +205,54 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section id="fees" title="8. Fees">
+        <Section id="subscriptions" title="8. Plans, subscriptions and fees">
           <p>
-            Fees, billing periods and payment terms are as set out in the order or proposal agreed between the Client
-            and OY Labs. We will not charge for the service other than as agreed in that order or proposal.
+            <Strong>Plans.</Strong>{' '}The service is offered on the plans shown on our{' '}<a href="/pricing" className="text-ink underline">pricing page</a>. Each plan allows a number
+            of connected Facebook Pages (each with its linked Instagram professional account). Prices are in US dollars
+            and exclude any taxes that apply. If you have a signed order or proposal with us, its fees apply instead.
+          </p>
+          <p>
+            <Strong>Free trial.</Strong>{' '}New workspaces can start one free trial of 14 days. You must provide a payment
+            card through Stripe to start it. Unless you cancel before the trial ends, your subscription starts
+            automatically and the first payment is taken at the end of the trial.
+          </p>
+          <p>
+            <Strong>Automatic renewal.</Strong>{' '}Subscriptions renew automatically at the end of each monthly or yearly
+            period, and we charge the card on file at the start of each new period until you cancel.
+          </p>
+          <p>
+            <Strong>Changes and cancellation.</Strong>{' '}Workspace owners can upgrade, downgrade, switch between monthly and
+            yearly billing, or cancel at any time from Billing in their account. Upgrades take effect immediately
+            and are charged pro rata; downgrades are credited pro rata against future invoices. When you cancel, the
+            service continues until the end of the period you have paid for and then stops. Except where the law
+            requires otherwise, payments already made are non-refundable. If you downgrade below the number of Pages
+            you have connected, existing Pages keep working but you can&rsquo;t connect more until you are within your
+            plan&rsquo;s limit.
+          </p>
+          <p>
+            <Strong>Failed payments.</Strong>{' '}If a payment fails, Stripe retries it and we let you know. The service
+            continues for 7 days. After that, forwarding messages to your systems and sending replies are paused until
+            payment is made; messages customers send during the pause are still stored (within our retention periods)
+            and delivered once the subscription is active again. If payment is not made, the subscription may be
+            cancelled.
+          </p>
+          <p>
+            <Strong>Price changes.</Strong>{' '}We may change plan prices by giving at least 30 days&rsquo; notice by email.
+            The new price applies from your next renewal after the notice period; you can cancel before then.
+          </p>
+          <p>
+            <Strong>Payments and invoices.</Strong>{' '}Payments are processed by Stripe under Stripe&rsquo;s own terms. Invoices
+            are available from Billing in your account. You are responsible for any taxes that apply to your purchase
+            other than taxes on OY Labs&rsquo; income.
           </p>
         </Section>
 
         <Section id="termination" title="9. Suspension and termination">
           <p>
-            You can stop using the service at any time by asking us at <Email />, using Disconnect in the console, or
+            You can stop using the service at any time by cancelling your subscription under Billing in your account, asking us at <Email />, using Disconnect under Connections, or
             removing the app in Facebook Settings → Business Integrations (or Meta Business Suite → Business settings
-            → Integrations → Connected apps). Any minimum term or notice period in your order or proposal will still
-            apply to fees.
+            → Integrations → Connected apps). Fees for the period already paid are not refunded (see section 8), and any minimum term in a signed order or
+            proposal still applies.
           </p>
           <p>
             We may suspend or end the service, with notice where reasonably possible, if you materially breach these

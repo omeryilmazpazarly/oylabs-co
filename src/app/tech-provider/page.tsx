@@ -211,16 +211,22 @@ export default function TechProviderPage() {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <a
-              href="#contact"
+              href="/pricing"
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-cta text-cta-fg text-sm font-semibold tracking-wide hover:opacity-85 transition-opacity duration-200 active:scale-95"
             >
-              Talk to us <ArrowRight size={16} />
+              Start 14-day free trial <ArrowRight size={16} />
             </a>
             <a
               href="#onboarding"
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border border-line-hi text-ink text-sm font-medium tracking-wide hover:border-ink-dull transition-colors duration-200"
             >
               How onboarding works
+            </a>
+            <a
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-sm font-medium text-ink-dim hover:text-ink transition-colors duration-200"
+            >
+              Sign in
             </a>
           </div>
 

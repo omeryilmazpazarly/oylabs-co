@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { requireStaff } from '@/lib/auth/session';
 import { Wordmark } from '@/components/console/ui';
 import ConsoleNav from './ConsoleNav';
-import { logoutAction } from './actions';
+import { logoutAction } from '@/app/console/actions';
 import { LogOut } from 'lucide-react';
 
 export const metadata = { title: 'Console — OY Labs', robots: { index: false, follow: false } };

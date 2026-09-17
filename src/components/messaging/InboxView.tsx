@@ -1,17 +1,32 @@
 import Link from 'next/link';
-import { requireStaff } from '@/lib/auth/session';
-import { ArrowLeft, Inbox, MessagesSquare, Paperclip, Trash2 } from 'lucide-react';
-import { listWorkspaces } from '@/lib/messaging/workspaces';
+import type { ReactNode } from 'react';
+import { ArrowLeft, MessagesSquare, Paperclip, Trash2 } from 'lucide-react';
 import { getConversation, listConversations, listMessages, messagingWindow, type MessageRow } from '@/lib/messaging/conversations';
 import { env } from '@/lib/messaging/env';
 import { now } from '@/lib/messaging/db';
-import { ChannelBadge, ConnectionStatusBadge, EmptyState, Notice, PageHeader, dangerBtn, formatDate, relativeTime } from '@/components/console/ui';
+import { ChannelBadge, ConnectionStatusBadge, EmptyState, Notice, dangerBtn, formatDate, relativeTime } from '@/components/console/ui';
 import { ConfirmAction } from '@/components/console/client';
-import { deleteConversationAction } from '../actions';
-import ReplyBox from './ReplyBox';
+import ReplyBox, { type ReplyState } from './ReplyBox';
 import AutoRefresh from './AutoRefresh';
 
-type Search = { w?: string; c?: string; deleted?: string };
+/**
+ * Conversation list + thread + reply box for one workspace. Used by the staff
+ * console and the client portal; each passes its own (authorised) actions.
+ */
+
+interface Props {
+  workspaceId: number;
+  workspaceName: string;
+  conversationId?: number;
+  /** Builds the URL for a conversation (or the list when undefined). */
+  hrefFor: (conversationId?: number) => string;
+  replyAction: (prev: ReplyState, formData: FormData) => Promise<ReplyState>;
+  deleteAction?: (formData: FormData) => Promise<void>;
+  reconnectHref: string;
+  deletedCode?: string;
+  /** Explains why replies are blocked (e.g. subscription paused), if they are. */
+  replyBlockedReason?: ReactNode;
+}
 
 function initials(name: string | null, fallback: string) {
   const source = name?.replace(/^@/, '') || fallback;
@@ -29,7 +44,7 @@ function Avatar({ name, picture, id }: { name: string | null; picture: string | 
 
 function MessageBubble({ m }: { m: MessageRow }) {
   const outbound = m.direction === 'outbound';
-  const via = m.source === 'console' ? (m.sent_by_name ? `${m.sent_by_name} · console` : 'Console') : m.source === 'api' ? 'Client system' : m.source === 'page_inbox' ? 'Meta inbox' : null;
+  const via = m.source === 'console' ? (m.sent_by_name ? `${m.sent_by_name} · OY Labs` : 'OY Labs') : m.source === 'api' ? 'Client system' : m.source === 'page_inbox' ? 'Meta inbox' : null;
   return (
     <div className={`flex ${outbound ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[85%] sm:max-w-[70%] ${outbound ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
@@ -41,7 +56,7 @@ function MessageBubble({ m }: { m: MessageRow }) {
               {a.type === 'image' && a.url
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={a.url} alt="Image attachment" className="max-h-60 rounded-lg" referrerPolicy="no-referrer" />
-                : <span className="inline-flex items-center gap-1.5"><Paperclip size={13} /> {a.type} attachment{a.url && <a href={a.url} target="_blank" rel="noreferrer noopener" className="underline">open</a>}</span>}
+                : <span className="inline-flex items-center gap-1.5"><Paperclip size={13} /> {a.type} attachment{a.url && <>{' '}<a href={a.url} target="_blank" rel="noreferrer noopener" className="underline">open</a></>}</span>}
             </div>
           ))}
         </div>
@@ -53,53 +68,23 @@ function MessageBubble({ m }: { m: MessageRow }) {
   );
 }
 
-export default async function InboxPage({ searchParams }: { searchParams: Promise<Search> }) {
-  await requireStaff();
-  const params = await searchParams;
-  const workspaces = listWorkspaces();
-  const selected = workspaces.find((w) => String(w.id) === params.w) ?? workspaces[0];
-
-  if (!selected) {
-    return (
-      <div className="mx-auto max-w-3xl">
-        <PageHeader eyebrow="Messaging" title="Inbox" />
-        <EmptyState icon={<Inbox size={18} />} title="No workspaces yet">Create a workspace and connect a Page to start receiving messages.</EmptyState>
-      </div>
-    );
-  }
-
-  const conversations = listConversations(selected.id);
-  const active = params.c ? getConversation(Number(params.c)) : null;
-  const conversation = active && active.workspace_id === selected.id ? active : null;
+export default function InboxView({ workspaceId, workspaceName, conversationId, hrefFor, replyAction, deleteAction, reconnectHref, deletedCode, replyBlockedReason }: Props) {
+  const conversations = listConversations(workspaceId);
+  const found = conversationId ? getConversation(conversationId) : null;
+  const conversation = found && found.workspace_id === workspaceId ? found : null; // never show another workspace's thread
   const messages = conversation ? listMessages(conversation.id) : [];
   const nowMs = now();
   const window = conversation ? messagingWindow(conversation.last_inbound_at, nowMs, env.humanAgentApproved()) : null;
-  const href = (c?: number) => `/console/inbox?w=${selected.id}${c ? `&c=${c}` : ''}`;
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <>
       <AutoRefresh />
-      <PageHeader
-        eyebrow="Messaging"
-        title="Inbox"
-        description="Messenger and Instagram conversations for connected client accounts. Replies go through the same Send API clients use."
-        actions={workspaces.length > 1 && (
-          <div className="flex flex-wrap gap-1 rounded-lg border border-line bg-panel p-1">
-            {workspaces.map((w) => (
-              <Link key={w.id} href={`/console/inbox?w=${w.id}`} className={`rounded-md px-3 py-1.5 text-xs ${w.id === selected.id ? 'bg-elevated text-ink' : 'text-ink-dim hover:text-ink'}`}>{w.name}</Link>
-            ))}
-          </div>
-        )}
-      />
-
-      {params.deleted && (
-        <div className="mb-4"><Notice tone="green">Conversation data deleted. Confirmation code <code className="font-mono">{params.deleted}</code>{' '}— include it in your reply to the requester.</Notice></div>
+      {deletedCode && (
+        <div className="mb-4"><Notice tone="green">Conversation data deleted. Confirmation code <code className="font-mono">{deletedCode}</code>{' '}— include it in your reply to the requester.</Notice></div>
       )}
-
       <div className="grid h-[calc(100vh-15rem)] min-h-[520px] overflow-hidden rounded-2xl border border-line bg-panel lg:grid-cols-[320px_1fr]">
-        {/* Conversation list */}
         <aside className={`${conversation ? 'hidden lg:flex' : 'flex'} min-h-0 flex-col border-line-sub lg:border-r`}>
-          <div className="border-b border-line-sub px-4 py-3 text-xs text-ink-dim">{selected.name} · {conversations.length} conversation{conversations.length === 1 ? '' : 's'}</div>
+          <div className="border-b border-line-sub px-4 py-3 text-xs text-ink-dim">{workspaceName} · {conversations.length} conversation{conversations.length === 1 ? '' : 's'}</div>
           {conversations.length === 0 ? (
             <EmptyState icon={<MessagesSquare size={18} />} title="No conversations yet">
               When a customer messages a connected Page or Instagram account, the conversation appears here within seconds.
@@ -110,7 +95,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                 const open = messagingWindow(c.last_inbound_at, nowMs, false).kind === 'open';
                 return (
                   <li key={c.id}>
-                    <Link href={href(c.id)} className={`flex gap-3 px-4 py-3 transition-colors ${conversation?.id === c.id ? 'bg-elevated' : 'hover:bg-elevated/60'}`}>
+                    <Link href={hrefFor(c.id)} className={`flex gap-3 px-4 py-3 transition-colors ${conversation?.id === c.id ? 'bg-elevated' : 'hover:bg-elevated/60'}`}>
                       <Avatar name={c.participant_name} picture={c.participant_picture} id={c.participant_id} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
@@ -131,7 +116,6 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
           )}
         </aside>
 
-        {/* Thread */}
         <section className={`${conversation ? 'flex' : 'hidden lg:flex'} min-h-0 flex-col`}>
           {!conversation || !window ? (
             <div className="flex flex-1 items-center justify-center">
@@ -140,7 +124,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
           ) : (
             <>
               <header className="flex items-center gap-3 border-b border-line-sub px-4 py-3">
-                <Link href={href()} className="rounded-md p-1 text-ink-dim hover:text-ink lg:hidden" aria-label="Back to conversations"><ArrowLeft size={16} /></Link>
+                <Link href={hrefFor()} className="rounded-md p-1 text-ink-dim hover:text-ink lg:hidden" aria-label="Back to conversations"><ArrowLeft size={16} /></Link>
                 <Avatar name={conversation.participant_name} picture={conversation.participant_picture} id={conversation.participant_id} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-ink">{conversation.participant_name ?? `Customer ${conversation.participant_id.slice(-4)}`}</div>
@@ -150,22 +134,27 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                     {conversation.connection_status !== 'active' && <ConnectionStatusBadge status={conversation.connection_status} />}
                   </div>
                 </div>
-                <ConfirmAction
-                  action={deleteConversationAction}
-                  fields={{ conversationId: conversation.id }}
-                  confirm="Permanently delete this conversation and its messages from OY Labs? Use this for a person's deletion request."
-                  className={`${dangerBtn} px-2.5 py-1.5 text-xs`}
-                >
-                  <Trash2 size={13} /> <span className="hidden sm:inline">Delete data</span>
-                </ConfirmAction>
+                {deleteAction && (
+                  <ConfirmAction
+                    action={deleteAction}
+                    fields={{ conversationId: conversation.id }}
+                    confirm="Permanently delete this conversation and its messages from OY Labs? Use this for a person's deletion request."
+                    className={`${dangerBtn} px-2.5 py-1.5 text-xs`}
+                  >
+                    <Trash2 size={13} /> <span className="hidden sm:inline">Delete data</span>
+                  </ConfirmAction>
+                )}
               </header>
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-5 flex flex-col-reverse">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 flex flex-col-reverse">
                 <div className="space-y-3">
                   {messages.map((m) => <MessageBubble key={m.id} m={m} />)}
                 </div>
               </div>
-              {conversation.connection_status === 'active' ? (
+              {replyBlockedReason ? (
+                <div className="border-t border-line-sub p-4 text-xs text-ink-dim">{replyBlockedReason}</div>
+              ) : conversation.connection_status === 'active' ? (
                 <ReplyBox
+                  action={replyAction}
                   conversationId={conversation.id}
                   windowKind={window.kind}
                   closesLabel={window.kind === 'closed' ? null : formatDate(window.closesAt)}
@@ -174,7 +163,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
               ) : (
                 <div className="border-t border-line-sub p-4 text-xs text-ink-dim">
                   {conversation.connection_status === 'reconnect_needed'
-                    ? <>Meta rejected this Page&rsquo;s access token, so replies are paused. <Link href={`/console/workspaces/${selected.id}`} className="text-ink underline">Reconnect the Page</Link>{' '}to resume.</>
+                    ? <>Meta rejected this Page&rsquo;s access token, so replies are paused.{' '}<Link href={reconnectHref} className="text-ink underline">Reconnect the Page</Link>{' '}to resume.</>
                     : 'This account is disconnected, so replies are unavailable.'}
                 </div>
               )}
@@ -182,6 +171,6 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
           )}
         </section>
       </div>
-    </div>
+    </>
   );
 }

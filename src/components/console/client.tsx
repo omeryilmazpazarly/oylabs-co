@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, type ReactNode } from 'react';
+import { useActionState, useState, useTransition, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Check, Copy, Loader2 } from 'lucide-react';
 
@@ -69,5 +69,34 @@ export function SecretField({ label, value, note }: { label: string; value: stri
       </div>
       {note && <p className="mt-1.5 text-xs text-ink-dim">{note}</p>}
     </div>
+  );
+}
+
+type StatusResult = { status: 'idle' } | { status: 'error'; message: string } | { status: 'ok'; message: string };
+
+/** A form bound to a server action that returns a status message, shown next to the submit button. */
+export function StatusForm({ action, children, submitLabel, pendingText, submitClassName, className = 'space-y-4', resetOnSuccess = false }: {
+  action: (prev: StatusResult, formData: FormData) => Promise<StatusResult>;
+  children: ReactNode;
+  submitLabel: ReactNode;
+  pendingText?: string;
+  submitClassName: string;
+  className?: string;
+  resetOnSuccess?: boolean;
+}) {
+  const [key, setKey] = useState(0);
+  const [state, formAction] = useActionState<StatusResult, FormData>(async (prev, fd) => {
+    const result = await action(prev, fd);
+    if (resetOnSuccess && result.status === 'ok') setKey((k) => k + 1);
+    return result;
+  }, { status: 'idle' });
+  return (
+    <form key={key} action={formAction} className={className}>
+      {children}
+      <div className="flex flex-wrap items-center gap-2">
+        <SubmitButton className={submitClassName} pendingText={pendingText}>{submitLabel}</SubmitButton>
+        {state.status !== 'idle' && <span role="status" className={`text-xs ${state.status === 'ok' ? 'text-emerald-500' : 'text-red-500'}`}>{state.message}</span>}
+      </div>
+    </form>
   );
 }

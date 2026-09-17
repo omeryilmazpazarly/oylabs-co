@@ -2,11 +2,13 @@
 
 import { useActionState, useRef, useState } from 'react';
 import { SendHorizontal } from 'lucide-react';
-import { sendReplyAction, type ReplyState } from '../actions';
 import { SubmitButton } from '@/components/console/client';
 import { primaryBtn } from '@/components/console/ui';
 
-export default function ReplyBox({ conversationId, windowKind, closesLabel, maxLength }: {
+export type ReplyState = { status: 'idle' } | { status: 'error'; message: string } | { status: 'sent'; at: number };
+
+export default function ReplyBox({ action, conversationId, windowKind, closesLabel, maxLength }: {
+  action: (prev: ReplyState, formData: FormData) => Promise<ReplyState>;
   conversationId: number;
   windowKind: 'open' | 'human_agent' | 'closed';
   closesLabel: string | null;
@@ -15,17 +17,16 @@ export default function ReplyBox({ conversationId, windowKind, closesLabel, maxL
   const [text, setText] = useState('');
   // Controlled textarea: React resets uncontrolled fields after every form action,
   // which would throw away a reply that failed to send. Clear only on success.
-  const [state, action] = useActionState<ReplyState, FormData>(async (prev, formData) => {
-    const result = await sendReplyAction(prev, formData);
+  const [state, formAction] = useActionState<ReplyState, FormData>(async (prev, formData) => {
+    const result = await action(prev, formData);
     if (result.status === 'sent') setText('');
     return result;
   }, { status: 'idle' });
   const formRef = useRef<HTMLFormElement>(null);
-
   const disabled = windowKind === 'closed';
 
   return (
-    <form ref={formRef} action={action} className="border-t border-line-sub p-3 sm:p-4">
+    <form ref={formRef} action={formAction} className="border-t border-line-sub p-3 sm:p-4">
       <input type="hidden" name="conversationId" value={conversationId} />
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <span className={disabled ? 'text-red-500' : windowKind === 'human_agent' ? 'text-amber-500' : 'text-ink-dim'}>
