@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { getStaff } from '@/lib/auth/session';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req: NextRequest) {
+  if (!(await getStaff())) {
+    return NextResponse.json({ error: 'Not authorised' }, { status: 401 });
+  }
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;

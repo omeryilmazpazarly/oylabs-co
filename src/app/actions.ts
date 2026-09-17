@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import * as db from '@/lib/db';
 import type { PortfolioItemInput, MainCategory } from '@/types/portfolio';
 import { sendContactEmails } from '@/lib/email';
+import { assertStaff } from '@/lib/auth/session';
 
 /* ── Turnstile verification ─────────────────────────────────────────── */
 async function verifyTurnstile(token: string): Promise<boolean> {
@@ -62,6 +63,7 @@ export async function getPortfolioItems() {
 }
 
 export async function createPortfolioItem(formData: FormData) {
+  await assertStaff();
   const input: PortfolioItemInput = {
     title:           formData.get('title')           as string,
     description:     formData.get('description')     as string,
@@ -83,6 +85,7 @@ export async function createPortfolioItem(formData: FormData) {
 }
 
 export async function updatePortfolioItem(id: number, formData: FormData) {
+  await assertStaff();
   const input: Partial<PortfolioItemInput> = {
     title:           formData.get('title')           as string,
     description:     formData.get('description')     as string,
@@ -107,12 +110,14 @@ export async function updatePortfolioItem(id: number, formData: FormData) {
 }
 
 export async function deletePortfolioItem(id: number) {
+  await assertStaff();
   const deleted = db.deleteItem(id);
   revalidateAll();
   return { success: deleted };
 }
 
 export async function reorderPortfolioItem(id: number, newOrder: number) {
+  await assertStaff();
   db.reorderItem(id, newOrder);
   revalidateAll();
   return { success: true };
