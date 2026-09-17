@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, ArrowUpRight, Sparkles, Layers } from 'lucide-react';
+import { Menu, X, Sun, Moon, ArrowUpRight, Layers, Wallet, MessageSquare } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 /* ── Mega-menu data — add new columns here ──────────────────────── */
@@ -19,13 +19,32 @@ const SHOPIFY_MEGA: {
         label: 'Greet',
         description: 'Multi-step onboarding popup. Saves preferences to Shopify customer profiles.',
         href: '/apps/greet',
-        icon: <Sparkles size={14} />,
+        icon: <MessageSquare size={14} />,
       },
       {
         label: 'SwatchBoost',
         description: 'Multi-colour upsell with live bulk discounts. Native RTL & Arabic support.',
         href: '/apps/SwatchBoost',
         icon: <Layers size={14} />,
+      },
+    ],
+  },
+];
+
+/* ── Products mega-menu data ────────────────────────────────────── */
+const PRODUCTS_MEGA: {
+  title: string;
+  items: { label: string; description: string; href: string; icon: React.ReactNode; external?: boolean }[];
+}[] = [
+  {
+    title: 'Apps',
+    items: [
+      {
+        label: 'Klair',
+        description: 'Personal finance tracker. Multi-currency, AI receipt scanning, no bank login.',
+        href: 'https://klair.pro',
+        icon: <Wallet size={14} />,
+        external: true,
       },
     ],
   },
@@ -44,9 +63,12 @@ export default function Navbar() {
   const pathname = usePathname();
   const [scrolled,    setScrolled]    = useState(false);
   const [mobileOpen,  setMobileOpen]  = useState(false);
-  const [shopifyOpen, setShopifyOpen] = useState(false);
-  const [mobileShopifyOpen, setMobileShopifyOpen] = useState(false);
-  const shopifyRef = useRef<HTMLDivElement>(null);
+  const [shopifyOpen,  setShopifyOpen]  = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [mobileShopifyOpen,  setMobileShopifyOpen]  = useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const shopifyRef  = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
   const { isDark, toggleTheme, mounted } = useTheme();
 
   useEffect(() => {
@@ -55,12 +77,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* Close mega menu on outside click */
+  /* Close mega menus on outside click */
   useEffect(() => {
     function onPointerDown(e: PointerEvent) {
-      if (shopifyRef.current && !shopifyRef.current.contains(e.target as Node)) {
-        setShopifyOpen(false);
-      }
+      if (shopifyRef.current  && !shopifyRef.current.contains(e.target as Node))  setShopifyOpen(false);
+      if (productsRef.current && !productsRef.current.contains(e.target as Node)) setProductsOpen(false);
     }
     document.addEventListener('pointerdown', onPointerDown);
     return () => document.removeEventListener('pointerdown', onPointerDown);
@@ -118,7 +139,7 @@ export default function Navbar() {
                   shopifyOpen ? 'text-ink bg-ink/8' : 'text-ink-dim hover:text-ink hover:bg-ink/5'
                 }`}
               >
-                Shopify
+                Shopify Apps
                 <motion.svg
                   width="10" height="10" viewBox="0 0 10 10" fill="none"
                   animate={{ rotate: shopifyOpen ? 180 : 0 }}
@@ -184,6 +205,89 @@ export default function Navbar() {
                         View all apps
                         <ArrowUpRight size={10} />
                       </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            {/* Products mega-menu trigger */}
+            <div
+              ref={productsRef}
+              className="relative"
+              onMouseEnter={() => setProductsOpen(true)}
+              onMouseLeave={() => setProductsOpen(false)}
+            >
+              <button
+                onClick={() => setProductsOpen((v) => !v)}
+                className={`flex items-center gap-1.5 px-4 py-2 text-sm rounded-md transition-all duration-200 tracking-wide ${
+                  productsOpen ? 'text-ink bg-ink/8' : 'text-ink-dim hover:text-ink hover:bg-ink/5'
+                }`}
+              >
+                Products
+                <motion.svg
+                  width="10" height="10" viewBox="0 0 10 10" fill="none"
+                  animate={{ rotate: productsOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="opacity-50"
+                >
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </motion.svg>
+              </button>
+
+              <AnimatePresence>
+                {productsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0,  scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: EASE }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[260px] rounded-2xl border border-line bg-panel shadow-xl overflow-hidden"
+                    style={{ boxShadow: '0 20px 48px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3)' }}
+                  >
+                    <div className="p-3 flex gap-3">
+                      {PRODUCTS_MEGA.map((col) => (
+                        <div key={col.title} className="flex-1 min-w-[200px]">
+                          <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-ink-dull px-3 py-2">
+                            {col.title}
+                          </p>
+                          {col.items.map((item) => (
+                            <a
+                              key={item.href}
+                              href={item.href}
+                              target={item.external ? '_blank' : undefined}
+                              rel={item.external ? 'noopener noreferrer' : undefined}
+                              onClick={() => setProductsOpen(false)}
+                              className="group flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-ink/5 transition-colors duration-150"
+                            >
+                              <span className="mt-0.5 w-6 h-6 rounded-md bg-ink/6 border border-line flex items-center justify-center flex-shrink-0 text-ink-dull group-hover:text-ink group-hover:border-line-hi transition-colors">
+                                {item.icon}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-ink leading-none mb-1 flex items-center gap-1">
+                                  {item.label}
+                                  <ArrowUpRight size={10} className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                                </p>
+                                <p className="text-[11px] text-ink-dull leading-relaxed">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t border-line-sub px-5 py-2.5 flex items-center justify-between">
+                      <span className="text-[10px] text-ink-ghost tracking-wide">Built by OY Labs</span>
+                      <a
+                        href="https://klair.pro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setProductsOpen(false)}
+                        className="text-[11px] text-ink-dull hover:text-ink flex items-center gap-1 transition-colors"
+                      >
+                        Visit Klair
+                        <ArrowUpRight size={10} />
+                      </a>
                     </div>
                   </motion.div>
                 )}
@@ -279,7 +383,7 @@ export default function Navbar() {
                 onClick={() => setMobileShopifyOpen((v) => !v)}
                 className="w-full flex items-center justify-between text-ink-dim hover:text-ink text-sm tracking-wide transition-colors py-3"
               >
-                Shopify
+                Shopify Apps
                 <motion.svg
                   width="10" height="10" viewBox="0 0 10 10" fill="none"
                   animate={{ rotate: mobileShopifyOpen ? 180 : 0 }}
@@ -310,6 +414,53 @@ export default function Navbar() {
                           <span className="text-ink-dull">{item.icon}</span>
                           {item.label}
                         </Link>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Products accordion */}
+            <div className="border-b border-line-sub">
+              <button
+                onClick={() => setMobileProductsOpen((v) => !v)}
+                className="w-full flex items-center justify-between text-ink-dim hover:text-ink text-sm tracking-wide transition-colors py-3"
+              >
+                Products
+                <motion.svg
+                  width="10" height="10" viewBox="0 0 10 10" fill="none"
+                  animate={{ rotate: mobileProductsOpen ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="opacity-50"
+                >
+                  <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </motion.svg>
+              </button>
+              <AnimatePresence>
+                {mobileProductsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pb-3 pl-3 flex flex-col gap-1">
+                      <p className="text-[10px] tracking-[0.18em] uppercase text-ink-ghost py-1.5 font-semibold">Apps</p>
+                      {PRODUCTS_MEGA[0].items.map((item) => (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          target={item.external ? '_blank' : undefined}
+                          rel={item.external ? 'noopener noreferrer' : undefined}
+                          onClick={() => { setMobileOpen(false); setMobileProductsOpen(false); }}
+                          className="flex items-center gap-2 py-2 text-ink-dim hover:text-ink text-sm transition-colors"
+                        >
+                          <span className="text-ink-dull">{item.icon}</span>
+                          {item.label}
+                          <ArrowUpRight size={10} className="opacity-40 ml-0.5" />
+                        </a>
                       ))}
                     </div>
                   </motion.div>

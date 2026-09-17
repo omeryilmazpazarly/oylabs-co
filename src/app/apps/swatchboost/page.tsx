@@ -145,7 +145,15 @@ export default function SwatchBoostPage() {
             variants={{ visible: { transition: { staggerChildren: 0.09 } } }}
             className="max-w-3xl"
           >
-            <motion.div variants={fadeUp(0)} className="flex items-center gap-2 mb-6">
+            <motion.div variants={fadeUp(0)} className="flex items-center gap-3 mb-6">
+              <img
+                src="/apps/swatchboost/logo.png"
+                alt="SwatchBoost"
+                width={56}
+                height={56}
+                className="rounded-xl"
+                style={{ display: 'block' }}
+              />
               <span className="px-3 py-1 rounded-full text-[11px] font-semibold tracking-widest uppercase border"
                 style={{ borderColor: 'rgba(201,168,76,0.4)', color: '#C9A84C', background: 'rgba(201,168,76,0.06)' }}>
                 Shopify App by OY Labs
@@ -356,40 +364,11 @@ export default function SwatchBoostPage() {
         </div>
       </section>
 
-      {/* ── Social Proof ── */}
+      {/* ── Social Proof ── hidden until real reviews collected
       <section className="py-28 px-6 border-t border-line-sub">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-ink-dim mb-3">Testimonials</p>
-            <h2 className="text-3xl sm:text-4xl font-bold">Merchants love it</h2>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {REVIEWS.map((r, i) => (
-              <motion.div
-                key={r.name}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.55 }}
-                className="rounded-2xl border border-line bg-panel p-6"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(r.stars)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-current" style={{ color: '#C9A84C' }} />
-                  ))}
-                </div>
-                <p className="text-sm text-ink-dim leading-relaxed mb-4">"{r.text}"</p>
-                <div>
-                  <p className="text-sm font-semibold">{r.name}</p>
-                  <p className="text-xs text-ink-dull">{r.store}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        ...
       </section>
+      ── */}
 
       {/* ── FAQ ── */}
       <section className="py-28 px-6 border-t border-line-sub">

@@ -8,6 +8,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://oylabs.co'),
   title: 'OY Labs — Technical Systems Architecture',
   description: 'High-end Technical Systems Architecture, Custom Web/Mobile Applications, and Serverless Automation Workflows.',
   keywords: ['systems architecture', 'web applications', 'serverless', 'automation', 'mobile apps'],

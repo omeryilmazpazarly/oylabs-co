@@ -256,7 +256,15 @@ export default function ProjectDetailClient({ item, related, nextItem }: Props) 
               {/* Overview */}
               <div>
                 <p className="text-[10px] text-ink-dim tracking-[0.3em] uppercase font-medium mb-4">Project Overview</p>
-                <p className="text-ink-dim leading-[1.85] text-[17px]">{item.longDescription}</p>
+                <div className="space-y-5">
+                  {item.longDescription.split(/\n{2,}/).map((para, i) => (
+                    <p key={i} className={i === 0
+                      ? 'text-ink/90 leading-[1.8] text-[17px]'
+                      : 'text-ink-dim leading-[1.85] text-[17px]'}>
+                      {para}
+                    </p>
+                  ))}
+                </div>
               </div>
 
               {/* Tech stack */}

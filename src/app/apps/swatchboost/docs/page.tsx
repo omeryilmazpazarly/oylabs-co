@@ -200,7 +200,17 @@ export default function DocsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: '#C9A84C' }}>Getting Started</span>
                 </div>
-                <h1 className="text-4xl font-bold mb-4">SwatchBoost Documentation</h1>
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src="/apps/swatchboost/logo.png"
+                    alt="SwatchBoost"
+                    width={48}
+                    height={48}
+                    className="rounded-xl"
+                    style={{ display: 'block' }}
+                  />
+                  <h1 className="text-4xl font-bold">SwatchBoost Documentation</h1>
+                </div>
                 <P>SwatchBoost is a Shopify Theme App Extension that intercepts the Add to Cart action on product pages, shows a multi-colour picker popup, and automatically applies tiered bulk discounts — all with zero code and full RTL support.</P>
 
                 <H3 id="overview">Overview</H3>

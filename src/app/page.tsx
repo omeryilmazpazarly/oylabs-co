@@ -3,7 +3,7 @@ import Services from '@/components/Services';
 import TechStack from '@/components/TechStack';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
-import { getAllItems } from '@/lib/db';
+import { getMixedSliderItems } from '@/lib/db';
 import PortfolioGrid from '@/components/PortfolioGrid';
 import SectionAtmosphere from '@/components/effects/SectionAtmosphere';
 import WorkSectionHeader from '@/components/WorkSectionHeader';
@@ -11,7 +11,7 @@ import WorkSectionHeader from '@/components/WorkSectionHeader';
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
-  const items = getAllItems().slice(0, 6);
+  const items = getMixedSliderItems();
 
   return (
     <>

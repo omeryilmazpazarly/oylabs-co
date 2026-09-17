@@ -150,6 +150,22 @@ export function getAllItems(): PortfolioItem[] {
   return (rows as Record<string, unknown>[]).map(rowToItem);
 }
 
+/* Returns items for the homepage slider in a mixed order:
+   newest item from each category comes first (so page 1 always has variety),
+   then all remaining items newest → oldest. */
+export function getMixedSliderItems(): PortfolioItem[] {
+  const db   = getDb();
+  const rows = db.prepare(`
+    WITH ranked AS (
+      SELECT *, ROW_NUMBER() OVER (PARTITION BY main_category ORDER BY id DESC) AS rn
+      FROM portfolio_items
+    )
+    SELECT * FROM ranked
+    ORDER BY CASE WHEN rn = 1 THEN 0 ELSE 1 END, id DESC
+  `).all();
+  return (rows as Record<string, unknown>[]).map(rowToItem);
+}
+
 export function getItemById(id: number): PortfolioItem | null {
   const db  = getDb();
   const row = db.prepare('SELECT * FROM portfolio_items WHERE id = ?').get(id);

@@ -41,13 +41,36 @@ URL: `http://34.239.24.172/admin`
 Default PIN: `0y1abs`
 Override: set `NEXT_PUBLIC_ADMIN_PIN` in `.env.production` and rebuild.
 
+## Persistent Data Layout (IMPORTANT)
+The app runs in Next `output: 'standalone'` mode; `server.js` chdir's into
+`.next/standalone/`, so the app resolves its data paths relative to that dir.
+`npm run build` wipes `.next/`, so the live data lives OUTSIDE it and is
+symlinked in:
+
+| Data | Source of truth | Symlink (runtime path) |
+|---|---|---|
+| SQLite DB | `/var/www/oylabs/data/portfolio.db` | `.next/standalone/data → /var/www/oylabs/data` |
+| Uploads | `/var/www/oylabs/public/uploads/` | `.next/standalone/public/uploads → /var/www/oylabs/public/uploads` |
+
+Nginx serves `/uploads/` directly from `/var/www/oylabs/public/uploads/`
+(see `/etc/nginx/sites-available/oylabs`). DB backups land in
+`/var/backups/oylabs/` on every deploy.
+
 ## Redeploy (SSH in and run)
+**Never run `npm run build` by hand followed by a pm2 restart without
+re-creating the symlinks — use the script:**
 ```bash
 cd /var/www/oylabs
-git pull origin main
-npm ci --production=false
-npm run build
-pm2 restart oylabs
+./deploy.sh
+```
+The script backs up the DB, pulls `main`, builds, rsyncs `public/` and
+`.next/static/` into the standalone dir, re-creates the data/uploads
+symlinks, restarts pm2, and smoke-tests `/portfolio`.
+
+Note: pm2 runs as root via nvm. If `pm2` isn't on the ubuntu user's PATH:
+```bash
+sudo /root/.nvm/versions/node/v20.20.2/bin/node \
+  /root/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 <cmd> oylabs
 ```
 
 ## HTTPS (run after DNS propagates)
