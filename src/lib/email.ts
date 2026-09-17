@@ -177,6 +177,27 @@ export async function sendContactEmails(data: {
   return { notif, confirm };
 }
 
+/* ── Account emails (verification, password reset, team invites) ─────── */
+export async function sendAccountEmail(opts: { to: string; subject: string; heading: string; intro: string; ctaLabel: string; ctaUrl: string; footnote: string }) {
+  if (!process.env.RESEND_API_KEY && process.env.NODE_ENV !== 'production') {
+    // Local development without email: print the link so the flow can be completed.
+    console.log(`[dev email] to=${opts.to} subject="${opts.subject}" link=${opts.ctaUrl}`);
+    return;
+  }
+  const body = `
+    <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:${WHITE};letter-spacing:-0.02em;">${escHtml(opts.heading)}</h1>
+    <p style="margin:0 0 24px;font-size:14px;line-height:1.7;color:${TEXT};">${escHtml(opts.intro)}</p>
+    <a href="${escHtml(opts.ctaUrl)}" style="display:inline-block;background:${WHITE};color:#000;font-size:14px;font-weight:600;text-decoration:none;padding:12px 20px;border-radius:8px;">${escHtml(opts.ctaLabel)}</a>
+    <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:${MUTED};">${escHtml(opts.footnote)}</p>
+    <p style="margin:12px 0 0;font-size:11px;line-height:1.6;color:#3f3f46;word-break:break-all;">${escHtml(opts.ctaUrl)}</p>`;
+  await resend().emails.send({
+    from: 'OY Labs <noreply@oylabs.co>',
+    to: [opts.to],
+    subject: opts.subject,
+    html: shell(body),
+  });
+}
+
 /* ── Utility ─────────────────────────────────────────────────────────── */
 function escHtml(str: string): string {
   return str

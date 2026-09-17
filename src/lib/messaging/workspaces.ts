@@ -1,24 +1,30 @@
 import 'server-only';
 import { getDb, now } from './db';
 import { decryptSecret, encryptSecret, randomToken } from './crypto';
+import type { BillingFields } from '@/lib/billing/entitlements';
 
-export interface Workspace {
+export interface Workspace extends BillingFields {
   id: number;
   name: string;
   api_key: string;
   forward_url: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  billing_interval: string | null;
+  trial_used: number;
   created_at: number;
   updated_at: number;
 }
 
 export interface WorkspaceSummary extends Workspace {
+  members: number;
   active_connections: number;
   attention_connections: number;
   conversations: number;
   dead_deliveries: number;
 }
 
-const COLUMNS = 'id, name, api_key, forward_url, created_at, updated_at';
+const COLUMNS = 'id, name, api_key, forward_url, created_at, updated_at, stripe_customer_id, stripe_subscription_id, plan, billing_interval, subscription_status, trial_ends_at, current_period_end, cancel_at_period_end, past_due_since, trial_used, complimentary, page_limit_override';
 
 export function validateForwardUrl(raw: string): string | null {
   const value = raw.trim();
@@ -34,16 +40,16 @@ export function validateForwardUrl(raw: string): string | null {
   return url.toString();
 }
 
-export function createWorkspace(name: string, forwardUrl: string): { workspace: Workspace; apiSecret: string } {
+export function createWorkspace(name: string, forwardUrl: string, opts: { complimentary?: boolean; pageLimit?: number | null } = {}): { workspace: Workspace; apiSecret: string } {
   const trimmed = name.trim();
   if (!trimmed) throw new Error('Workspace name is required.');
   const apiKey = `oyk_${randomToken(12)}`;
   const apiSecret = `oys_${randomToken(32)}`;
   const t = now();
   const { lastInsertRowid } = getDb().prepare(`
-    INSERT INTO workspaces (name, api_key, api_secret_enc, forward_url, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(trimmed, apiKey, encryptSecret(apiSecret), validateForwardUrl(forwardUrl), t, t);
+    INSERT INTO workspaces (name, api_key, api_secret_enc, forward_url, complimentary, page_limit_override, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(trimmed, apiKey, encryptSecret(apiSecret), validateForwardUrl(forwardUrl), opts.complimentary ? 1 : 0, opts.pageLimit ?? null, t, t);
   return { workspace: getWorkspace(Number(lastInsertRowid))!, apiSecret };
 }
 
@@ -65,6 +71,7 @@ export function workspaceSecret(workspaceId: number): string {
 export function listWorkspaces(): WorkspaceSummary[] {
   return getDb().prepare(`
     SELECT ${COLUMNS.split(', ').map((c) => `w.${c}`).join(', ')},
+      (SELECT COUNT(*) FROM workspace_members m WHERE m.workspace_id = w.id) AS members,
       (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'active') AS active_connections,
       (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'reconnect_needed') AS attention_connections,
       (SELECT COUNT(*) FROM conversations v WHERE v.workspace_id = w.id) AS conversations,
@@ -79,6 +86,18 @@ export function updateWorkspace(id: number, name: string, forwardUrl: string): v
   if (!trimmed) throw new Error('Workspace name is required.');
   getDb().prepare('UPDATE workspaces SET name = ?, forward_url = ?, updated_at = ? WHERE id = ?')
     .run(trimmed, validateForwardUrl(forwardUrl), now(), id);
+}
+
+/** Staff override: complimentary accounts never need a subscription. */
+export function setComplimentary(id: number, complimentary: boolean, pageLimit: number | null): void {
+  if (pageLimit !== null && (!Number.isInteger(pageLimit) || pageLimit < 0 || pageLimit > 500)) throw new Error('Page limit must be a whole number between 0 and 500.');
+  getDb().prepare('UPDATE workspaces SET complimentary = ?, page_limit_override = ?, updated_at = ? WHERE id = ?')
+    .run(complimentary ? 1 : 0, pageLimit, now(), id);
+}
+
+export function activeConnectionCount(workspaceId: number, excludePageId?: string): number {
+  return (getDb().prepare(`SELECT COUNT(*) AS n FROM connections WHERE workspace_id = ? AND status != 'disconnected' AND page_id != ?`)
+    .get(workspaceId, excludePageId ?? '') as { n: number }).n;
 }
 
 export function rotateWorkspaceSecret(id: number): string {

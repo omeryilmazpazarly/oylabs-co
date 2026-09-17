@@ -4,6 +4,8 @@ import { decryptSecret, encryptSecret, randomToken, sha256Hex } from './crypto';
 import { env } from './env';
 import * as graph from './graph';
 import { errorSummary, log } from '@/lib/log';
+import { activeConnectionCount, getWorkspace } from './workspaces';
+import { pageLimit, serviceState } from '@/lib/billing/entitlements';
 
 /**
  * Connecting a client's Facebook Page (and its linked Instagram professional
@@ -89,7 +91,7 @@ export function beginOAuth(linkToken: string): { dialogUrl: string; state: strin
 }
 
 export class ConnectError extends Error {
-  constructor(public readonly reason: 'invalid' | 'expired' | 'used' | 'state' | 'no_pages' | 'page' | 'meta') {
+  constructor(public readonly reason: 'invalid' | 'expired' | 'used' | 'state' | 'no_pages' | 'page' | 'meta' | 'limit' | 'billing') {
     super(reason);
     this.name = 'ConnectError';
   }
@@ -209,6 +211,8 @@ export async function finalizeConnection(stateCookie: string | undefined, pageId
   const existing = db.prepare(`SELECT workspace_id, status FROM connections WHERE page_id = ?`).get(page.id) as { workspace_id: number; status: ConnectionStatus } | undefined;
   if (existing && existing.workspace_id !== link.workspace_id && existing.status !== 'disconnected') throw new ConnectError('page');
 
+  assertCanConnect(link.workspace_id, page.id);
+
   try {
     await graph.subscribePage(page.id, page.token);
   } catch (err) {
@@ -241,6 +245,15 @@ export async function finalizeConnection(stateCookie: string | undefined, pageId
   const connection = db.prepare(`SELECT ${CONNECTION_COLUMNS} FROM connections WHERE page_id = ?`).get(page.id) as Connection;
   log.info('meta.connection.created', { workspaceId: link.workspace_id, connectionId: connection.id, instagram: Boolean(page.igId) });
   return { workspaceName: link.name, connection };
+}
+
+/** Plan rules: the workspace must be in service and within its Page limit (reconnecting a Page it already has is always allowed). */
+export function assertCanConnect(workspaceId: number, pageId: string, nowMs: number = now()) {
+  const workspace = getWorkspace(workspaceId);
+  if (!workspace) throw new ConnectError('invalid');
+  if (!serviceState(workspace, nowMs).active) throw new ConnectError('billing');
+  const alreadyHere = getDb().prepare(`SELECT 1 FROM connections WHERE workspace_id = ? AND page_id = ? AND status != 'disconnected'`).get(workspaceId, pageId);
+  if (!alreadyHere && activeConnectionCount(workspaceId) >= pageLimit(workspace)) throw new ConnectError('limit');
 }
 
 /* ── Managing connections ────────────────────────────────────────────── */

@@ -4,6 +4,7 @@ import { randomToken } from './crypto';
 import { signClientPayload } from './signatures';
 import { workspaceSecret } from './workspaces';
 import { errorSummary, log } from '@/lib/log';
+import { GRACE_MS, SERVICE_ACTIVE_SQL } from '@/lib/billing/entitlements';
 
 /**
  * Forwarding normalised events to each client's webhook URL, signed with the
@@ -84,11 +85,13 @@ export async function deliverDue(batch = 10): Promise<number> {
     WHERE id IN (
       SELECT id FROM deliveries
       WHERE status = 'pending' AND next_attempt_at <= @now AND (locked_until IS NULL OR locked_until < @now)
+        -- Held (not failed) while the workspace's subscription is inactive; resumes when it is paid.
+        AND EXISTS (SELECT 1 FROM workspaces w WHERE w.id = deliveries.workspace_id AND ${SERVICE_ACTIVE_SQL('w')})
       ORDER BY next_attempt_at LIMIT @batch
     )
     RETURNING id, workspace_id, event_id, payload, attempts,
       (SELECT forward_url FROM workspaces w WHERE w.id = deliveries.workspace_id) AS forward_url
-  `).all({ now: now(), lock: now() + LOCK_MS, batch }) as DeliveryRow[];
+  `).all({ now: now(), lock: now() + LOCK_MS, batch, graceCutoff: now() - GRACE_MS }) as DeliveryRow[];
 
   for (const row of rows) {
     const attempts = row.attempts + 1;

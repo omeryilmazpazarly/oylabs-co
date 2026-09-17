@@ -6,12 +6,15 @@ export function freshDb(): Db {
   return resetDbForTests();
 }
 
-export function seedWorkspace(db: Db, opts: { name?: string; forwardUrl?: string | null; secret?: string } = {}) {
+export function seedWorkspace(db: Db, opts: { name?: string; forwardUrl?: string | null; secret?: string; complimentary?: boolean; status?: string | null; plan?: string | null; pastDueSince?: number | null } = {}) {
   const t = Date.now();
   const { lastInsertRowid } = db.prepare(`
-    INSERT INTO workspaces (name, api_key, api_secret_enc, forward_url, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO workspaces (name, api_key, api_secret_enc, forward_url, complimentary, subscription_status, plan, past_due_since, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(opts.name ?? 'Minhaj Kids', `oyk_${Math.random().toString(36).slice(2)}`, encryptSecret(opts.secret ?? 'oys_client_secret'),
-    opts.forwardUrl === undefined ? 'https://client.example/hooks/oylabs' : opts.forwardUrl, t, t);
+    opts.forwardUrl === undefined ? 'https://client.example/hooks/oylabs' : opts.forwardUrl,
+    // Default to an in-service account so non-billing tests aren't affected by subscriptions.
+    opts.complimentary ?? (opts.status === undefined) ? 1 : 0, opts.status ?? null, opts.plan ?? null, opts.pastDueSince ?? null, t, t);
   return Number(lastInsertRowid);
 }
 

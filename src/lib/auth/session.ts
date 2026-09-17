@@ -62,7 +62,7 @@ export const getStaff = cache(async (): Promise<Staff | null> => {
 /** For pages: redirect to /login when signed out. */
 export async function requireStaff(): Promise<Staff> {
   const staff = await getStaff();
-  if (!staff) redirect('/login');
+  if (!staff) redirect('/console/login');
   return staff;
 }
 

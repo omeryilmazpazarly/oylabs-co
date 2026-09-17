@@ -169,6 +169,76 @@ const MIGRATIONS: string[] = [
     completed_at        INTEGER
   );
   `,
+
+  /* 2 — client accounts, team membership, email tokens, subscriptions */
+  `
+  CREATE TABLE client_users (
+    id                INTEGER PRIMARY KEY,
+    email             TEXT    NOT NULL UNIQUE COLLATE NOCASE,
+    name              TEXT    NOT NULL,
+    password_hash     TEXT    NOT NULL,
+    email_verified_at INTEGER,
+    created_at        INTEGER NOT NULL,
+    last_login_at     INTEGER
+  );
+
+  CREATE TABLE workspace_members (
+    workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    user_id      INTEGER NOT NULL REFERENCES client_users(id) ON DELETE CASCADE,
+    role         TEXT    NOT NULL CHECK (role IN ('owner', 'member')),
+    created_at   INTEGER NOT NULL,
+    PRIMARY KEY (workspace_id, user_id)
+  );
+  CREATE INDEX workspace_members_user ON workspace_members(user_id);
+
+  CREATE TABLE client_sessions (
+    token_hash   TEXT    PRIMARY KEY,
+    user_id      INTEGER NOT NULL REFERENCES client_users(id) ON DELETE CASCADE,
+    workspace_id INTEGER REFERENCES workspaces(id) ON DELETE SET NULL,
+    created_at   INTEGER NOT NULL,
+    expires_at   INTEGER NOT NULL
+  );
+
+  CREATE TABLE email_tokens (
+    token_hash   TEXT    PRIMARY KEY,
+    purpose      TEXT    NOT NULL CHECK (purpose IN ('verify_email', 'reset_password', 'invite')),
+    user_id      INTEGER REFERENCES client_users(id) ON DELETE CASCADE,
+    workspace_id INTEGER REFERENCES workspaces(id) ON DELETE CASCADE,
+    email        TEXT    NOT NULL COLLATE NOCASE,
+    role         TEXT    CHECK (role IN ('owner', 'member')),
+    data         TEXT,
+    created_at   INTEGER NOT NULL,
+    expires_at   INTEGER NOT NULL,
+    used_at      INTEGER
+  );
+  CREATE INDEX email_tokens_invites ON email_tokens(workspace_id, purpose);
+
+  ALTER TABLE workspaces ADD COLUMN stripe_customer_id     TEXT;
+  ALTER TABLE workspaces ADD COLUMN stripe_subscription_id TEXT;
+  ALTER TABLE workspaces ADD COLUMN plan                   TEXT;
+  ALTER TABLE workspaces ADD COLUMN billing_interval       TEXT;
+  ALTER TABLE workspaces ADD COLUMN subscription_status    TEXT;
+  ALTER TABLE workspaces ADD COLUMN trial_ends_at          INTEGER;
+  ALTER TABLE workspaces ADD COLUMN current_period_end     INTEGER;
+  ALTER TABLE workspaces ADD COLUMN cancel_at_period_end   INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE workspaces ADD COLUMN past_due_since         INTEGER;
+  ALTER TABLE workspaces ADD COLUMN trial_used             INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE workspaces ADD COLUMN stripe_synced_at       INTEGER;
+  ALTER TABLE workspaces ADD COLUMN complimentary          INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE workspaces ADD COLUMN page_limit_override    INTEGER;
+  CREATE UNIQUE INDEX workspaces_stripe_customer ON workspaces(stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+
+  -- Workspaces created before billing existed were set up by staff for in-house use.
+  UPDATE workspaces SET complimentary = 1;
+
+  CREATE TABLE stripe_events (
+    id           TEXT    PRIMARY KEY,
+    type         TEXT    NOT NULL,
+    received_at  INTEGER NOT NULL,
+    processed_at INTEGER,
+    error        TEXT
+  );
+  `,
 ];
 
 export type Db = Database.Database;

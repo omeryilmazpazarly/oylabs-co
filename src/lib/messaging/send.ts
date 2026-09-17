@@ -6,6 +6,8 @@ import * as graph from './graph';
 import { markReconnectNeeded, pageTokenFor } from './connections';
 import { messagingWindow, previewText, type Attachment, type Channel } from './conversations';
 import { errorSummary, log } from '@/lib/log';
+import { getWorkspace } from './workspaces';
+import { serviceState } from '@/lib/billing/entitlements';
 
 /**
  * The one path for outbound messages — used by the client Send API and the
@@ -44,6 +46,7 @@ export type SendErrorCode =
   | 'outside_messaging_window'
   | 'human_agent_not_approved'
   | 'meta_rate_limited'
+  | 'subscription_inactive'
   | 'meta_error';
 
 const HTTP_STATUS: Record<SendErrorCode, number> = {
@@ -55,6 +58,7 @@ const HTTP_STATUS: Record<SendErrorCode, number> = {
   outside_messaging_window: 422,
   human_agent_not_approved: 422,
   meta_rate_limited: 429,
+  subscription_inactive: 402,
   meta_error: 502,
 };
 
@@ -90,6 +94,12 @@ export function validateSendInput(input: Partial<SendInput>): void {
 export async function sendMessage(input: SendInput, nowMs: number = now()): Promise<SendResult> {
   validateSendInput(input);
   const db = getDb();
+
+  const billing = getWorkspace(input.workspaceId);
+  if (!billing) throw new SendError('connection_not_found', 'Workspace not found.');
+  if (!serviceState(billing, nowMs).active) {
+    throw new SendError('subscription_inactive', 'This workspace has no active subscription. Update billing to resume sending.');
+  }
 
   if (input.idempotencyKey) {
     const prior = db.prepare(`
