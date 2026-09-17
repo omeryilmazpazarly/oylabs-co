@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     description: 'High-end Technical Systems Architecture, Custom Web/Mobile Applications, and Serverless Automation Workflows.',
     type: 'website',
   },
+  // Proves ownership of oylabs.co to Meta Business (domain verification).
+  verification: { other: { 'facebook-domain-verification': 'disyyqsdufkx9j059joif8iuxxd9o9' } },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
