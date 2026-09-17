@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireStaff } from '@/lib/auth/session';
 import { notFound } from 'next/navigation';
 import { MessagesSquare, Plug, RotateCcw } from 'lucide-react';
 import { getWorkspace } from '@/lib/messaging/workspaces';
@@ -13,6 +14,7 @@ import { connectNowAction, disconnectAction, retryDeliveryAction, revokeLinkActi
 import { ConnectLinkForm, RotateSecretForm, SettingsForm } from './forms';
 
 export default async function WorkspacePage({ params }: { params: Promise<{ id: string }> }) {
+  await requireStaff();
   const { id } = await params;
   const workspace = getWorkspace(Number(id));
   if (!workspace) notFound();

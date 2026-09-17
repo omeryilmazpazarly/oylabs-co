@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireStaff } from '@/lib/auth/session';
 import { AlertTriangle, ArrowRight, Building2, Plus } from 'lucide-react';
 import { listWorkspaces } from '@/lib/messaging/workspaces';
 import { consoleOverview } from '@/lib/messaging/overview';
@@ -9,7 +10,8 @@ import { CopyButton } from '@/components/console/client';
 
 const REQUIRED_ENV = ['META_APP_ID', 'META_APP_SECRET', 'META_VERIFY_TOKEN', 'META_LOGIN_CONFIG_ID', 'TOKEN_ENCRYPTION_KEY', 'APP_BASE_URL'];
 
-export default function ConsoleOverviewPage() {
+export default async function ConsoleOverviewPage() {
+  await requireStaff();
   const workspaces = listWorkspaces();
   const o = consoleOverview();
   const base = env.appBaseUrl();

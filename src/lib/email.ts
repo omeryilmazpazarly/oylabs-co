@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/* Created on first send: in production only .env.production is loaded at runtime,
+   and constructing Resend without a key throws at import time. */
+let resendClient: Resend | null = null;
+function resend(): Resend {
+  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not set');
+  resendClient ??= new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
+}
 
 /* ── Shared brand values ─────────────────────────────────────────────── */
 const BG        = '#09090b';
@@ -151,7 +158,7 @@ export async function sendContactEmails(data: {
 }) {
   const [notif, confirm] = await Promise.all([
     /* Notify the team */
-    resend.emails.send({
+    resend().emails.send({
       from:    'OY Labs <noreply@oylabs.co>',
       to:      ['hi@oylabs.co'],
       replyTo: data.email,
@@ -159,7 +166,7 @@ export async function sendContactEmails(data: {
       html:    buildNotificationEmail(data),
     }),
     /* Confirm to the user */
-    resend.emails.send({
+    resend().emails.send({
       from:    'OY Labs <noreply@oylabs.co>',
       to:      [data.email],
       subject: 'Brief received — OY Labs',

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireStaff } from '@/lib/auth/session';
 import { ArrowLeft, Inbox, MessagesSquare, Paperclip, Trash2 } from 'lucide-react';
 import { listWorkspaces } from '@/lib/messaging/workspaces';
 import { getConversation, listConversations, listMessages, messagingWindow, type MessageRow } from '@/lib/messaging/conversations';
@@ -53,6 +54,7 @@ function MessageBubble({ m }: { m: MessageRow }) {
 }
 
 export default async function InboxPage({ searchParams }: { searchParams: Promise<Search> }) {
+  await requireStaff();
   const params = await searchParams;
   const workspaces = listWorkspaces();
   const selected = workspaces.find((w) => String(w.id) === params.w) ?? workspaces[0];

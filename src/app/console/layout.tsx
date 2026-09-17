@@ -8,6 +8,7 @@ import { LogOut } from 'lucide-react';
 export const metadata = { title: 'Console — OY Labs', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
+// Pages call requireStaff() too: layouts don't re-run on client navigation (see Next.js authentication guide).
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();
   return (
