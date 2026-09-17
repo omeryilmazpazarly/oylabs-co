@@ -47,6 +47,9 @@ fi
 # 3. Pull + build (regenerates .next/ including the standalone dir).
 git pull origin main
 npm ci
+# The app runs as root and writes its image cache inside .next; give it back to
+# ubuntu or the build can't clear the previous output.
+sudo chown -R ubuntu:ubuntu "$APP_DIR/.next" 2>/dev/null || true
 npm run build
 
 # 4. Assemble runtime assets Next does not copy into standalone by itself.
