@@ -46,3 +46,23 @@ export function mockFetch(handlers: Record<string, (url: URL, init?: RequestInit
   vi.stubGlobal('fetch', fn);
   return calls;
 }
+
+export function seedWaNumber(db: Db, workspaceId: number, opts: { phoneNumberId?: string; wabaId?: string; display?: string; coexistence?: boolean; status?: string } = {}) {
+  const t = Date.now();
+  const { lastInsertRowid } = db.prepare(`
+    INSERT INTO wa_numbers (workspace_id, waba_id, phone_number_id, display_phone_number, verified_name, meta_user_id, token_enc, coexistence, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, 'Minhaj Kids', 'ASID1', ?, ?, ?, ?, ?)
+  `).run(workspaceId, opts.wabaId ?? 'WABA1', opts.phoneNumberId ?? 'PN1', opts.display ?? '447700900000',
+    encryptSecret('wa-token'), opts.coexistence ? 1 : 0, opts.status ?? 'active', t, t);
+  return Number(lastInsertRowid);
+}
+
+export function seedTemplate(db: Db, workspaceId: number, opts: { name?: string; status?: string; components?: unknown[]; parameterFormat?: string } = {}) {
+  const components = opts.components ?? [{ type: 'BODY', text: 'Hello {{1}}, your order {{2}} is ready.' }];
+  const { lastInsertRowid } = db.prepare(`
+    INSERT INTO wa_templates (workspace_id, waba_id, template_id, name, language, category, status, parameter_format, components, updated_at)
+    VALUES (?, 'WABA1', ?, ?, 'en_US', 'UTILITY', ?, ?, ?, ?)
+  `).run(workspaceId, `TPL${Math.random().toString(36).slice(2, 8)}`, opts.name ?? 'order_ready', opts.status ?? 'APPROVED',
+    opts.parameterFormat ?? 'positional', JSON.stringify(components), Date.now());
+  return Number(lastInsertRowid);
+}

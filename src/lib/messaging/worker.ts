@@ -63,6 +63,7 @@ export function purgeExpiredData(nowMs: number = now()) {
     links:         db.prepare('DELETE FROM connect_links WHERE expires_at < ?').run(nowMs - 30 * DAY).changes,
     sessions:      db.prepare('DELETE FROM staff_sessions WHERE expires_at < ?').run(nowMs).changes,
     deletions:     db.prepare('DELETE FROM deletion_requests WHERE created_at < ?').run(nowMs - 365 * DAY).changes,
+    waContacts:    db.prepare('DELETE FROM wa_contacts WHERE updated_at < ?').run(nowMs - retentionMs).changes,
   }))();
   log.info('retention.purged', result);
   return result;

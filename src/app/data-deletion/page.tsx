@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Data Deletion — OY Labs',
   description:
-    'How to ask OY Labs Ltd to delete data from our Messenger and Instagram messaging integration, and how to check the status of a deletion request.',
+    'How to ask OY Labs Ltd to delete data from our Messenger, Instagram and WhatsApp messaging integration, and how to check the status of a deletion request.',
   alternates: { canonical: '/data-deletion' },
 };
 
@@ -50,13 +50,15 @@ export default function DataDeletionPage() {
 
         <h1 className="text-3xl sm:text-4xl font-bold mb-3 tracking-tight">Data deletion instructions</h1>
         <p className="text-ink-dull text-sm mb-10">
-          OY Labs Ltd · Messenger and Instagram messaging integration
+          OY Labs Ltd · Messenger, Instagram and WhatsApp messaging integration
         </p>
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-12 text-sm text-ink-dim leading-relaxed">
           <Strong>Summary.</Strong>{' '}If you connected a Facebook Page to OY Labs, remove our app in your Facebook
           settings and we delete your data automatically. If you messaged a business that uses OY Labs, email{' '}
-          <Email /> and we delete your messages within 30 days.
+          <Email /> and we delete your messages within 30 days. If you messaged a business on WhatsApp, email us
+          with the business name and your WhatsApp number and we delete your data within one month. Disconnecting a
+          WhatsApp number deletes our access tokens for it.
         </div>
 
         <Section id="connected-a-page" title="1. If you connected a Page with Facebook Login">
@@ -89,30 +91,56 @@ export default function DataDeletionPage() {
           </p>
         </Section>
 
-        <Section id="what-is-deleted" title="3. What gets deleted">
+        <Section id="whatsapp" title="3. WhatsApp">
+          <p>
+            <Strong>If you messaged a business on WhatsApp,</Strong>{' '}email <Email /> with:
+          </p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Access tokens for the connected Page and Instagram professional account.</li>
+            <li>the name of the business you messaged; and</li>
+            <li>your WhatsApp phone number.</li>
+          </ul>
+          <p>
+            We verify the request, delete your messages, phone number, WhatsApp user ID and profile name and username
+            we hold within one month, and tell the business so it can remove its own copy. You can also contact the
+            business directly.
+          </p>
+          <p>
+            <Strong>If your business connected a WhatsApp number,</Strong>{' '}disconnecting it in your OY Labs
+            account, or asking us at <Email />, deletes our access tokens for that number immediately. You can also
+            remove OY Labs in Meta Business Suite → Settings → <Strong>Integrations</Strong>, or in WhatsApp Manager
+            → <Strong>Partners</Strong>. Contacts synced from the WhatsApp Business app and message templates we hold
+            for the number are deleted when it is disconnected.
+          </p>
+        </Section>
+
+        <Section id="what-is-deleted" title="4. What gets deleted">
+          <ul className="list-disc pl-5 space-y-2">
+            <li>Access tokens for the connected Page and Instagram professional account, or WhatsApp number.</li>
             <li>
-              Messages, attachment links, Page-scoped and Instagram-scoped IDs, and profile names and pictures we hold
-              for those conversations.
+              Messages (including imported WhatsApp chat history), attachment and media references, Page-scoped,
+              Instagram-scoped and WhatsApp business-scoped user IDs, WhatsApp phone numbers, and profile names,
+              usernames and pictures we hold for those conversations.
             </li>
+            <li>For WhatsApp numbers, contacts synced from the WhatsApp Business app and message templates.</li>
           </ul>
           <p>
             Raw webhook event records and delivery logs expire on their own after 14 and 30 days.{' '}
             We keep a short record of the request itself (confirmation code, date and status, with no message content)
             for 12 months so we can show it was completed. Even without a request, messages we hold are deleted
-            automatically 90 days after they were received or sent.
+            automatically 90 days after they were received or sent. WhatsApp media files are not stored by OY Labs;
+            they are fetched from Meta only when requested.
           </p>
         </Section>
 
-        <Section id="timeline" title="4. Timeline">
+        <Section id="timeline" title="5. Timeline">
           <p>
             Access tokens are deleted immediately when we receive a deletion request from Meta. Requests sent to us by
-            email are completed within 30 days. We respond to all data protection requests within one month.
+            email are completed within 30 days (within one month for WhatsApp requests). Disconnecting a WhatsApp
+            number deletes our access tokens for it immediately. We respond to all data protection requests within one month.
           </p>
         </Section>
 
-        <Section id="status" title="5. Check the status of a request">
+        <Section id="status" title="6. Check the status of a request">
           <p>
             When Meta sends us a deletion request, we return a confirmation code. Enter it below, or visit{' '}
             <span className="text-ink break-all">https://oylabs.co/data-deletion/status?code=YOUR_CODE</span>.
@@ -145,7 +173,7 @@ export default function DataDeletionPage() {
           </form>
         </Section>
 
-        <Section id="contact" title="6. Contact">
+        <Section id="contact" title="7. Contact">
           <p>
             Questions about deletion or your data: <Email />. OY Labs Ltd, 71-75 Shelton Street, Covent Garden,
             London, WC2H 9JQ, United Kingdom. See also our{' '}

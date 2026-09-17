@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import { Check, Lock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { resolveConnectLink } from '@/lib/messaging/connections';
-import { FacebookIcon, InstagramIcon, Notice, formatDate } from '@/components/console/ui';
+import { FacebookIcon, InstagramIcon, Notice, WhatsAppIcon, formatDate } from '@/components/console/ui';
+import { env, whatsappConfigured } from '@/lib/messaging/env';
+import { ConnectWhatsApp } from '@/components/whatsapp/ConnectWhatsApp';
+import { connectWhatsAppViaLinkAction } from '../actions';
 import ConnectShell from '../ConnectShell';
 
-export const metadata = { title: 'Connect Facebook & Instagram — OY Labs', robots: { index: false, follow: false } };
+export const metadata = { title: 'Connect your messaging accounts — OY Labs', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 const ERRORS: Record<string, string> = {
@@ -82,7 +85,16 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
       >
         <FacebookIcon size={18} /> Continue with Facebook
       </a>
-      <p className="mt-3 text-center text-xs text-ink-dull">
+      {whatsappConfigured() && (
+        <div className="mt-6 border-t border-line pt-6">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-ink"><WhatsAppIcon size={16} className="text-emerald-500" /> Or connect WhatsApp</h2>
+          <p className="mt-1.5 mb-3 text-xs leading-relaxed text-ink-dim">
+            Keep using the WhatsApp Business app on your phone — the same number also works here. WhatsApp asks whether to share your contacts and recent chats. OY Labs can then read incoming messages and send your replies and approved templates.
+          </p>
+          <ConnectWhatsApp appId={env.metaAppId()} configId={env.metaWhatsAppConfigId()} linkToken={token} onComplete={connectWhatsAppViaLinkAction} />
+        </div>
+      )}
+      <p className="mt-6 text-center text-xs text-ink-dull">
         By continuing you agree to the <Link href="/terms" className="underline">Terms</Link>{' '}and <Link href="/privacy" className="underline">Privacy Policy</Link>. Link expires {formatDate(link.expiresAt)}.
       </p>
     </ConnectShell>

@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
       pageId: typeof body.pageId === 'string' ? body.pageId : undefined,
       text: body.text,
       attachment: body.attachment,
+      template: body.template,
+      phoneNumberId: typeof body.phoneNumberId === 'string' ? body.phoneNumberId : undefined,
       tag: body.tag,
       idempotencyKey: request.headers.get('idempotency-key')?.slice(0, 200) || undefined,
       source: 'api',

@@ -42,7 +42,18 @@ Record at 1280×800 or larger, English UI, with captions or a voice-over naming 
 4. Conversation appears in the inbox with the **Instagram** badge and "via @username". Open it.
 5. Reply from the inbox; show it arriving in the customer's Instagram DMs.
 
-## Screencast D (optional but recommended): data deletion
+## Screencast D: connect WhatsApp and message (covers whatsapp_business_management, whatsapp_business_messaging)
+
+1. Signed in to the demo client account, open **Connections** and scroll to **WhatsApp**.
+2. Click **Use my WhatsApp Business app number**. In Meta's WhatsApp pop-up: sign in, pick the business, choose the number already used in the WhatsApp Business app, and agree to share contacts and chat history when asked.
+3. Back in OY Labs the number shows **Active**, **Business app**, and the chat import progress.
+4. Split screen: left, WhatsApp on a phone messaging that number as a customer; right, the OY Labs **Inbox**. The message appears within seconds.
+5. Reply from the inbox; show it arriving in WhatsApp on the phone.
+6. Send a reply from the **WhatsApp Business app** on the phone and show it appearing in the OY Labs inbox (coexistence).
+7. Open **Templates**, show an approved template, then in a conversation older than 24 hours use **Send template** and show it arriving.
+8. Back in **Connections**, click **Disconnect** to show the business can end access at any time.
+
+## Screencast E (optional but recommended): data deletion
 
 1. As the test Page admin, open Facebook **Settings & privacy → Settings → Business integrations**, remove **OY Labs Messaging**.
 2. **Connections** in the OY Labs account shows the Page as **Disconnected**.
@@ -82,6 +93,9 @@ Use the "How will your app use this permission?" box. Each links to the screenca
 
 | Question | Answer |
 |---|---|
+| **WhatsApp permissions** | |
+| `whatsapp_business_management` | Read the client's WhatsApp Business Account and phone number details, subscribe our app to its webhooks, manage the message templates the client creates in OY Labs, and (for Coexistence) start the one-time contact and chat-history sync the business agrees to. |
+| `whatsapp_business_messaging` | Receive the messages customers send to the client's WhatsApp number and send the client's replies and approved template messages. |
 | Do you share Platform Data with third parties? | Only with the client business that owns the connected Page/Instagram account (the business the customer messaged), and with our hosting sub-processor (Amazon Web Services). Stripe processes subscription payments only and receives no Platform Data. |
 | Do you use data for advertising or sell it? | No. |
 | Retention | Messages and profile data 90 days; raw webhook events 14 days; delivery logs 30 days; tokens until disconnect or deletion. |

@@ -43,6 +43,18 @@ Staff console reply box ──────────────────�
 4. Local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook` (Stripe CLI) gives a local `whsec_…`, and test card `4242 4242 4242 4242` completes Checkout.
 5. Repeat 1–3 with live keys when going live.
 
+## WhatsApp
+
+- **Connecting** uses Meta's **WhatsApp Embedded Signup** (a Facebook JavaScript SDK pop-up, not our redirect OAuth), in two modes: **Coexistence** (`featureType: whatsapp_business_app_onboarding`) for a number already used in the WhatsApp Business app, and a new API-only number. `completeEmbeddedSignup` exchanges the code for a business integration system-user token, reads the phone number, subscribes our app to the WhatsApp Business Account, registers new numbers with a generated PIN (coexistence numbers are already registered), and for coexistence calls `POST /{phone_number_id}/smb_app_data` twice — `smb_app_state_sync` (contacts) and `history`. Meta allows those two calls once, within 24 hours of onboarding; the Connections page offers a retry if they fail.
+- **Webhook fields** subscribed on the WhatsApp Business Account: `messages` (incoming messages and delivery statuses), `smb_message_echoes` (replies sent from the Business app), `smb_app_state_sync` (contact changes), `history` (imported chats), `message_template_status_update`, `account_update`. Everything arrives at the same `/api/meta/webhook` endpoint, is stored one row per item in `webhook_events` (`object = 'whatsapp'`, `account_id` = phone number ID), and is applied by `src/lib/whatsapp/processor.ts`.
+- **Identity.** WhatsApp identifies people by a **business-scoped user ID (BSUID)**; the phone number may be missing for people using usernames. Conversations are keyed on the BSUID when present, else the phone, and `findOrCreateWaConversation` upgrades a phone-keyed conversation to its BSUID when one appears. Echoes and history carry phone numbers only, so they match on the phone.
+- **History import** keeps only messages inside the retention window (90 days) and dates them by when they were sent, so retention removes them on schedule. If the business declines history sharing, Meta sends error 2593109 and the number shows "History sharing is off".
+- **Media** is never stored. `/api/v1/media/{mediaId}` (client API, signed) and `/api/media/{messageId}/{index}` (signed-in staff or workspace member) fetch the URL from Meta with the account token and stream the file.
+- **Sending** (`src/lib/whatsapp/send.ts`): free-form text and media need the 24-hour customer service window; an approved template can be sent at any time, including to a phone number with no conversation, which creates one. Bodies carry both `to` (phone) and `recipient` (BSUID) when known.
+- **Templates** (`src/lib/whatsapp/templates.ts`) mirror Meta's per-WABA templates in `wa_templates`. The portal can create, edit and delete them; media headers upload an example file through the Resumable Upload API to get the `header_handle`. Approval decisions arrive on the `message_template_status_update` webhook.
+- **Plan limits** count *channels*: connected Pages plus connected WhatsApp numbers (`activeChannelCount`).
+- **Meta bills the business directly** for WhatsApp messages; OY Labs neither pays nor marks up those fees.
+
 ## Code map
 
 | Path | Purpose |
@@ -65,6 +77,8 @@ Staff console reply box ──────────────────�
 | `src/lib/accounts/accounts.ts` | Client users, sign-up, verification, password reset, team and invites |
 | `src/lib/auth/client-session.ts` | Client sessions and guards (`requireClient`, `assertClient`) |
 | `src/lib/billing/*` | Plans, service rules, Stripe Checkout/Portal/webhook sync |
+| `src/lib/whatsapp/*` | Embedded Signup, WhatsApp webhooks, sending, templates, media streaming |
+| `src/components/whatsapp/*` | Connect button (Embedded Signup), number list, template editor and send form |
 | `src/app/(auth)/*` | `/login`, `/signup`, password reset, email verification, invites |
 | `src/app/app/*` | Client portal: overview, inbox, connections, developers, team, billing, settings |
 | `src/app/pricing`, `src/app/developers/messaging-api` | Public pricing page and API guide (rendered from `docs/client-integration.md`) |
@@ -92,6 +106,7 @@ Set in `.env.production` on the server (and `.env.development.local` locally). R
 | `MESSAGING_WORKER` | no | `off` | Disables the background worker |
 | `STRIPE_SECRET_KEY` | for billing | `sk_test_…` / `sk_live_…` | Without it, clients can sign up but not subscribe |
 | `STRIPE_WEBHOOK_SECRET` | for billing | `whsec_…` from the Stripe webhook endpoint | |
+| `META_WA_CONFIG_ID` | for WhatsApp | The WhatsApp Embedded Signup configuration ID | Without it the WhatsApp buttons are hidden |
 | `RESEND_API_KEY` | yes in prod | Resend dashboard | Account emails (verify, reset, invites) and the contact form. Locally, links are printed to the server log instead. |
 
 Until the five required Meta/encryption variables are set, the public pages and console work, but `/api/meta/*` and `/api/v1/messages` return 503 and the console shows a banner.

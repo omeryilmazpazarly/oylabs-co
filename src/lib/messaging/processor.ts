@@ -7,6 +7,7 @@ import { pageTokenFor, markReconnectNeeded } from './connections';
 import { previewText, type Attachment, type Channel } from './conversations';
 import * as graph from './graph';
 import { errorSummary, log } from '@/lib/log';
+import { processWhatsAppEvent } from '@/lib/whatsapp/processor';
 
 /**
  * Turns stored webhook items into conversations and messages, then queues a
@@ -19,7 +20,7 @@ const PROFILE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface EventRow {
   id: number;
-  object: 'page' | 'instagram';
+  object: 'page' | 'instagram' | 'whatsapp';
   account_id: string;
   payload: string;
   attempts: number;
@@ -35,7 +36,7 @@ interface RoutedConnection {
 }
 
 /** Finds the client connection an event belongs to: Instagram events by IG account, Messenger by Page. */
-export function routeEvent(object: 'page' | 'instagram', accountId: string): { connection: RoutedConnection; channel: Channel } | null {
+export function routeEvent(object: 'page' | 'instagram' | 'whatsapp', accountId: string): { connection: RoutedConnection; channel: Channel } | null {
   const db = getDb();
   const select = `
     SELECT c.id, c.workspace_id, c.page_id, c.ig_account_id, c.status, w.forward_url
@@ -82,6 +83,7 @@ export async function processDueEvents(batch = 20): Promise<number> {
 }
 
 export async function processEvent(row: EventRow): Promise<'done' | 'ignored'> {
+  if (row.object === 'whatsapp') return processWhatsAppEvent(row);
   const item = JSON.parse(row.payload) as MessagingItem;
   const routed = routeEvent(row.object, row.account_id);
   if (!routed) {
@@ -112,7 +114,7 @@ export async function processEvent(row: EventRow): Promise<'done' | 'ignored'> {
     db.prepare(`
       INSERT INTO conversations (workspace_id, connection_id, channel, participant_id, last_message_at, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(connection_id, channel, participant_id) DO NOTHING
+      ON CONFLICT(connection_id, channel, participant_id) WHERE connection_id IS NOT NULL DO NOTHING
     `).run(connection.workspace_id, connection.id, channel, participantId, timestamp, now());
     return db.prepare(`SELECT id, participant_name, profile_fetched_at FROM conversations WHERE connection_id = ? AND channel = ? AND participant_id = ?`)
       .get(connection.id, channel, participantId) as { id: number; participant_name: string | null; profile_fetched_at: number | null };
@@ -139,7 +141,7 @@ export async function processEvent(row: EventRow): Promise<'done' | 'ignored'> {
 
   let senderName = conversation.participant_name;
   if (!conversation.profile_fetched_at || now() - conversation.profile_fetched_at > PROFILE_TTL_MS) {
-    senderName = (await refreshProfile(conversation.id, connection.id, channel, participantId)) ?? senderName;
+    senderName = (await refreshProfile(conversation.id, connection.id, channel as 'messenger' | 'instagram', participantId)) ?? senderName;
   }
 
   if (connection.forward_url) {
@@ -168,7 +170,7 @@ export async function processEvent(row: EventRow): Promise<'done' | 'ignored'> {
 }
 
 /** Best effort: a missing name must never block delivering the message. */
-async function refreshProfile(conversationId: number, connectionId: number, channel: Channel, participantId: string): Promise<string | null> {
+async function refreshProfile(conversationId: number, connectionId: number, channel: 'messenger' | 'instagram', participantId: string): Promise<string | null> {
   const db = getDb();
   const token = pageTokenFor(connectionId);
   if (!token) return null;

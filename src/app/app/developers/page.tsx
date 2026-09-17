@@ -20,7 +20,7 @@ export default async function DevelopersPage() {
       />
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
-          <Card title="Forwarding webhook" description="We POST every inbound Messenger and Instagram message here, signed with your API secret.">
+          <Card title="Forwarding webhook" description="We POST every inbound Messenger, Instagram and WhatsApp message here, signed with your API secret.">
             <ForwardingForm workspaceId={w.id} name={w.name} forwardUrl={w.forward_url} saveAction={clientUpdateForwardingAction} testAction={clientTestDeliveryAction} showName={false} canEdit={isOwner} />
           </Card>
           <Card title="Recent deliveries">

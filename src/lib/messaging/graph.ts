@@ -35,9 +35,9 @@ export class GraphError extends Error {
   }
 }
 
-type Params = Record<string, string | number | boolean | undefined>;
+export type Params = Record<string, string | number | boolean | undefined>;
 
-function graphUrl(path: string, params: Params = {}): string {
+export function graphUrl(path: string, params: Params = {}): string {
   const url = new URL(`https://graph.facebook.com/${env.metaGraphVersion()}/${path.replace(/^\//, '')}`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined) url.searchParams.set(key, String(value));
@@ -45,11 +45,11 @@ function graphUrl(path: string, params: Params = {}): string {
   return url.toString();
 }
 
-function proof(token: string): string {
+export function proof(token: string): string {
   return createHmac('sha256', env.metaAppSecret()).update(token).digest('hex');
 }
 
-async function call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, token: string | null, params: Params = {}, body?: unknown): Promise<T> {
+export async function call<T>(method: 'GET' | 'POST' | 'DELETE', path: string, token: string | null, params: Params = {}, body?: unknown): Promise<T> {
   const query: Params = { ...params };
   if (token) {
     query.access_token = token;

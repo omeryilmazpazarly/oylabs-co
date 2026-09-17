@@ -10,8 +10,11 @@ import {
   Inbox,
   KeyRound,
   Lock,
+  Receipt,
+  RefreshCw,
   ServerCog,
   ShieldCheck,
+  Smartphone,
   Trash2,
   Unplug,
   UserCheck,
@@ -24,9 +27,9 @@ import SectionAtmosphere from '@/components/effects/SectionAtmosphere';
 import MessageFlow from './MessageFlow';
 
 export const metadata: Metadata = {
-  title: 'Messenger & Instagram Integration — OY Labs',
+  title: 'Messenger, Instagram & WhatsApp Integration — OY Labs',
   description:
-    'OY Labs Ltd connects your Facebook Page and Instagram professional account to your own customer inbox or CRM, so your team can receive and reply to Messenger and Instagram Direct messages in one place.',
+    'OY Labs Ltd connects your Facebook Page, Instagram professional account and WhatsApp Business number to your own customer inbox or CRM, so your team can receive and reply to Messenger, Instagram Direct and WhatsApp messages in one place.',
   alternates: { canonical: '/tech-provider' },
 };
 
@@ -36,7 +39,7 @@ const AUDIENCE = [
   {
     icon: <Inbox size={20} />,
     title: 'Businesses with their own inbox or CRM',
-    body: 'You already manage customer conversations in your own system and want Messenger and Instagram messages to arrive there too, instead of in a separate app.',
+    body: 'You already manage customer conversations in your own system and want Messenger, Instagram and WhatsApp messages to arrive there too, instead of in separate apps.',
   },
   {
     icon: <Users size={20} />,
@@ -46,7 +49,7 @@ const AUDIENCE = [
   {
     icon: <Building2 size={20} />,
     title: 'Service and education providers',
-    body: 'Businesses such as online schools and service providers whose customers get in touch through Facebook and Instagram before they enrol or book.',
+    body: 'Businesses such as online schools and service providers whose customers get in touch through Facebook, Instagram or WhatsApp before they enrol or book.',
   },
 ];
 
@@ -81,6 +84,44 @@ const STEPS = [
   },
 ];
 
+const WHATSAPP_STEPS = [
+  {
+    title: 'Start the WhatsApp connection',
+    body: 'In your OY Labs account, go to Connections and choose to connect a WhatsApp number. This opens Meta’s WhatsApp Embedded Signup in a Facebook pop-up.',
+  },
+  {
+    title: 'Choose your business and number',
+    body: 'Sign in with Facebook, select or create your business portfolio and WhatsApp Business Account, and choose one of the two options below.',
+  },
+  {
+    title: 'Option A: the number you already use',
+    body: 'Connect the number you use in the WhatsApp Business app (coexistence). You keep using the app on your phone, and the same number also works through OY Labs.',
+  },
+  {
+    title: 'Option B: a new number for the API',
+    body: 'Register a new number during signup that is used only through the API.',
+  },
+  {
+    title: 'Add a payment method in WhatsApp Manager',
+    body: 'Meta charges your business directly for WhatsApp messages, so you add your own payment method in WhatsApp Manager. These charges are separate from your OY Labs subscription.',
+  },
+  {
+    title: 'Start replying from your inbox',
+    body: 'WhatsApp messages to your number are delivered to your inbox alongside Messenger and Instagram, and your staff reply from there.',
+  },
+];
+
+const COEXISTENCE = [
+  'Your WhatsApp Business app keeps working on your phone, on the same number.',
+  'During connection you can choose to share your WhatsApp contacts and up to 180 days of chat history. We import only the last 90 days of that history into your inbox, in line with our retention period.',
+  'Messages you send from the WhatsApp Business app are synced into your inbox, so your team sees the whole conversation.',
+];
+
+const COEXISTENCE_LIMITS = [
+  'Group chats, broadcast lists, and disappearing and view-once messages are not supported through the API. They keep working in the app but do not appear in your inbox.',
+  'WhatsApp limits coexistence numbers to 20 messages per second sent through the API.',
+];
+
 const PERMISSIONS = [
   {
     name: 'pages_show_list',
@@ -100,7 +141,7 @@ const PERMISSIONS = [
   },
   {
     name: 'business_management',
-    reason: 'Required by Meta alongside the Page permissions. We use it only to read the business portfolio ID the connection belongs to and the assets you granted.',
+    reason: 'Required by Meta alongside the Page and WhatsApp permissions. We use it only to read the business portfolio ID the connection belongs to and the assets you granted.',
   },
   {
     name: 'instagram_basic',
@@ -110,32 +151,50 @@ const PERMISSIONS = [
     name: 'instagram_manage_messages',
     reason: 'Receive Instagram Direct messages and send your business’s replies.',
   },
+  {
+    name: 'whatsapp_business_management',
+    reason: 'Read your WhatsApp Business Account and phone number details, subscribe the account to our webhooks, manage your message templates, and, for numbers you already use in the WhatsApp Business app, start the contact and chat history sync you chose to share.',
+  },
+  {
+    name: 'whatsapp_business_messaging',
+    reason: 'Receive WhatsApp messages and send your business’s replies and template messages.',
+  },
 ];
 
 const DATA_GROUPS = [
   {
     title: 'Connection data',
-    body: 'Page ID and name, Instagram professional account ID and username, your business portfolio ID, and access tokens.',
+    body: 'Page ID and name, Instagram professional account ID and username, your business portfolio ID, WhatsApp Business Account ID, phone number ID, display phone number and verified business name, and access tokens.',
   },
   {
     title: 'Conversation data',
-    body: 'Page-scoped IDs (PSID) and Instagram-scoped IDs (IGSID) of people who message you, message text, attachment links and their type, timestamps, button tap (postback) payloads, and the messages your business sends.',
+    body: 'Page-scoped IDs (PSID), Instagram-scoped IDs (IGSID) and WhatsApp business-scoped user IDs (BSUID) of people who message you, their WhatsApp phone number when WhatsApp provides it, message text, attachment links and their type, media shared on WhatsApp (images, audio, video, documents, stickers, locations and contacts), delivery and read statuses, reactions, timestamps, button tap (postback) payloads, and the messages your business sends.',
   },
   {
     title: 'Profile data',
-    body: 'Where Meta permits it, the name or username and profile picture URL of the person messaging you. Used only to label the conversation in your inbox.',
+    body: 'Where Meta permits it, the name or username and profile picture URL of the person messaging you, or their WhatsApp profile name and username if they use one. Used only to label the conversation in your inbox.',
+  },
+  {
+    title: 'WhatsApp Business app data',
+    body: 'For numbers you already use in the WhatsApp Business app: contact names from the app’s address book (synced once and again when they change) and the chat history you choose to share, of which we import the last 90 days.',
+  },
+  {
+    title: 'Message templates',
+    body: 'The WhatsApp message templates your business creates: name, category, language, content and Meta’s approval status.',
   },
 ];
 
 const NEVER = [
+  'Message anyone without your business’s instruction',
   'Post content to your Page or Instagram account',
   'Read or manage your ads',
   'Access Page insights',
   'Read personal Facebook profiles',
   'Sell any data',
+  'Use your customers’ data for our own marketing',
   'Use messages for advertising or profiling',
   'Use messages to train AI models',
-  'Share conversations with anyone other than the business that owns the Page or account, apart from the service providers that host the service',
+  'Share conversations with anyone other than the business that owns the Page, account or number, apart from the service providers that host the service',
 ];
 
 const SECURITY = [
@@ -183,6 +242,33 @@ function SectionHeader({ eyebrow, title, intro }: { eyebrow: string; title: stri
   );
 }
 
+function StepList({ steps }: { steps: { title: string; body: string }[] }) {
+  return (
+    <ol className="grid gap-4 sm:gap-5 md:grid-cols-2">
+      {steps.map((step, i) => (
+        <li
+          key={step.title}
+          className="rounded-2xl border border-line bg-panel p-5 sm:p-6 flex gap-4"
+        >
+          <span
+            className="shrink-0 w-8 h-8 rounded-full border border-line-hi flex items-center justify-center text-xs font-mono text-ink"
+            aria-hidden
+          >
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <div className="min-w-0">
+            <h4 className="text-base font-semibold text-ink tracking-tight">
+              <span className="sr-only">Step {i + 1}: </span>
+              {step.title}
+            </h4>
+            <p className="mt-1.5 text-sm text-ink-dim leading-relaxed">{step.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 const linkCls = 'text-ink underline underline-offset-4 decoration-line-hi hover:decoration-ink transition-colors';
 
 /* ── Page ────────────────────────────────────────────────────────────── */
@@ -198,16 +284,16 @@ export default function TechProviderPage() {
             Messaging integration
           </span>
           <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink leading-[1.05] max-w-4xl">
-            Messenger &amp; Instagram messaging integration
+            Messenger, Instagram &amp; WhatsApp messaging integration
           </h1>
           <p className="mt-6 text-base sm:text-lg text-ink-dim max-w-2xl leading-relaxed">
-            Connect your Facebook Page and the Instagram professional account linked to it to your own customer
-            inbox or CRM. Messages your customers send on Messenger and Instagram Direct arrive where your team
-            already works, and your staff reply from there.
+            Connect your Facebook Page, the Instagram professional account linked to it, and your WhatsApp Business
+            number to your own customer inbox or CRM. Messages your customers send on Messenger, Instagram Direct
+            and WhatsApp arrive where your team already works, and your staff reply from there.
           </p>
           <p className="mt-4 text-sm text-ink-dim max-w-2xl leading-relaxed">
             The service is operated by <strong className="text-ink font-semibold">OY Labs Ltd</strong>, a software
-            company registered in England and Wales, using Meta&rsquo;s official Messenger Platform and Instagram messaging APIs.
+            company registered in England and Wales, using Meta&rsquo;s official Messenger Platform, Instagram messaging and WhatsApp Business Platform APIs.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <a
@@ -260,31 +346,79 @@ export default function TechProviderPage() {
         <div className="max-w-6xl mx-auto">
           <SectionHeader
             eyebrow="How onboarding works"
-            title="How your Page gets connected"
-            intro="You never share a password with us. Access is granted through Facebook’s own sign-in screens, and you choose exactly which Pages and assets to share."
+            title="How your channels get connected"
+            intro="You never share a password with us. Access is granted through Meta’s own sign-in screens, and you choose exactly which Pages, WhatsApp Business Accounts and numbers to share."
           />
-          <ol className="grid gap-4 sm:gap-5 md:grid-cols-2">
-            {STEPS.map((step, i) => (
-              <li
-                key={step.title}
-                className="rounded-2xl border border-line bg-panel p-5 sm:p-6 flex gap-4"
-              >
-                <span
-                  className="shrink-0 w-8 h-8 rounded-full border border-line-hi flex items-center justify-center text-xs font-mono text-ink"
-                  aria-hidden
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className="min-w-0">
-                  <h3 className="text-base font-semibold text-ink tracking-tight">
-                    <span className="sr-only">Step {i + 1}: </span>
-                    {step.title}
-                  </h3>
-                  <p className="mt-1.5 text-sm text-ink-dim leading-relaxed">{step.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-ink tracking-tight mb-5">
+            <Inbox size={18} className="text-ink-dim" aria-hidden /> Facebook Page and Instagram
+          </h3>
+          <StepList steps={STEPS} />
+
+          <h3 className="mt-12 sm:mt-16 flex items-center gap-2 text-lg font-semibold text-ink tracking-tight mb-5">
+            <Smartphone size={18} className="text-ink-dim" aria-hidden /> WhatsApp Business number
+          </h3>
+          <StepList steps={WHATSAPP_STEPS} />
+
+          {/* WhatsApp coexistence */}
+          <div id="whatsapp-coexistence" className="mt-12 sm:mt-16 scroll-mt-28 rounded-2xl border border-line bg-panel p-5 sm:p-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 shrink-0 rounded-xl bg-elevated border border-line flex items-center justify-center text-ink">
+                <RefreshCw size={18} aria-hidden />
+              </div>
+              <h3 className="text-lg font-semibold text-ink tracking-tight">WhatsApp Coexistence</h3>
+            </div>
+            <p className="mt-4 text-sm text-ink-dim leading-relaxed max-w-3xl">
+              Coexistence is Meta&rsquo;s option for connecting a number you already use in the WhatsApp Business
+              app. The number keeps working in the app on your phone and, at the same time, through OY Labs, so your
+              team can answer from your inbox while you still reply from your phone when you need to.
+            </p>
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              <div>
+                <h4 className="text-sm font-semibold text-ink">What syncs</h4>
+                <ul className="mt-3 space-y-2.5 text-sm text-ink-dim leading-relaxed list-disc pl-5">
+                  {COEXISTENCE.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-ink">Limitations set by WhatsApp</h4>
+                <ul className="mt-3 space-y-2.5 text-sm text-ink-dim leading-relaxed list-disc pl-5">
+                  {COEXISTENCE_LIMITS.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* WhatsApp messaging rules and charges */}
+          <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-line bg-panel p-5 sm:p-7">
+              <div className="flex items-center gap-3">
+                <Smartphone size={18} className="text-ink" aria-hidden />
+                <h3 className="text-base font-semibold text-ink tracking-tight">WhatsApp messaging rules</h3>
+              </div>
+              <p className="mt-3 text-sm text-ink-dim leading-relaxed">
+                You can reply freely within 24 hours of a customer&rsquo;s last message. After that, or to start a
+                conversation, only message templates approved by Meta can be sent, and you must have the
+                person&rsquo;s opt-in to receive WhatsApp messages from your business. You also need to follow the
+                WhatsApp Business Messaging Policy and the WhatsApp Commerce Policy.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-panel p-5 sm:p-7">
+              <div className="flex items-center gap-3">
+                <Receipt size={18} className="text-ink" aria-hidden />
+                <h3 className="text-base font-semibold text-ink tracking-tight">WhatsApp message charges</h3>
+              </div>
+              <p className="mt-3 text-sm text-ink-dim leading-relaxed">
+                Meta charges your business directly for WhatsApp messages under Meta&rsquo;s own pricing, using the
+                payment method you add in WhatsApp Manager. These charges are separate from your OY Labs
+                subscription. OY Labs does not bill them or add any mark-up.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -409,6 +543,10 @@ export default function TechProviderPage() {
                   Or remove the app yourself in Facebook Settings → Business Integrations, or in Meta Business Suite →
                   Business settings → Integrations → Connected apps.
                 </li>
+                <li>
+                  For WhatsApp, you can also remove OY Labs in Meta Business Suite → Settings → Integrations, or in
+                  WhatsApp Manager → Partners. Disconnecting a WhatsApp number deletes our access tokens for it.
+                </li>
                 <li>When Meta tells us the app has been removed, we stop processing and delete the access tokens.</li>
               </ul>
             </div>
@@ -418,8 +556,10 @@ export default function TechProviderPage() {
                 <h3 className="text-base font-semibold text-ink tracking-tight">Retention and deletion</h3>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-ink-dim leading-relaxed list-disc pl-5">
-                <li>Access tokens are kept only while the Page is connected and are deleted immediately on disconnection, when the service ends, or on a deletion request.</li>
+                <li>Access tokens are kept only while the Page or WhatsApp number is connected and are deleted immediately on disconnection, when the service ends, or on a deletion request.</li>
                 <li>Messages, attachment links and profile names and pictures held by OY Labs are deleted automatically 90 days after they were received or sent. Your business keeps its own copy in its inbox.</li>
+                <li>WhatsApp media files are not stored by OY Labs. They are fetched from Meta only when an authorised user or your system requests them.</li>
+                <li>Contacts synced from the WhatsApp Business app are kept until the number is disconnected or 90 days after they were last updated. Message templates are kept while the number is connected.</li>
                 <li>
                   You can request deletion at any time. See{' '}
                   <Link href="/data-deletion" className={linkCls}>data deletion instructions</Link>.

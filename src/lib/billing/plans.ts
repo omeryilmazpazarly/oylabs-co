@@ -10,6 +10,7 @@ export type BillingInterval = 'month' | 'year';
 export interface Plan {
   id: PlanId;
   name: string;
+  /** Channels included: a Facebook Page (with its Instagram) or a WhatsApp number. */
   pages: number;
   monthlyUsd: number;
   yearlyUsd: number;
@@ -17,9 +18,9 @@ export interface Plan {
 }
 
 export const PLANS: Plan[] = [
-  { id: 'starter', name: 'Starter', pages: 1, monthlyUsd: 29, yearlyUsd: 290, blurb: 'One Facebook Page and its Instagram account.' },
-  { id: 'growth', name: 'Growth', pages: 3, monthlyUsd: 79, yearlyUsd: 790, blurb: 'Up to three brands or locations.' },
-  { id: 'scale', name: 'Scale', pages: 10, monthlyUsd: 199, yearlyUsd: 1990, blurb: 'Up to ten Pages for multi-brand teams.' },
+  { id: 'starter', name: 'Starter', pages: 1, monthlyUsd: 29, yearlyUsd: 290, blurb: 'One channel: a Facebook Page with its Instagram, or a WhatsApp number.' },
+  { id: 'growth', name: 'Growth', pages: 3, monthlyUsd: 79, yearlyUsd: 790, blurb: 'Up to three channels — brands, locations or WhatsApp numbers.' },
+  { id: 'scale', name: 'Scale', pages: 10, monthlyUsd: 199, yearlyUsd: 1990, blurb: 'Up to ten channels for multi-brand teams.' },
 ];
 
 export const TRIAL_DAYS = 14;

@@ -1,7 +1,7 @@
 import { CreditCard, ExternalLink, Lock } from 'lucide-react';
 import { requireClient } from '@/lib/auth/client-session';
 import { now } from '@/lib/messaging/db';
-import { activeConnectionCount } from '@/lib/messaging/workspaces';
+import { activeChannelCount } from '@/lib/messaging/workspaces';
 import { hasLiveSubscription, syncCheckoutSession } from '@/lib/billing/subscriptions';
 import { stripeConfigured } from '@/lib/billing/stripe';
 import { isInterval, isPlanId, planById } from '@/lib/billing/plans';
@@ -38,7 +38,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
   const nowMs = now();
   const live = hasLiveSubscription(w);
   const plan = planById(w.plan);
-  const used = activeConnectionCount(w.id);
+  const used = activeChannelCount(w.id);
   const limit = pageLimit(w);
 
   return (
@@ -46,7 +46,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       <PageHeader eyebrow="Billing" title={live || w.complimentary ? 'Your plan' : 'Choose a plan'} description="Payments are handled securely by Stripe. OY Labs never sees your card details." />
 
       {params.error && <div className="mb-6"><Notice tone="red">{ERRORS[params.error] ?? ERRORS.stripe}</Notice></div>}
-      {params.checkout === 'success' && <div className="mb-6"><Notice tone="green">Thanks — your subscription is set up. You can connect your Facebook Page now.</Notice></div>}
+      {params.checkout === 'success' && <div className="mb-6"><Notice tone="green">Thanks — your subscription is set up. You can connect your Facebook Page or WhatsApp number now.</Notice></div>}
       {params.checkout === 'cancelled' && <div className="mb-6"><Notice>Checkout was cancelled. No charge was made.</Notice></div>}
 
       {w.complimentary ? (
@@ -77,8 +77,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           </Card>
           <Card title="Usage">
             <div className="text-3xl font-bold tabular-nums text-ink">{used}<span className="text-lg text-ink-dim"> / {limit}</span></div>
-            <p className="mt-1 text-sm text-ink-dim">Facebook Pages connected</p>
-            {used > limit && <p className="mt-3 text-xs text-amber-500">You have more Pages than your plan allows. Existing Pages keep working; upgrade to add more.</p>}
+            <p className="mt-1 text-sm text-ink-dim">Channels connected</p>
+            {used > limit && <p className="mt-3 text-xs text-amber-500">You have more channels than your plan allows. The existing ones keep working; upgrade to add more.</p>}
           </Card>
         </div>
       ) : (

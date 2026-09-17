@@ -239,6 +239,119 @@ const MIGRATIONS: string[] = [
     error        TEXT
   );
   `,
+
+  /* 3 — WhatsApp numbers, templates and contacts; conversations/messages gain a WhatsApp shape.
+     conversations and messages are rebuilt (SQLite can't alter CHECK constraints); ids are kept. */
+  `
+  CREATE TABLE wa_numbers (
+    id                   INTEGER PRIMARY KEY,
+    workspace_id         INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    waba_id              TEXT    NOT NULL,
+    phone_number_id      TEXT    NOT NULL UNIQUE,
+    display_phone_number TEXT    NOT NULL,
+    verified_name        TEXT,
+    business_id          TEXT,
+    meta_user_id         TEXT,
+    token_enc            TEXT,
+    pin_enc              TEXT,
+    coexistence          INTEGER NOT NULL DEFAULT 0,
+    quality_rating       TEXT,
+    status               TEXT    NOT NULL CHECK (status IN ('active', 'reconnect_needed', 'disconnected')),
+    status_detail        TEXT,
+    history_status       TEXT    CHECK (history_status IN ('requested', 'in_progress', 'complete', 'declined', 'failed')),
+    history_progress     INTEGER,
+    created_at           INTEGER NOT NULL,
+    updated_at           INTEGER NOT NULL
+  );
+  CREATE INDEX wa_numbers_workspace ON wa_numbers(workspace_id);
+  CREATE INDEX wa_numbers_waba ON wa_numbers(waba_id);
+
+  CREATE TABLE wa_templates (
+    id               INTEGER PRIMARY KEY,
+    workspace_id     INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    waba_id          TEXT    NOT NULL,
+    template_id      TEXT    NOT NULL UNIQUE,
+    name             TEXT    NOT NULL,
+    language         TEXT    NOT NULL,
+    category         TEXT    NOT NULL,
+    status           TEXT    NOT NULL,
+    parameter_format TEXT    NOT NULL DEFAULT 'positional',
+    components       TEXT    NOT NULL DEFAULT '[]',
+    rejected_reason  TEXT,
+    updated_at       INTEGER NOT NULL
+  );
+  CREATE INDEX wa_templates_waba ON wa_templates(waba_id, status);
+
+  CREATE TABLE wa_contacts (
+    wa_number_id INTEGER NOT NULL REFERENCES wa_numbers(id) ON DELETE CASCADE,
+    phone        TEXT    NOT NULL,
+    name         TEXT,
+    updated_at   INTEGER NOT NULL,
+    PRIMARY KEY (wa_number_id, phone)
+  );
+
+  CREATE TABLE conversations_v3 (
+    id                   INTEGER PRIMARY KEY,
+    workspace_id         INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    connection_id        INTEGER REFERENCES connections(id) ON DELETE CASCADE,
+    wa_number_id         INTEGER REFERENCES wa_numbers(id) ON DELETE CASCADE,
+    channel              TEXT    NOT NULL CHECK (channel IN ('messenger', 'instagram', 'whatsapp')),
+    participant_id       TEXT    NOT NULL,
+    participant_phone    TEXT,
+    participant_username TEXT,
+    participant_name     TEXT,
+    participant_picture  TEXT,
+    profile_fetched_at   INTEGER,
+    last_inbound_at      INTEGER,
+    last_message_at      INTEGER NOT NULL,
+    last_message_preview TEXT,
+    created_at           INTEGER NOT NULL,
+    CHECK ((connection_id IS NULL) != (wa_number_id IS NULL))
+  );
+  INSERT INTO conversations_v3 (id, workspace_id, connection_id, channel, participant_id, participant_name, participant_picture,
+    profile_fetched_at, last_inbound_at, last_message_at, last_message_preview, created_at)
+  SELECT id, workspace_id, connection_id, channel, participant_id, participant_name, participant_picture,
+    profile_fetched_at, last_inbound_at, last_message_at, last_message_preview, created_at FROM conversations;
+
+  CREATE TABLE messages_v3 (
+    id               INTEGER PRIMARY KEY,
+    public_id        TEXT    NOT NULL UNIQUE,
+    workspace_id     INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    conversation_id  INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    direction        TEXT    NOT NULL CHECK (direction IN ('inbound', 'outbound')),
+    source           TEXT    NOT NULL CHECK (source IN ('customer', 'api', 'console', 'page_inbox', 'business_app', 'history')),
+    kind             TEXT    NOT NULL DEFAULT 'text',
+    mid              TEXT    UNIQUE,
+    text             TEXT,
+    attachments      TEXT    NOT NULL DEFAULT '[]',
+    postback         TEXT,
+    template         TEXT,
+    status           TEXT    NOT NULL CHECK (status IN ('received', 'sent', 'delivered', 'read', 'failed')),
+    error            TEXT,
+    idempotency_key  TEXT,
+    sent_by_staff_id INTEGER REFERENCES staff_users(id) ON DELETE SET NULL,
+    sent_by_user_id  INTEGER REFERENCES client_users(id) ON DELETE SET NULL,
+    meta_timestamp   INTEGER NOT NULL,
+    created_at       INTEGER NOT NULL,
+    UNIQUE (workspace_id, idempotency_key)
+  );
+  INSERT INTO messages_v3 (id, public_id, workspace_id, conversation_id, direction, source, mid, text, attachments, postback, status,
+    error, idempotency_key, sent_by_staff_id, meta_timestamp, created_at)
+  SELECT id, public_id, workspace_id, conversation_id, direction, source, mid, text, attachments, postback, status,
+    error, idempotency_key, sent_by_staff_id, meta_timestamp, created_at FROM messages;
+
+  DROP TABLE messages;
+  DROP TABLE conversations;
+  ALTER TABLE conversations_v3 RENAME TO conversations;
+  ALTER TABLE messages_v3 RENAME TO messages;
+
+  CREATE UNIQUE INDEX conversations_page_participant ON conversations(connection_id, channel, participant_id) WHERE connection_id IS NOT NULL;
+  CREATE UNIQUE INDEX conversations_wa_participant ON conversations(wa_number_id, participant_id) WHERE wa_number_id IS NOT NULL;
+  CREATE INDEX conversations_wa_phone ON conversations(wa_number_id, participant_phone) WHERE wa_number_id IS NOT NULL;
+  CREATE INDEX conversations_recent ON conversations(workspace_id, last_message_at DESC);
+  CREATE INDEX messages_thread ON messages(conversation_id, meta_timestamp);
+  CREATE INDEX messages_age ON messages(created_at);
+  `,
 ];
 
 export type Db = Database.Database;
@@ -255,11 +368,22 @@ export function openMessagingDb(file: string): Db {
 
 function migrate(db: Db) {
   const current = db.pragma('user_version', { simple: true }) as number;
-  for (let i = current; i < MIGRATIONS.length; i++) {
-    db.transaction(() => {
-      db.exec(MIGRATIONS[i]);
-      db.pragma(`user_version = ${i + 1}`);
-    })();
+  if (current >= MIGRATIONS.length) return;
+  // Table rebuilds drop tables other tables reference, so foreign keys are
+  // switched off for the duration (it can't change inside a transaction) and
+  // checked before committing each migration.
+  db.pragma('foreign_keys = OFF');
+  try {
+    for (let i = current; i < MIGRATIONS.length; i++) {
+      db.transaction(() => {
+        db.exec(MIGRATIONS[i]);
+        const violations = db.pragma('foreign_key_check') as unknown[];
+        if (violations.length) throw new Error(`Migration ${i + 1} left ${violations.length} foreign key violations`);
+        db.pragma(`user_version = ${i + 1}`);
+      })();
+    }
+  } finally {
+    db.pragma('foreign_keys = ON');
   }
 }
 

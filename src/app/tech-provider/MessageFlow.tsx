@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { MessageCircle, Camera, ShieldCheck, Inbox } from 'lucide-react';
+import { MessageCircle, Camera, Phone, ShieldCheck, Inbox } from 'lucide-react';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -66,9 +66,9 @@ export default function MessageFlow() {
       <div className="flex flex-col items-center md:grid md:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)_3rem_minmax(0,1fr)] md:items-stretch lg:grid-cols-[minmax(0,1fr)_5rem_minmax(0,1fr)_5rem_minmax(0,1fr)]">
         <Node
           index={0}
-          icon={<span className="flex -space-x-1"><MessageCircle size={16} /><Camera size={16} /></span>}
+          icon={<span className="flex -space-x-1"><MessageCircle size={16} /><Camera size={16} /><Phone size={16} /></span>}
           title="Your customers"
-          caption="Message your Page on Messenger or your Instagram account in Direct"
+          caption="Message your Page on Messenger, your Instagram account in Direct, or your number on WhatsApp"
         />
         <Connector delay={0} />
         <Node
@@ -86,7 +86,7 @@ export default function MessageFlow() {
         />
       </div>
       <figcaption className="sr-only">
-        Customer messages sent to your Facebook Page or Instagram account are received by OY Labs, verified,
+        Customer messages sent to your Facebook Page, Instagram account or WhatsApp number are received by OY Labs, verified,
         and delivered to your own inbox. Replies travel back the same way.
       </figcaption>
     </figure>

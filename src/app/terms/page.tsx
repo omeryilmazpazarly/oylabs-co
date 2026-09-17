@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Terms of Service — OY Labs',
   description:
-    'The terms that apply to the OY Labs Messenger and Instagram messaging integration and to the oylabs.co website.',
+    'The terms that apply to the OY Labs Messenger, Instagram and WhatsApp messaging integration and to the oylabs.co website.',
   alternates: { canonical: '/terms' },
 };
 
@@ -58,9 +58,10 @@ export default function TermsPage() {
         </p>
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-12 text-sm text-ink-dim leading-relaxed">
-          <Strong>Summary.</Strong>{' '}These terms apply to our Messenger and Instagram messaging integration and to
-          our website. You must have authority over any Page or account you connect and follow Meta&rsquo;s rules
-          when messaging your customers. We process your customer conversations only on your behalf, keep them for
+          <Strong>Summary.</Strong>{' '}These terms apply to our Messenger, Instagram and WhatsApp messaging
+          integration and to our website. You must have authority over any Page, account or WhatsApp number you
+          connect and follow Meta&rsquo;s and WhatsApp&rsquo;s rules when messaging your customers. Meta charges you
+          directly for WhatsApp messages, separately from your OY Labs subscription. We process your customer conversations only on your behalf, keep them for
           no more than 90 days, and delete your access tokens as soon as you disconnect. These terms are governed by
           the law of England and Wales.
         </div>
@@ -74,7 +75,7 @@ export default function TermsPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li>
               the business that uses our messaging integration (&ldquo;Client&rdquo;, &ldquo;you&rdquo;), including
-              anyone who connects a Page or account on the Client&rsquo;s behalf; and
+              anyone who connects a Page, account or WhatsApp number on the Client&rsquo;s behalf; and
             </li>
             <li>anyone who visits or uses the oylabs.co website, for the parts of these terms that apply to the website.</li>
           </ul>
@@ -93,9 +94,19 @@ export default function TermsPage() {
             Client&rsquo;s system. When the Client&rsquo;s staff reply, we send those replies back through Meta.
           </p>
           <p>
+            The Client can also connect a WhatsApp Business number through Meta&rsquo;s WhatsApp Embedded Signup,
+            either a number it already uses in the WhatsApp Business app (coexistence), which keeps working in the app,
+            or a new number used only through the API. We receive WhatsApp messages sent to that number, deliver them
+            to the Client&rsquo;s system, and send the Client&rsquo;s replies and template messages through WhatsApp.
+            For coexistence numbers, the Client can choose to share its WhatsApp contacts and chat history; we import
+            only the last 90 days of history. Some WhatsApp features, such as group chats, broadcast lists and
+            disappearing or view-once messages, are not supported through the API.
+          </p>
+          <p>
             To set up the service, we create a workspace for the Client and send a secure, single-use connect link
-            that expires after 7 days. An admin of the Client&rsquo;s Facebook Page uses the link to sign in with
-            Facebook Login for Business and grant the permissions described on our{' '}
+            that expires after 7 days, or the Client signs up and connects its channels from its OY Labs account. An
+            admin of the Client&rsquo;s Facebook Page or WhatsApp Business Account signs in with Facebook and grants
+            the permissions described on our{' '}
             <Link href="/tech-provider" className={linkCls}>Messaging Integration page</Link>.
           </p>
           <p>
@@ -109,7 +120,8 @@ export default function TermsPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li>
               you own, or are authorised to manage, every Facebook Page and Instagram professional account you
-              connect, and the person who connects it is an admin of that Page with authority to act for you;
+              connect, and every WhatsApp Business number you connect, and the person who connects it is an admin
+              of that Page or WhatsApp Business Account with authority to act for you;
             </li>
             <li>
               you will comply with the Meta Platform Terms, Meta&rsquo;s Developer Policies, the Messenger Platform
@@ -117,8 +129,24 @@ export default function TermsPage() {
               Instagram;
             </li>
             <li>
+              for WhatsApp, you will comply with the WhatsApp Business Messaging Policy, the WhatsApp Commerce Policy
+              and any other WhatsApp terms that apply to your business;
+            </li>
+            <li>
               you will respect Meta&rsquo;s messaging windows, including the 24-hour standard messaging window, and
-              only send messages outside that window where Meta&rsquo;s rules allow it;
+              only send messages outside that window where Meta&rsquo;s rules allow it. On WhatsApp, you may reply
+              freely within 24 hours of a customer&rsquo;s last message; after that, or to start a conversation, you
+              will send only message templates approved by Meta;
+            </li>
+            <li>
+              you will obtain, and be able to show, each person&rsquo;s opt-in to receive WhatsApp messages from your
+              business before you send them a message they have not asked for, including any template message that
+              starts a conversation;
+            </li>
+            <li>
+              you will add your own payment method in WhatsApp Manager and pay Meta directly for WhatsApp messages
+              under Meta&rsquo;s pricing. These charges are separate from your OY Labs fees; OY Labs does not bill
+              them or add any mark-up, and is not responsible for them;
             </li>
             <li>
               you have a lawful basis under applicable data protection law for messaging your customers and for
@@ -139,9 +167,10 @@ export default function TermsPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li>provide the service with reasonable skill and care;</li>
             <li>use the access you grant only to deliver messages between you and your customers;</li>
+            <li>never message anyone except on your instruction, and never use your customers&rsquo; data for our own marketing;</li>
             <li>request only the Meta permissions the service needs, and explain why we need each one;</li>
             <li>keep your data secure and confidential, as described in section 6 and our Privacy Policy;</li>
-            <li>stop processing and delete your access tokens when you disconnect; and</li>
+            <li>stop processing and delete your access tokens when you disconnect a Page or WhatsApp number; and</li>
             <li>respond to support and data protection requests sent to <Email />.</li>
           </ul>
         </Section>
@@ -152,7 +181,8 @@ export default function TermsPage() {
             <li>break any law or regulation, or infringe anyone&rsquo;s rights;</li>
             <li>send spam, harassment, threats, hateful content, or misleading or fraudulent messages;</li>
             <li>send malware or content designed to harm devices or systems;</li>
-            <li>connect a Page or account you are not authorised to manage;</li>
+            <li>connect a Page, account or WhatsApp number you are not authorised to manage;</li>
+            <li>message people on WhatsApp who have not opted in to receive messages from you;</li>
             <li>
               try to gain unauthorised access to the service, other clients&rsquo; data or our systems, or interfere
               with their security or operation;
@@ -176,8 +206,13 @@ export default function TermsPage() {
               the service ends, or on a deletion request;
             </li>
             <li>
-              messages, attachment links and profile names and pictures we hold are deleted automatically 90 days after
-              they were received or sent (your own inbox keeps its copy under your policy);
+              messages, attachment and media references and profile names and pictures we hold are deleted
+              automatically 90 days after they were received or sent (your own inbox keeps its copy under your
+              policy); WhatsApp media files are not stored by us;
+            </li>
+            <li>
+              contacts synced from the WhatsApp Business app are kept until the number is disconnected or 90 days after
+              they were last updated, and message templates while the number is connected;
             </li>
             <li>raw webhook event records are kept for 14 days and delivery logs for 30 days;</li>
             <li>
@@ -200,7 +235,7 @@ export default function TermsPage() {
             We use reasonable efforts to keep the service available and to fix problems promptly, but we do not
             guarantee that it will be uninterrupted or error-free. The service depends on Meta&rsquo;s platform and
             APIs, and on your own systems being available to receive deliveries. We are not responsible for outages,
-            delays, rate limits, policy changes, or changes to or withdrawal of Meta features that are outside our
+            delays, rate limits (including WhatsApp throughput limits for coexistence numbers), policy changes, or changes to or withdrawal of Meta features that are outside our
             control. We may carry out maintenance, and will try to do so in a way that keeps disruption to a minimum.
           </p>
         </Section>
@@ -208,8 +243,14 @@ export default function TermsPage() {
         <Section id="subscriptions" title="8. Plans, subscriptions and fees">
           <p>
             <Strong>Plans.</Strong>{' '}The service is offered on the plans shown on our{' '}<a href="/pricing" className="text-ink underline">pricing page</a>. Each plan allows a number
-            of connected Facebook Pages (each with its linked Instagram professional account). Prices are in US dollars
-            and exclude any taxes that apply. If you have a signed order or proposal with us, its fees apply instead.
+            of connected channels. A channel is either a connected Facebook Page (together with its linked Instagram
+            professional account) or a connected WhatsApp number. Prices are in US dollars and exclude any taxes that
+            apply. If you have a signed order or proposal with us, its fees apply instead.
+          </p>
+          <p>
+            <Strong>WhatsApp message charges.</Strong>{' '}Meta charges you directly for WhatsApp messages under
+            Meta&rsquo;s own pricing, using the payment method you add in WhatsApp Manager. These charges are not part
+            of your OY Labs plan, and OY Labs does not bill them or add any mark-up.
           </p>
           <p>
             <Strong>Free trial.</Strong>{' '}New workspaces can start one free trial of 14 days. You must provide a payment
@@ -225,9 +266,9 @@ export default function TermsPage() {
             yearly billing, or cancel at any time from Billing in their account. Upgrades take effect immediately
             and are charged pro rata; downgrades are credited pro rata against future invoices. When you cancel, the
             service continues until the end of the period you have paid for and then stops. Except where the law
-            requires otherwise, payments already made are non-refundable. If you downgrade below the number of Pages
-            you have connected, existing Pages keep working but you can&rsquo;t connect more until you are within your
-            plan&rsquo;s limit.
+            requires otherwise, payments already made are non-refundable. If you downgrade below the number of channels
+            you have connected, existing channels keep working but you can&rsquo;t connect more until you are within
+            your plan&rsquo;s limit.
           </p>
           <p>
             <Strong>Failed payments.</Strong>{' '}If a payment fails, Stripe retries it and we let you know. The service
@@ -251,7 +292,8 @@ export default function TermsPage() {
           <p>
             You can stop using the service at any time by cancelling your subscription under Billing in your account, asking us at <Email />, using Disconnect under Connections, or
             removing the app in Facebook Settings → Business Integrations (or Meta Business Suite → Business settings
-            → Integrations → Connected apps). Fees for the period already paid are not refunded (see section 8), and any minimum term in a signed order or
+            → Integrations → Connected apps). For a WhatsApp number, you can also remove OY Labs in Meta Business
+            Suite → Settings → Integrations or in WhatsApp Manager → Partners. Fees for the period already paid are not refunded (see section 8), and any minimum term in a signed order or
             proposal still applies.
           </p>
           <p>
@@ -259,10 +301,11 @@ export default function TermsPage() {
             terms, if your use puts the service, other clients or people who message you at risk, if Meta restricts or
             withdraws our access, or if we are required to by law.
           </p>
-          <p>When the service ends or a Page is disconnected:</p>
+          <p>When the service ends or a Page or WhatsApp number is disconnected:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>we unsubscribe the Page from our webhooks and stop processing new messages;</li>
-            <li>we delete the access tokens immediately; and</li>
+            <li>we unsubscribe the Page or WhatsApp Business Account from our webhooks and stop processing new messages;</li>
+            <li>we delete the access tokens for it immediately;</li>
+            <li>contacts synced from the WhatsApp Business app and message templates we hold for that number are deleted; and</li>
             <li>
               remaining messages and related data we hold are deleted within the retention periods in our Privacy
               Policy, or sooner if you ask us to delete them.
@@ -279,7 +322,7 @@ export default function TermsPage() {
             business data, and you grant us only the rights we need to provide the service. If you give us feedback,
             we may use it to improve the service without any obligation to you.
           </p>
-          <p>Facebook, Messenger and Instagram are trademarks of Meta Platforms, Inc.</p>
+          <p>Facebook, Messenger, Instagram and WhatsApp are trademarks of Meta Platforms, Inc. or its affiliates.</p>
         </Section>
 
         <Section id="liability" title="11. Liability">

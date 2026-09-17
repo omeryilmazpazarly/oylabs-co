@@ -47,6 +47,7 @@ export async function handleDataDeletionRequest(signedRequest: string): Promise<
   for (const conn of connections) await unsubscribeQuietly(conn);
 
   const code = newConfirmationCode();
+  let waDeleted = 0;
   const counts = db.transaction(() => {
     let messages = 0;
     for (const conn of connections) {
@@ -56,10 +57,18 @@ export async function handleDataDeletionRequest(signedRequest: string): Promise<
       db.prepare('DELETE FROM connections WHERE id = ?').run(conn.id); // cascades to conversations → messages → deliveries
     }
     db.prepare('DELETE FROM oauth_sessions WHERE meta_user_id = ?').run(payload.user_id);
+    // WhatsApp numbers connected by the same Facebook user (Embedded Signup): delete them and their conversations.
+    const waNumbers = db.prepare('SELECT id, phone_number_id FROM wa_numbers WHERE meta_user_id = ?').all(payload.user_id) as { id: number; phone_number_id: string }[];
+    for (const n of waNumbers) {
+      messages += (db.prepare('SELECT COUNT(*) AS n FROM messages m JOIN conversations v ON v.id = m.conversation_id WHERE v.wa_number_id = ?').get(n.id) as { n: number }).n;
+      db.prepare('DELETE FROM webhook_events WHERE account_id = ?').run(n.phone_number_id);
+      db.prepare('DELETE FROM wa_numbers WHERE id = ?').run(n.id);
+    }
+    waDeleted = waNumbers.length;
     db.prepare(`
       INSERT INTO deletion_requests (confirmation_code, meta_user_id, source, status, connections_deleted, messages_deleted, created_at, completed_at)
       VALUES (?, ?, 'meta_callback', ?, ?, ?, ?, ?)
-    `).run(code, payload.user_id, connections.length ? 'completed' : 'no_data', connections.length, messages, now(), now());
+    `).run(code, payload.user_id, connections.length || waDeleted ? 'completed' : 'no_data', connections.length + waDeleted, messages, now(), now());
     return { messages };
   })();
 
@@ -71,11 +80,14 @@ export async function handleDataDeletionRequest(signedRequest: string): Promise<
 export async function handleDeauthorize(signedRequest: string): Promise<boolean> {
   const payload = parseSignedRequest(signedRequest, env.metaAppSecret());
   if (!payload) return false;
-  const { changes } = getDb().prepare(`
+  const db = getDb();
+  const { changes } = db.prepare(`
     UPDATE connections SET status = 'disconnected', status_detail = 'App removed in Facebook settings',
       page_token_enc = NULL, business_token_enc = NULL, updated_at = ?
     WHERE meta_user_id = ?
   `).run(now(), payload.user_id);
+  db.prepare(`UPDATE wa_numbers SET status = 'disconnected', status_detail = 'App removed in Facebook settings', token_enc = NULL, updated_at = ? WHERE meta_user_id = ?`)
+    .run(now(), payload.user_id);
   log.info('meta.deauthorized', { connections: changes });
   return true;
 }

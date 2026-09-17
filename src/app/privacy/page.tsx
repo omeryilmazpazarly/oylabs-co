@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Privacy Policy — OY Labs',
   description:
-    'How OY Labs Ltd collects, uses and protects personal data, including data from the Meta Platform processed through our Messenger and Instagram messaging integration.',
+    'How OY Labs Ltd collects, uses and protects personal data, including data from the Meta Platform processed through our Messenger, Instagram and WhatsApp messaging integration.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -111,10 +111,10 @@ export default function PrivacyPage() {
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-10 text-sm text-ink-dim leading-relaxed space-y-3">
           <p>
-            <Strong>Summary.</Strong>{' '}This policy covers our website, our contact form, and our Messenger and
-            Instagram messaging integration. When a business connects its Facebook Page and Instagram professional
-            account to us, we receive the messages its customers send and deliver them to that business&rsquo;s own
-            inbox. We do that on the business&rsquo;s behalf and for no other purpose.
+            <Strong>Summary.</Strong>{' '}This policy covers our website, our contact form, and our Messenger,
+            Instagram and WhatsApp messaging integration. When a business connects its Facebook Page, Instagram
+            professional account or WhatsApp Business number to us, we receive the messages its customers send and
+            deliver them to that business&rsquo;s own inbox. We do that on the business&rsquo;s behalf and for no other purpose.
           </p>
           <p>
             We never sell personal data, never use it for advertising or profiling, and never use message content to
@@ -145,11 +145,11 @@ export default function PrivacyPage() {
             <li>
               <Strong>As a controller</Strong>{' '}for data about visitors to oylabs.co, people who use our contact form
               or email us, our client businesses and their staff (for example, console accounts), and the data needed
-              to set up and manage a Page connection. We decide how and why this data is used.
+              to set up and manage a Page or WhatsApp number connection. We decide how and why this data is used.
             </li>
             <li>
               <Strong>As a processor</Strong>{' '}for the conversations between a client business and its customers on
-              Messenger and Instagram. The client business is the controller of those conversations. We process them
+              Messenger, Instagram and WhatsApp. The client business is the controller of those conversations. We process them
               only on its instructions, to deliver messages between it and its customers.
             </li>
           </ul>
@@ -201,15 +201,15 @@ export default function PrivacyPage() {
 
           <SubHeading>Data from the Meta Platform</SubHeading>
           <p>
-            When a business connects its Facebook Page and linked Instagram professional account, we receive data
-            from Meta Platforms. This is described in detail in the next section.
+            When a business connects its Facebook Page and linked Instagram professional account, or its WhatsApp
+            Business number, we receive data from Meta Platforms. This is described in detail in the next section.
           </p>
 
           <SubHeading>Sources</SubHeading>
           <p>
             We collect data directly from you (for example, through the contact form or email), from client
-            businesses, and from Meta Platforms, Inc. and its affiliates when a business connects its Page and
-            Instagram account and when people message that business.
+            businesses, and from Meta Platforms, Inc. and its affiliates (including WhatsApp) when a business connects
+            its Page, Instagram account or WhatsApp number and when people message that business.
           </p>
         </Section>
 
@@ -217,7 +217,8 @@ export default function PrivacyPage() {
           <p>
             Our messaging integration uses Meta&rsquo;s APIs. A person who is an admin of a business&rsquo;s Facebook
             Page signs in with Facebook Login for Business and chooses which Pages and business assets to grant to OY
-            Labs. We then process the following data from the Meta Platform.
+            Labs. A business connecting WhatsApp does so through Meta&rsquo;s WhatsApp Embedded Signup, in the same
+            way. We then process the following data from the Meta Platform.
           </p>
 
           <Table
@@ -225,7 +226,7 @@ export default function PrivacyPage() {
             rows={[
               [
                 'Connection data',
-                'Page ID and name, Instagram professional account ID and username, the client business portfolio ID, and access tokens.',
+                'Page ID and name, Instagram professional account ID and username, the client business portfolio ID, and access tokens. For WhatsApp: the WhatsApp Business Account ID, phone number ID, display phone number and verified business name.',
               ],
               [
                 'Conversation data',
@@ -238,25 +239,58 @@ export default function PrivacyPage() {
             ]}
           />
 
+          <SubHeading>WhatsApp Business Platform data</SubHeading>
+          <p>
+            A business can connect a number it already uses in the WhatsApp Business app (known as coexistence), or a
+            new number used only through the API. For WhatsApp we process:
+          </p>
+          <Table
+            head={['Category', 'What it includes']}
+            rows={[
+              [
+                'People who message the business',
+                'Their phone number (when WhatsApp provides it), WhatsApp business-scoped user ID (BSUID), profile name, and username if they use one.',
+              ],
+              [
+                'Messages',
+                'Message content and media (images, audio, video, documents, stickers, shared locations and shared contacts), delivery and read statuses, reactions, and the messages the business sends. Media files are not stored by OY Labs: they are fetched from Meta only when an authorised user or the client business’s system requests them.',
+              ],
+              [
+                'WhatsApp Business app contacts (coexistence only)',
+                'Contact names from the business’s WhatsApp Business app address book, if the business chooses to share them. They are synced once when the number is connected and again when they change.',
+              ],
+              [
+                'Chat history (coexistence only)',
+                'If the business chooses to share it, Meta makes up to 180 days of chat history available. We import only messages from the last 90 days, in line with our retention period, and sync messages the business later sends from the WhatsApp Business app into its inbox.',
+              ],
+              [
+                'Message templates',
+                'The templates the business creates: name, category, language, content and Meta’s approval status.',
+              ],
+            ]}
+          />
+
           <SubHeading>How we use it</SubHeading>
           <p>We use Meta Platform data solely to deliver messages between the client business and its customers:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>forwarding incoming messages to the client business&rsquo;s own system;</li>
-            <li>sending the client business&rsquo;s replies through Messenger or Instagram; and</li>
+            <li>sending the client business&rsquo;s replies and, on its instruction, its WhatsApp template messages through Messenger, Instagram or WhatsApp; and</li>
             <li>showing the conversation to the client business&rsquo;s authorised staff.</li>
           </ul>
           <p>
             Connection data is also used to set up, maintain and remove the connection (for example, to subscribe the
-            Page to our webhooks and to unsubscribe it on disconnection).
+            Page or WhatsApp Business Account to our webhooks, manage message templates, start the contact and chat
+            history sync a business chose to share, and unsubscribe on disconnection).
           </p>
 
           <SubHeading>What we never do with it</SubHeading>
           <ul className="list-disc pl-5 space-y-2">
             <li>We never sell it.</li>
-            <li>We never use it for advertising, marketing or profiling.</li>
+            <li>We never use it for advertising, marketing or profiling, including our own marketing.</li>
+            <li>We never message anyone except on the client business&rsquo;s instruction.</li>
             <li>We never use it to train AI models.</li>
             <li>
-              We never share it with anyone other than the client business that owns the Page or Instagram account,
+              We never share it with anyone other than the client business that owns the Page, Instagram account or WhatsApp number,
               and the sub-processors listed below that host and run the service.
             </li>
             <li>
@@ -266,7 +300,8 @@ export default function PrivacyPage() {
           <p>
             The Meta permissions we request, and the reason for each, are listed on our{' '}
             <Link href="/tech-provider#permissions" className={linkCls}>Messaging Integration page</Link>. We handle
-            Meta Platform data in line with the Meta Platform Terms and Developer Policies.
+            Meta Platform data in line with the Meta Platform Terms and Developer Policies, and WhatsApp data in line with
+            the WhatsApp Business terms and policies that apply to it.
           </p>
         </Section>
 
@@ -280,7 +315,7 @@ export default function PrivacyPage() {
                 'Legitimate interests (answering people who contact us and running our business), or steps taken at your request before entering into a contract',
               ],
               [
-                'Providing the service to client businesses: accounts, workspaces, team invitations, staff console accounts and Page connections, and sending service emails (email confirmation, password reset, invitations)',
+                'Providing the service to client businesses: accounts, workspaces, team invitations, staff console accounts, Page and WhatsApp number connections, and sending service emails (email confirmation, password reset, invitations)',
                 'Performance of our contract with the client business',
               ],
               [
@@ -288,8 +323,8 @@ export default function PrivacyPage() {
                 'Performance of our contract, and legal obligation (keeping tax and accounting records)',
               ],
               [
-                'Delivering messages between a client business and its customers',
-                'We act as a processor on the client business’s instructions. The client business, as controller, is responsible for having its own lawful basis for messaging its customers',
+                'Delivering messages between a client business and its customers on Messenger, Instagram and WhatsApp, including sending WhatsApp template messages, importing the WhatsApp chat history and contacts a business chooses to share, and managing its message templates',
+                'We act as a processor on the client business’s instructions. The client business, as controller, is responsible for having its own lawful basis for messaging its customers, including any opt-in WhatsApp requires',
               ],
               [
                 'Keeping the website and service secure, preventing spam and abuse (including Cloudflare Turnstile), and handling deletion requests',
@@ -311,12 +346,12 @@ export default function PrivacyPage() {
           <p>We share personal data only as follows:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <Strong>The client business</Strong>{' '}that owns the connected Page or Instagram account receives the
+              <Strong>The client business</Strong>{' '}that owns the connected Page, Instagram account or WhatsApp number receives the
               conversations with its own customers. We do not share one business&rsquo;s data with another.
             </li>
             <li>
-              <Strong>Meta</Strong>{' '}receives the replies a client business sends, because replies are delivered
-              through Messenger and Instagram.
+              <Strong>Meta</Strong>{' '}(including WhatsApp) receives the replies and template messages a client
+              business sends, because they are delivered through Messenger, Instagram and WhatsApp.
             </li>
             <li>
               <Strong>Service providers (sub-processors)</Strong>{' '}that host and run our website and service under
@@ -359,12 +394,18 @@ export default function PrivacyPage() {
             rows={[
               [
                 'Access tokens',
-                'Until the Page is disconnected, the client business ends the service, or we receive a deletion request. They are then deleted immediately.',
+                'Until the Page or WhatsApp number is disconnected, the client business ends the service, or we receive a deletion request. They are then deleted immediately.',
               ],
               [
-                'Messages, attachment links, and profile names and pictures held by OY Labs',
+                'Messages (including imported WhatsApp chat history), attachment and media references, and profile names, usernames and pictures held by OY Labs',
                 '90 days from when the message was received or sent, then deleted automatically. The client business keeps its own copy in its inbox under its own policy.',
               ],
+              [
+                'Contacts synced from the WhatsApp Business app',
+                'Until the WhatsApp number is disconnected, or 90 days after the contact was last updated, whichever is sooner.',
+              ],
+              ['WhatsApp message templates', 'While the WhatsApp number is connected'],
+              ['WhatsApp media files', 'Not stored by OY Labs. Fetched from Meta only when requested.'],
               ['Raw webhook event records', '14 days'],
               ['Logs of deliveries to client systems', '30 days'],
               [
@@ -428,7 +469,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section id="deletion" title="10. Data deletion">
-          <p>There are two ways to have data deleted:</p>
+          <p>There are several ways to have data deleted:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
               <Strong>If you connected a Page using Facebook Login,</Strong>{' '}remove the OY Labs app in your Facebook
@@ -440,6 +481,16 @@ export default function PrivacyPage() {
               <Strong>If you messaged a business that uses OY Labs,</Strong>{' '}email <Email /> with the business name
               and your Facebook or Instagram name. We will verify the request, delete your messages within 30 days, and
               tell the business so it can remove its own copy.
+            </li>
+            <li>
+              <Strong>If you messaged a business on WhatsApp,</Strong>{' '}email <Email /> with the business name and
+              your WhatsApp number. We will verify the request, delete your messages, contact details and profile
+              data within one month, and tell the business so it can remove its own copy.
+            </li>
+            <li>
+              <Strong>If your business connected a WhatsApp number,</Strong>{' '}disconnecting it in your OY Labs
+              account deletes our access tokens for it. You can also remove OY Labs in Meta Business Suite → Settings
+              → Integrations, or in WhatsApp Manager → Partners.
             </li>
           </ul>
           <p>

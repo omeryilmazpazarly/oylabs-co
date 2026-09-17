@@ -109,7 +109,8 @@ export function relativeTime(ms: number, nowMs = Date.now()): string {
   return diff < 0 ? `in ${unit}` : `${unit} ago`;
 }
 
-export function ChannelBadge({ channel }: { channel: 'messenger' | 'instagram' }) {
+export function ChannelBadge({ channel }: { channel: 'messenger' | 'instagram' | 'whatsapp' }) {
+  if (channel === 'whatsapp') return <Badge tone="green">WhatsApp</Badge>;
   return channel === 'instagram' ? <Badge tone="pink">Instagram</Badge> : <Badge tone="blue">Messenger</Badge>;
 }
 
@@ -124,6 +125,14 @@ export function FacebookIcon({ size = 16, className = '' }: { size?: number; cla
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
       <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z" />
+    </svg>
+  );
+}
+
+export function WhatsAppIcon({ size = 16, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.1 14.9l-.3-.2-2.4.6.6-2.3-.2-.3A8 8 0 0 1 12 4zm-3.3 4.2c-.2 0-.4 0-.6.3-.2.3-.8.8-.8 1.9s.8 2.2.9 2.3c.1.2 1.6 2.6 4 3.5 1.9.7 2.3.6 2.8.6.4 0 1.3-.5 1.5-1.1.2-.6.2-1.1.1-1.2l-.5-.3s-1.2-.6-1.4-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.4.2-.4v-.4l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.6z" />
     </svg>
   );
 }

@@ -20,6 +20,8 @@ Meta checks these URLs during setup and review, so they must be live on https://
 - [ ] Push branch `feat/meta-tech-provider` and deploy (see `docs/messaging-system.md` → *Deploying*). I'll do this once you approve.
 - [ ] Generate and set env vars in `/var/www/oylabs/.env.production`: `TOKEN_ENCRYPTION_KEY`, `META_VERIFY_TOKEN`, `APP_BASE_URL=https://oylabs.co` now; the `META_APP_*` values after step 3.
 - [ ] Create your console login on the server: `node scripts/create-staff-user.mjs --email you@oylabs.co --name "…"`. Staff sign in at `/console/login`.
+- [ ] WhatsApp: add the **WhatsApp** product to the Meta app, create a **Facebook Login for Business** configuration for WhatsApp Embedded Signup (permissions `whatsapp_business_management`, `whatsapp_business_messaging`, `business_management`), and put its ID in `META_WA_CONFIG_ID`.
+- [ ] WhatsApp webhooks: subscribe the app to `messages`, `smb_message_echoes`, `smb_app_state_sync`, `history`, `message_template_status_update` and `account_update` on the WhatsApp Business Account object, pointing at the same `/api/meta/webhook` URL and verify token.
 - [ ] Stripe (can be test mode during Meta review): run `scripts/stripe-setup.mjs`, add the webhook endpoint, and set `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` (see `docs/messaging-system.md` → Billing).
 - [ ] Move `RESEND_API_KEY` into `.env.production` so sign-up confirmation, password reset and invite emails are sent.
 - [ ] Check: https://oylabs.co/tech-provider, /pricing, /privacy, /terms, /data-deletion, /signup, /login all load.
@@ -72,6 +74,8 @@ In Development mode only people with a role on the app can connect.
 - [ ] App Dashboard → **App roles → Roles**: add yourself (and whoever administers Minhaj's Page) as Admin/Tester.
 - [ ] Use a test Facebook Page you administer, with a linked Instagram professional account (or Minhaj's Page if you are its admin).
 - [ ] Sign up at `/signup` as a demo client ("OY Labs Demo"), confirm the email, then in the console mark that workspace **Complimentary** (or start a Stripe test-mode trial with card 4242 4242 4242 4242). In the client portal → **Connections** → **Connect Facebook & Instagram** → finish the flow → the Page shows **Active**.
+- [ ] WhatsApp test: connect a WhatsApp number (Coexistence if it is already in the WhatsApp Business app), message it from another phone, reply from the OY Labs inbox, and check a reply sent from the WhatsApp Business app also appears in the inbox.
+- [ ] Create one message template in **Templates**, wait for WhatsApp's approval, and send it to a number outside the 24-hour window.
 - [ ] From another Facebook account (also with an app role), message the Page and the Instagram account → both conversations appear in the portal **Inbox** within seconds → reply there → the reply arrives in Messenger/Instagram.
 - [ ] Remove the app in that test user's Facebook settings → check the data deletion / deauthorize callbacks work (connection shows Disconnected; a confirmation code resolves at /data-deletion/status).
 - [ ] Record the App Review screencasts now (scripts in `docs/meta-app-review.md`).
@@ -100,6 +104,7 @@ Required because OY Labs accesses *other* businesses' data.
 
 - [ ] App Dashboard → **App mode: Live**.
 - [ ] **[You]** Minhaj builds its receiving endpoint per `docs/client-integration.md`.
+- [ ] Minhaj's WhatsApp: connect its existing WhatsApp Business app number through Coexistence so the phone keeps working and events forward with `channel: "whatsapp"`.
 - [ ] Console → **New workspace** "Minhaj Kids" (Complimentary, Page limit as needed), forwarding URL = Minhaj's endpoint → copy API key/secret into Minhaj's env (`OYLABS_API_KEY`, `OYLABS_API_SECRET`) → **Send signed test event** returns 2xx. Optionally invite Minhaj's admin as owner so they can use the portal.
 - [ ] **Create connect link** → a full admin of Minhaj's Page opens it and connects → Minhaj's Instagram owner enables *Allow access to messages*.
 - [ ] Message Minhaj's Page and Instagram from a personal account → arrives in Minhaj's inbox → reply from Minhaj → arrives in Messenger/Instagram.
@@ -124,6 +129,8 @@ Required because OY Labs accesses *other* businesses' data.
 | 12 | Test Page + Instagram professional account for demos | Facebook/Instagram |
 | 13 | Record screencasts | your screen recorder |
 | 13b | Stripe account: run setup script (test then live), webhook endpoint, email/retry settings, public business details | dashboard.stripe.com |
+| 13d | WhatsApp: add the product, create the Embedded Signup configuration, subscribe the extra webhook fields | developers.facebook.com |
+| 13e | Tell each client to add their own payment method in WhatsApp Manager (Meta bills them for WhatsApp messages) | business.facebook.com |
 | 13c | Decide with your accountant whether VAT applies; enable Stripe Tax if so | accountant / Stripe |
 | 14 | Access Verification questionnaire | App Dashboard |
 | 15 | App Review submission | App Dashboard |

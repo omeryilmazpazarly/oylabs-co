@@ -28,7 +28,7 @@ export default async function ConsoleInboxPage({ searchParams }: { searchParams:
       <PageHeader
         eyebrow="Messaging"
         title="Inbox"
-        description="Messenger and Instagram conversations for every client workspace. Replies go through the same Send API clients use."
+        description="Messenger, Instagram and WhatsApp conversations for every client workspace. Replies go through the same Send API clients use."
         actions={workspaces.length > 1 && (
           <div className="flex flex-wrap gap-1 rounded-lg border border-line bg-panel p-1">
             {workspaces.map((w) => (

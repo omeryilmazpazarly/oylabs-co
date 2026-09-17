@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalLink, MessagesSquare } from 'lucide-react';
 import { requireStaff } from '@/lib/auth/session';
-import { getWorkspace, activeConnectionCount } from '@/lib/messaging/workspaces';
+import { getWorkspace, activeChannelCount } from '@/lib/messaging/workspaces';
 import { listConnections, listOpenConnectLinks } from '@/lib/messaging/connections';
 import { listDeliveries } from '@/lib/messaging/deliveries';
-import { metaConfigured } from '@/lib/messaging/env';
+import { env, metaConfigured } from '@/lib/messaging/env';
 import { now } from '@/lib/messaging/db';
 import { listMembers, listPendingInvites } from '@/lib/accounts/accounts';
 import { pageLimit } from '@/lib/billing/entitlements';
@@ -14,8 +14,13 @@ import { SecretField, StatusForm, SubmitButton } from '@/components/console/clie
 import { BillingBadge, billingSummary } from '@/components/console/billing';
 import { ConnectLinkForm, ForwardingForm, RotateSecretForm } from '@/components/messaging/panels';
 import { ConnectionsList, DeliveriesTable } from '@/components/messaging/lists';
+import { WaCoexistenceNote, WaNumberList } from '@/components/whatsapp/NumberList';
+import { ConnectWhatsApp } from '@/components/whatsapp/ConnectWhatsApp';
+import { listWaNumbers } from '@/lib/whatsapp/numbers';
+import { whatsappConfigured } from '@/lib/messaging/env';
 import {
   connectNowAction, createConnectLinkAction, disconnectAction, inviteClientAction, retryDeliveryAction, revokeLinkAction,
+  staffConnectWhatsAppAction, staffDisconnectWhatsAppAction, staffRetryWhatsAppSyncAction,
   rotateSecretAction, setComplimentaryAction, staffRemoveMemberAction, staffRevokeInviteAction, testDeliveryAction, updateWorkspaceAction,
 } from '@/app/console/actions';
 
@@ -51,7 +56,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
         <div className="space-y-6 lg:col-span-2">
           <Card
             title="Connected accounts"
-            description={`Facebook Pages and their linked Instagram professional accounts · ${activeConnectionCount(workspace.id)} of ${pageLimit(workspace)} allowed`}
+            description={`Facebook Pages and their linked Instagram professional accounts · ${activeChannelCount(workspace.id)} of ${pageLimit(workspace)} channels used (Pages and WhatsApp numbers together)`}
             actions={configured && (
               <form action={connectNowAction}>
                 <input type="hidden" name="workspaceId" value={workspace.id} />
@@ -67,7 +72,30 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
             />
           </Card>
 
-          <Card title="Client onboarding link" description="For when someone at the client business administers the Page.">
+          <Card
+            title="WhatsApp numbers"
+            description="Connect the client's WhatsApp Business app number (chats keep working on their phone), or a new API-only number."
+            actions={whatsappConfigured() && (
+              <ConnectWhatsApp
+                appId={env.metaAppId()}
+                configId={env.metaWhatsAppConfigId()}
+                onComplete={async (payload) => {
+                  'use server';
+                  return staffConnectWhatsAppAction({ ...payload, workspaceId: workspace.id });
+                }}
+              />
+            )}
+          >
+            <WaNumberList
+              numbers={listWaNumbers(workspace.id)}
+              disconnectAction={staffDisconnectWhatsAppAction}
+              retrySyncAction={staffRetryWhatsAppSyncAction}
+              emptyHint="Connect here if you manage the client's WhatsApp, or send them the onboarding link below."
+            />
+            <p className="mt-3 text-xs text-ink-dull"><WaCoexistenceNote /></p>
+          </Card>
+
+          <Card title="Client onboarding link" description="For when someone at the client business administers the Page or WhatsApp number.">
             <div className="space-y-4">
               <ConnectLinkForm workspaceId={workspace.id} action={createConnectLinkAction} />
               {links.length > 0 && (

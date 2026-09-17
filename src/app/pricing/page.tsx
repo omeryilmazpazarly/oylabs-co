@@ -6,13 +6,15 @@ import SectionAtmosphere from '@/components/effects/SectionAtmosphere';
 import PricingPlans from './PricingPlans';
 
 export const metadata = {
-  title: 'Pricing — Messenger & Instagram Integration — OY Labs',
-  description: 'Simple per-Page pricing for connecting Facebook Messenger and Instagram Direct to your inbox or CRM. 14-day free trial.',
+  title: 'Pricing — Messenger, Instagram & WhatsApp Integration — OY Labs',
+  description: 'Simple per-channel pricing for connecting Facebook Messenger, Instagram Direct and WhatsApp to your inbox or CRM. 14-day free trial.',
   alternates: { canonical: 'https://oylabs.co/pricing' },
 };
 
 const FAQ = [
-  { q: 'What counts as a Page?', a: 'Each connected Facebook Page counts once, including the Instagram professional account linked to it. Messages, conversations and team members are not limited.' },
+  { q: 'What counts as a channel?', a: 'A connected Facebook Page counts once, including the Instagram professional account linked to it. A connected WhatsApp number also counts once. Messages, conversations and team members are not limited.' },
+  { q: 'Can I keep using WhatsApp on my phone?', a: 'Yes. Connect the number you already use in the WhatsApp Business app and it keeps working there; your contacts and recent chats come across, and replies you send from the phone appear in OY Labs too.' },
+  { q: 'Does this include WhatsApp message fees?', a: 'No. Meta charges for WhatsApp messages under its own pricing, directly to the card you add in WhatsApp Manager. OY Labs does not mark those charges up. Messenger and Instagram messages have no Meta fee.' },
   { q: 'How does the free trial work?', a: `Every plan starts with a ${TRIAL_DAYS}-day free trial. We ask for a card through Stripe at sign-up and charge nothing until the trial ends. Cancel before then and you won't be charged.` },
   { q: 'Can I change or cancel my plan?', a: 'Yes. Upgrade, downgrade, switch between monthly and yearly, or cancel at any time from Billing in your account. Cancellation takes effect at the end of the period you have paid for.' },
   { q: 'What happens if a payment fails?', a: `Stripe retries the card automatically and we email you. The service keeps running for ${GRACE_DAYS} days. After that, delivering and replying pause, but incoming messages are still saved and delivered once billing is updated.` },
@@ -29,14 +31,14 @@ export default async function PricingPage() {
         <div className="relative z-10 mx-auto max-w-6xl">
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <span className="text-xs font-medium uppercase tracking-[0.3em] text-ink-dim">Pricing</span>
-            <h1 className="mt-3 text-4xl font-bold leading-[1.05] tracking-tight text-ink sm:text-5xl">Pay per Page. Everything else included.</h1>
+            <h1 className="mt-3 text-4xl font-bold leading-[1.05] tracking-tight text-ink sm:text-5xl">Pay per channel. Everything else included.</h1>
             <p className="mt-5 text-base leading-relaxed text-ink-dim sm:text-lg">
-              Connect your Facebook Page and Instagram account, answer customers from one inbox or your own CRM, and start with a {TRIAL_DAYS}-day free trial.
+              Connect your Facebook Page, Instagram account and WhatsApp number, answer customers from one inbox or your own CRM, and start with a {TRIAL_DAYS}-day free trial.
             </p>
           </div>
           <PricingPlans signedIn={signedIn} />
           <p className="mt-10 text-center text-sm text-ink-dim">
-            Need more than 10 Pages or a custom integration?{' '}<Link href="/tech-provider#contact" className="text-ink underline">Talk to us</Link>
+            Need more than 10 channels or a custom integration?{' '}<Link href="/tech-provider#contact" className="text-ink underline">Talk to us</Link>
           </p>
         </div>
       </section>

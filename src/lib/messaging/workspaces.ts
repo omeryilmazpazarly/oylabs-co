@@ -72,8 +72,10 @@ export function listWorkspaces(): WorkspaceSummary[] {
   return getDb().prepare(`
     SELECT ${COLUMNS.split(', ').map((c) => `w.${c}`).join(', ')},
       (SELECT COUNT(*) FROM workspace_members m WHERE m.workspace_id = w.id) AS members,
-      (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'active') AS active_connections,
-      (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'reconnect_needed') AS attention_connections,
+      (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'active')
+        + (SELECT COUNT(*) FROM wa_numbers n WHERE n.workspace_id = w.id AND n.status = 'active') AS active_connections,
+      (SELECT COUNT(*) FROM connections c WHERE c.workspace_id = w.id AND c.status = 'reconnect_needed')
+        + (SELECT COUNT(*) FROM wa_numbers n WHERE n.workspace_id = w.id AND n.status = 'reconnect_needed') AS attention_connections,
       (SELECT COUNT(*) FROM conversations v WHERE v.workspace_id = w.id) AS conversations,
       (SELECT COUNT(*) FROM deliveries d WHERE d.workspace_id = w.id AND d.status = 'dead') AS dead_deliveries
     FROM workspaces w
@@ -95,9 +97,12 @@ export function setComplimentary(id: number, complimentary: boolean, pageLimit: 
     .run(complimentary ? 1 : 0, pageLimit, now(), id);
 }
 
-export function activeConnectionCount(workspaceId: number, excludePageId?: string): number {
-  return (getDb().prepare(`SELECT COUNT(*) AS n FROM connections WHERE workspace_id = ? AND status != 'disconnected' AND page_id != ?`)
-    .get(workspaceId, excludePageId ?? '') as { n: number }).n;
+/** Channels counted against the plan: connected Facebook Pages (with their Instagram) plus WhatsApp numbers. */
+export function activeChannelCount(workspaceId: number): number {
+  return (getDb().prepare(`
+    SELECT (SELECT COUNT(*) FROM connections WHERE workspace_id = @id AND status != 'disconnected')
+         + (SELECT COUNT(*) FROM wa_numbers WHERE workspace_id = @id AND status != 'disconnected') AS n
+  `).get({ id: workspaceId }) as { n: number }).n;
 }
 
 export function rotateWorkspaceSecret(id: number): string {

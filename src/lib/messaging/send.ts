@@ -8,6 +8,10 @@ import { messagingWindow, previewText, type Attachment, type Channel } from './c
 import { errorSummary, log } from '@/lib/log';
 import { getWorkspace } from './workspaces';
 import { serviceState } from '@/lib/billing/entitlements';
+import { SendError } from './send-errors';
+import { sendWhatsApp } from '@/lib/whatsapp/send';
+
+export { SendError, type SendErrorCode } from './send-errors';
 
 /**
  * The one path for outbound messages — used by the client Send API and the
@@ -20,11 +24,16 @@ export interface SendInput {
   recipientId: string;
   pageId?: string;
   text?: string;
-  attachment?: { type: string; url: string };
+  attachment?: { type: string; url: string; filename?: string; caption?: string };
+  /** WhatsApp only: an approved template, in Meta's shape ({ name, language: { code }, components }). */
+  template?: { name: string; language: { code: string } | string; components?: unknown[] };
+  /** WhatsApp only: which connected number to send from, when the workspace has several. */
+  phoneNumberId?: string;
   tag?: 'HUMAN_AGENT';
   idempotencyKey?: string;
   source: 'api' | 'console';
   staffId?: number;
+  userId?: number;
 }
 
 export interface SendResult {
@@ -37,44 +46,14 @@ export interface SendResult {
   replayed: boolean;
 }
 
-export type SendErrorCode =
-  | 'invalid_request'
-  | 'page_id_required'
-  | 'connection_not_found'
-  | 'reconnect_needed'
-  | 'conversation_not_found'
-  | 'outside_messaging_window'
-  | 'human_agent_not_approved'
-  | 'meta_rate_limited'
-  | 'subscription_inactive'
-  | 'meta_error';
-
-const HTTP_STATUS: Record<SendErrorCode, number> = {
-  invalid_request: 400,
-  page_id_required: 400,
-  connection_not_found: 404,
-  conversation_not_found: 404,
-  reconnect_needed: 409,
-  outside_messaging_window: 422,
-  human_agent_not_approved: 422,
-  meta_rate_limited: 429,
-  subscription_inactive: 402,
-  meta_error: 502,
-};
-
-export class SendError extends Error {
-  readonly status: number;
-  constructor(public readonly code: SendErrorCode, message: string, public readonly metaCode?: number) {
-    super(message);
-    this.name = 'SendError';
-    this.status = HTTP_STATUS[code];
-  }
-}
-
 const ATTACHMENT_TYPES = new Set(['image', 'video', 'audio', 'file']);
 
+const WA_MEDIA_TYPES = new Set(['image', 'video', 'audio', 'document', 'sticker']);
+
 export function validateSendInput(input: Partial<SendInput>): void {
-  if (input.channel !== 'messenger' && input.channel !== 'instagram') throw new SendError('invalid_request', 'channel must be "messenger" or "instagram".');
+  if (input.channel === 'whatsapp') return validateWhatsAppInput(input);
+  if (input.channel !== 'messenger' && input.channel !== 'instagram') throw new SendError('invalid_request', 'channel must be "messenger", "instagram" or "whatsapp".');
+  if (input.template) throw new SendError('invalid_request', 'Templates are only available on WhatsApp.');
   if (!input.recipientId || typeof input.recipientId !== 'string') throw new SendError('invalid_request', 'recipientId is required.');
   const hasText = typeof input.text === 'string' && input.text.trim().length > 0;
   const hasAttachment = Boolean(input.attachment);
@@ -89,6 +68,26 @@ export function validateSendInput(input: Partial<SendInput>): void {
     if (!url || !/^https:\/\//.test(url)) throw new SendError('invalid_request', 'attachment.url must be an https URL.');
   }
   if (input.tag !== undefined && input.tag !== 'HUMAN_AGENT') throw new SendError('invalid_request', 'The only supported tag is HUMAN_AGENT.');
+}
+
+function validateWhatsAppInput(input: Partial<SendInput>): void {
+  if (!input.recipientId || typeof input.recipientId !== 'string') throw new SendError('invalid_request', 'recipientId is required (BSUID or phone number).');
+  const count = [typeof input.text === 'string' && input.text.trim().length > 0, Boolean(input.attachment), Boolean(input.template)].filter(Boolean).length;
+  if (count !== 1) throw new SendError('invalid_request', 'Provide exactly one of text, attachment or template.');
+  if (input.tag) throw new SendError('invalid_request', 'Message tags are not used on WhatsApp; send an approved template instead.');
+  if (input.text && input.text.length > 4096) throw new SendError('invalid_request', 'WhatsApp text is limited to 4096 characters.');
+  if (input.attachment) {
+    const { type, url } = input.attachment;
+    if (!WA_MEDIA_TYPES.has(type)) throw new SendError('invalid_request', 'attachment.type must be image, video, audio, document or sticker.');
+    if (!url || !/^https:\/\//.test(url)) throw new SendError('invalid_request', 'attachment.url must be an https URL.');
+  }
+  if (input.template) {
+    const { name, language } = input.template;
+    const code = typeof language === 'string' ? language : language?.code;
+    if (!name || !/^[a-z0-9_]{1,512}$/.test(name)) throw new SendError('template_invalid', 'template.name must be the approved template name.');
+    if (!code || !/^[a-z]{2,3}(_[A-Za-z]{2,4})?$/.test(code)) throw new SendError('template_invalid', 'template.language must be a language code such as "en_US".');
+    if (input.template.components !== undefined && !Array.isArray(input.template.components)) throw new SendError('template_invalid', 'template.components must be an array.');
+  }
 }
 
 export async function sendMessage(input: SendInput, nowMs: number = now()): Promise<SendResult> {
@@ -111,6 +110,8 @@ export async function sendMessage(input: SendInput, nowMs: number = now()): Prom
       return { id: prior.public_id, mid: prior.mid, conversationId: prior.conversation_id, channel: prior.channel, recipientId: prior.participant_id, sentAt: new Date(prior.meta_timestamp).toISOString(), replayed: true };
     }
   }
+
+  if (input.channel === 'whatsapp') return sendWhatsApp(input, nowMs);
 
   const connections = db.prepare(`
     SELECT id, page_id, ig_account_id, status FROM connections

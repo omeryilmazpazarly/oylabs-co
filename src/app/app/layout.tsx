@@ -7,6 +7,7 @@ import { Wordmark } from '@/components/console/ui';
 import { BillingBadge } from '@/components/console/billing';
 import { clientLogoutAction, switchWorkspaceAction } from './actions';
 import PortalNav from './PortalNav';
+import { listWaNumbers } from '@/lib/whatsapp/numbers';
 import BillingBanner from './BillingBanner';
 
 export const metadata = { title: 'OY Labs — Messaging', robots: { index: false, follow: false } };
@@ -15,6 +16,7 @@ export const dynamic = 'force-dynamic';
 // Pages call requireClient() too: layouts don't re-run on client navigation.
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireClient();
+  const hasWhatsApp = listWaNumbers(ctx.workspace.id).some((n) => n.status !== 'disconnected');
   const nowMs = now();
   const state = serviceState(ctx.workspace, nowMs);
 
@@ -41,7 +43,7 @@ export default async function PortalLayout({ children }: { children: React.React
           )}
           <div className="mt-1.5"><BillingBadge w={ctx.workspace} nowMs={nowMs} /></div>
         </div>
-        <PortalNav isOwner={ctx.role === 'owner'} />
+        <PortalNav hasWhatsApp={hasWhatsApp} isOwner={ctx.role === 'owner'} />
         <div className="hidden border-t border-line-sub p-4 lg:mt-auto lg:block">
           <div className="truncate text-sm text-ink">{ctx.user.name}</div>
           <div className="truncate text-xs text-ink-dim">{ctx.user.email} · {ctx.role}</div>

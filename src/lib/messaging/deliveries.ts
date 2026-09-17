@@ -15,21 +15,37 @@ import { GRACE_MS, SERVICE_ACTIVE_SQL } from '@/lib/billing/entitlements';
 export const RETRY_DELAYS_MS = [30e3, 2 * 60e3, 10 * 60e3, 30 * 60e3, 60 * 60e3, 3 * 3600e3, 6 * 3600e3, 12 * 3600e3];
 const LOCK_MS = 60_000;
 
+export interface ForwardAttachment {
+  type: string;
+  url: string | null;
+  /** WhatsApp media: fetch through OY Labs with a signed GET to mediaUrl (Meta links need a token and expire). */
+  mediaId?: string;
+  mediaUrl?: string;
+  mimeType?: string | null;
+  filename?: string | null;
+}
+
 export interface ForwardEvent {
   id: string;
-  type: 'message.received';
+  type: 'message.received' | 'message.echo' | 'message.history' | 'message.status';
   clientId: string;
-  channel: 'messenger' | 'instagram';
-  direction: 'inbound';
-  pageId: string;
+  channel: 'messenger' | 'instagram' | 'whatsapp';
+  direction: 'inbound' | 'outbound';
+  pageId: string | null;
   igAccountId: string | null;
+  whatsapp?: { phoneNumberId: string; wabaId: string; displayPhoneNumber: string } | null;
+  /** The customer: PSID / IGSID, or on WhatsApp the business-scoped user ID (BSUID) when available, else the phone number. */
   senderId: string;
   senderName: string | null;
-  messageId: string;
+  senderPhone?: string | null;
+  senderUsername?: string | null;
+  messageId: string | null;
   mid: string | null;
+  kind?: string;
   text: string | null;
-  attachments: { type: string; url: string | null }[];
+  attachments: ForwardAttachment[];
   postback: { title: string | null; payload: string | null } | null;
+  status?: { value: 'sent' | 'delivered' | 'read' | 'failed'; errors: { code?: number; title?: string; message?: string }[] } | null;
   timestamp: string;
   raw: unknown;
 }

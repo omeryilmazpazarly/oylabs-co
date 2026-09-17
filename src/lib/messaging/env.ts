@@ -26,6 +26,8 @@ export const env = {
   metaAppSecret:    () => required('META_APP_SECRET'),
   metaVerifyToken:  () => required('META_VERIFY_TOKEN'),
   metaLoginConfigId: () => required('META_LOGIN_CONFIG_ID'),
+  /** Facebook Login for Business configuration used by WhatsApp Embedded Signup. */
+  metaWhatsAppConfigId: () => required('META_WA_CONFIG_ID'),
   metaGraphVersion: () => process.env.META_GRAPH_VERSION || 'v26.0',
   /** Set to "true" only after Meta approves the Human Agent feature for the app. */
   humanAgentApproved: () => process.env.META_HUMAN_AGENT_APPROVED === 'true',
@@ -39,4 +41,9 @@ export const env = {
 export function metaConfigured(): boolean {
   return ['META_APP_ID', 'META_APP_SECRET', 'META_VERIFY_TOKEN', 'META_LOGIN_CONFIG_ID', 'TOKEN_ENCRYPTION_KEY']
     .every((name) => Boolean(process.env[name]));
+}
+
+/** WhatsApp Embedded Signup needs its own Login configuration on top of the base Meta settings. */
+export function whatsappConfigured(): boolean {
+  return metaConfigured() && Boolean(process.env.META_WA_CONFIG_ID);
 }

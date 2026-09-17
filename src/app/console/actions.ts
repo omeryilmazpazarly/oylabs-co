@@ -7,11 +7,13 @@ import {
   createWorkspace, getWorkspace, rotateWorkspaceSecret, setComplimentary, updateWorkspace,
 } from '@/lib/messaging/workspaces';
 import { AccountError, inviteMember, removeMember, revokeInvite } from '@/lib/accounts/accounts';
-import { createConnectLink, disconnectConnection, getConnection, revokeConnectLink } from '@/lib/messaging/connections';
+import { ConnectError, createConnectLink, disconnectConnection, getConnection, revokeConnectLink } from '@/lib/messaging/connections';
 import { retryDelivery, sendTestDelivery } from '@/lib/messaging/deliveries';
 import { sendMessage, SendError } from '@/lib/messaging/send';
 import { getConversation } from '@/lib/messaging/conversations';
 import { deleteConversationData } from '@/lib/messaging/deletion';
+import { completeEmbeddedSignup, disconnectWaNumber, getWaNumber, startCoexistenceSync } from '@/lib/whatsapp/numbers';
+import { syncTemplates } from '@/lib/whatsapp/templates';
 import { errorSummary, log } from '@/lib/log';
 import type { ReplyState } from '@/components/messaging/ReplyBox';
 import type { FormResult, LinkState, SecretState } from '@/components/messaging/types';
@@ -204,4 +206,55 @@ export async function staffRevokeInviteAction(fd: FormData) {
   const workspaceId = id(fd, 'workspaceId');
   revokeInvite(workspaceId, String(fd.get('tokenHash') ?? ''));
   revalidatePath(`/console/workspaces/${workspaceId}`);
+}
+
+/* ── WhatsApp (staff acting for a client workspace) ──────────────────── */
+
+const WA_ERRORS: Record<string, string> = {
+  limit: 'This workspace has reached its channel limit. Raise the plan or set a Page limit override.',
+  billing: 'This workspace has no active subscription. Mark it complimentary or ask the client to choose a plan.',
+  taken: 'That WhatsApp number is already connected to another workspace.',
+  expired_code: 'The WhatsApp window timed out. Please try again.',
+  invalid: 'WhatsApp did not return the expected details. Please try again.',
+  meta: 'WhatsApp could not complete the connection. Please try again.',
+};
+
+export async function staffConnectWhatsAppAction(payload: { code: string; wabaId: string; phoneNumberId: string; coexistence: boolean; workspaceId?: number }): Promise<{ error?: string }> {
+  await assertStaff();
+  const workspaceId = Number(payload.workspaceId);
+  if (!Number.isInteger(workspaceId) || workspaceId <= 0) return { error: WA_ERRORS.invalid };
+  try {
+    await completeEmbeddedSignup({
+      workspaceId,
+      code: String(payload.code),
+      wabaId: String(payload.wabaId),
+      phoneNumberId: String(payload.phoneNumberId),
+      coexistence: Boolean(payload.coexistence),
+    });
+  } catch (err) {
+    if (err instanceof ConnectError) return { error: WA_ERRORS[err.reason] ?? WA_ERRORS.meta };
+    log.error('whatsapp.staff_connect.failed', { workspaceId, error: errorSummary(err) });
+    return { error: WA_ERRORS.meta };
+  }
+  void syncTemplates(workspaceId).catch(() => {});
+  revalidatePath(`/console/workspaces/${workspaceId}`);
+  return {};
+}
+
+export async function staffDisconnectWhatsAppAction(fd: FormData) {
+  await assertStaff();
+  const number = getWaNumber(id(fd, 'numberId'));
+  if (number) {
+    await disconnectWaNumber(number.id);
+    revalidatePath(`/console/workspaces/${number.workspace_id}`);
+  }
+}
+
+export async function staffRetryWhatsAppSyncAction(fd: FormData) {
+  await assertStaff();
+  const number = getWaNumber(id(fd, 'numberId'));
+  if (number) {
+    await startCoexistenceSync(number.id);
+    revalidatePath(`/console/workspaces/${number.workspace_id}`);
+  }
 }

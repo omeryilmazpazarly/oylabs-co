@@ -6,7 +6,8 @@ import { Check } from 'lucide-react';
 import { PLANS, TRIAL_DAYS, type BillingInterval, type PlanId } from '@/lib/billing/plans';
 
 const FEATURES = [
-  'Messenger and Instagram Direct in one place',
+  'Messenger, Instagram Direct and WhatsApp in one place',
+  'WhatsApp message templates, created and sent here',
   'Shared inbox with 24-hour window guidance',
   'Signed webhooks + Send API for your own CRM',
   'Unlimited team members',
@@ -55,7 +56,7 @@ export default function PlanPicker({ initialInterval = 'month', highlight = 'gro
               </div>
               <p className="mt-1 min-h-8 text-xs text-ink-dull">{interval === 'year' ? `$${(plan.yearlyUsd / 12).toFixed(2)} per month, billed yearly` : 'Billed monthly'}</p>
               <ul className="mt-6 space-y-2.5 text-sm text-ink">
-                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><span><strong className="font-semibold">{plan.pages} Facebook Page{plan.pages === 1 ? '' : 's'}</strong>{' '}+ linked Instagram</span></li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><span><strong className="font-semibold">{plan.pages} channel{plan.pages === 1 ? '' : 's'}</strong>{' '}— a Facebook Page with Instagram, or a WhatsApp number</span></li>
                 {FEATURES.map((f) => <li key={f} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><span>{f}</span></li>)}
               </ul>
               <div className="mt-auto pt-6">{renderAction(plan.id, interval, featured)}</div>

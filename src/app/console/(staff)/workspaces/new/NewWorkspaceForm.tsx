@@ -30,7 +30,7 @@ export default function NewWorkspaceForm() {
       <div>
         <label htmlFor="forwardUrl" className={labelCls}>Forwarding webhook URL <span className="normal-case tracking-normal text-ink-dull">(optional)</span></label>
         <input id="forwardUrl" name="forwardUrl" type="url" placeholder="https://minhaj.kids/api/integrations/oylabs/webhook" className={inputCls} />
-        <p className="mt-1.5 text-xs text-ink-dim">Inbound Messenger and Instagram messages are POSTed here, signed with the workspace secret.</p>
+        <p className="mt-1.5 text-xs text-ink-dim">Inbound Messenger, Instagram and WhatsApp messages are POSTed here, signed with the workspace secret.</p>
       </div>
       <div className="rounded-xl border border-line-sub p-4 space-y-3">
         <label className="flex items-center gap-2 text-sm text-ink">

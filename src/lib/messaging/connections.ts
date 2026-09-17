@@ -4,7 +4,7 @@ import { decryptSecret, encryptSecret, randomToken, sha256Hex } from './crypto';
 import { env } from './env';
 import * as graph from './graph';
 import { errorSummary, log } from '@/lib/log';
-import { activeConnectionCount, getWorkspace } from './workspaces';
+import { activeChannelCount, getWorkspace } from './workspaces';
 import { pageLimit, serviceState } from '@/lib/billing/entitlements';
 
 /**
@@ -91,7 +91,7 @@ export function beginOAuth(linkToken: string): { dialogUrl: string; state: strin
 }
 
 export class ConnectError extends Error {
-  constructor(public readonly reason: 'invalid' | 'expired' | 'used' | 'state' | 'no_pages' | 'page' | 'meta' | 'limit' | 'billing') {
+  constructor(public readonly reason: 'invalid' | 'expired' | 'used' | 'state' | 'no_pages' | 'page' | 'meta' | 'limit' | 'billing' | 'taken' | 'expired_code') {
     super(reason);
     this.name = 'ConnectError';
   }
@@ -247,13 +247,17 @@ export async function finalizeConnection(stateCookie: string | undefined, pageId
   return { workspaceName: link.name, connection };
 }
 
-/** Plan rules: the workspace must be in service and within its Page limit (reconnecting a Page it already has is always allowed). */
-export function assertCanConnect(workspaceId: number, pageId: string, nowMs: number = now()) {
+/** Plan rules: the workspace must be in service and within its channel limit (reconnecting a channel it already has is always allowed). */
+export function assertCanAddChannel(workspaceId: number, alreadyConnectedHere: boolean, nowMs: number = now()) {
   const workspace = getWorkspace(workspaceId);
   if (!workspace) throw new ConnectError('invalid');
   if (!serviceState(workspace, nowMs).active) throw new ConnectError('billing');
-  const alreadyHere = getDb().prepare(`SELECT 1 FROM connections WHERE workspace_id = ? AND page_id = ? AND status != 'disconnected'`).get(workspaceId, pageId);
-  if (!alreadyHere && activeConnectionCount(workspaceId) >= pageLimit(workspace)) throw new ConnectError('limit');
+  if (!alreadyConnectedHere && activeChannelCount(workspaceId) >= pageLimit(workspace)) throw new ConnectError('limit');
+}
+
+export function assertCanConnect(workspaceId: number, pageId: string, nowMs: number = now()) {
+  const alreadyHere = Boolean(getDb().prepare(`SELECT 1 FROM connections WHERE workspace_id = ? AND page_id = ? AND status != 'disconnected'`).get(workspaceId, pageId));
+  assertCanAddChannel(workspaceId, alreadyHere, nowMs);
 }
 
 /* ── Managing connections ────────────────────────────────────────────── */

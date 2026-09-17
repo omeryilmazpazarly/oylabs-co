@@ -47,7 +47,7 @@ A     www.oylabs.co  34.239.24.172
 See `docs/messaging-system.md` (env vars, deploy notes, operations) and
 `docs/meta-onboarding-checklist.md`. Requires `TOKEN_ENCRYPTION_KEY`, `META_APP_ID`,
 `META_APP_SECRET`, `META_VERIFY_TOKEN`, `META_LOGIN_CONFIG_ID`, `APP_BASE_URL` in
-`.env.production` (template: `.env.example.messaging`), plus `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` for billing. Its database is
+`.env.production` (template: `.env.example.messaging`), plus `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` for billing, and `META_WA_CONFIG_ID` for WhatsApp. Its database is
 `/var/www/oylabs/data/messaging.db`, backed up by `deploy.sh`.
 
 ## Persistent Data Layout (IMPORTANT)
