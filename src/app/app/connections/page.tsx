@@ -23,14 +23,17 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
   const isOwner = ctx.role === 'owner';
   const used = activeConnectionCount(w.id);
   const limit = pageLimit(w);
-  const active = serviceState(w, now()).active;
+  const state = serviceState(w, now());
+  const active = state.active;
   const atLimit = used >= limit;
   const canConnect = isOwner && active && !atLimit && metaConfigured();
 
   let reason: React.ReactNode = null;
   if (!isOwner) reason = 'Only workspace owners can connect or disconnect Pages.';
   else if (!metaConfigured()) reason = 'Connecting is temporarily unavailable.';
-  else if (!active) reason = <>Choose a plan to connect your Page.{' '}<Link href="/app/billing" className="underline">Go to billing</Link></>;
+  else if (!active) reason = state.kind === 'no_subscription'
+    ? <>Choose a plan to connect your Page.{' '}<Link href="/app/billing" className="underline">Choose a plan</Link></>
+    : <>Update billing to connect Pages again.{' '}<Link href="/app/billing" className="underline">Go to billing</Link></>;
   else if (atLimit) reason = <>Your plan includes {limit} Page{limit === 1 ? '' : 's'}.{' '}<Link href="/app/billing" className="underline">Upgrade</Link>{' '}to connect more.</>;
 
   return (

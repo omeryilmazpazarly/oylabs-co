@@ -10,6 +10,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   const isOwner = ctx.role === 'owner';
   const members = listMembers(ctx.workspace.id);
   const invites = isOwner ? listPendingInvites(ctx.workspace.id) : [];
+  const ownerCount = members.filter((m) => m.role === 'owner').length;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -38,7 +39,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                         <button className="text-ink-dim hover:text-ink">{m.role === 'owner' ? 'Make member' : 'Make owner'}</button>
                       </form>
                     )}
-                    {(isOwner || self) && (
+                    {(isOwner || self) && !(m.role === 'owner' && ownerCount === 1) && (
                       <form action={removeMemberAction}>
                         <input type="hidden" name="userId" value={m.user_id} />
                         <button className="text-red-500 hover:underline">{self ? 'Leave' : 'Remove'}</button>

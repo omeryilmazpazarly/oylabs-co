@@ -27,6 +27,22 @@ Staff console reply box ──────────────────�
 - **Auth:** staff accounts (`staff_users`) with scrypt hashes and database sessions (`oy_session` cookie, 12h). `requireStaff()` guards pages; `assertStaff()` guards server actions and routes, including the pre-existing portfolio admin and `/api/upload`. Login is throttled to 5 failures per email+IP per 15 minutes (in memory).
 - **Logs:** JSON lines via `src/lib/log.ts`, with IDs and outcomes only. Never message text, attachment URLs, tokens or secrets.
 
+## Accounts and billing
+
+- **Two kinds of login.** Staff use `/console/login` (`staff_users`, cookie `oy_session`). Clients use `/login` and `/signup` (`client_users`, cookie `oy_client`, 30 days) and work in `/app`. A client user belongs to one or more workspaces through `workspace_members` with role `owner` or `member`. Owners manage billing, connections, API secret, forwarding URL and team; members use the inbox and can view settings.
+- **Email tokens** (`email_tokens`, stored as SHA-256) drive email verification (48h), password reset (1h, signs out all sessions) and invitations (7 days, bound to the invited address). Checkout and connecting Pages require a verified email.
+- **Plans** live in `src/lib/billing/plans.ts`: Starter 1 Page ($29/mo, $290/yr), Growth 3 ($79/$790), Scale 10 ($199/$1,990), with a 14-day trial (card required, once per workspace). Stripe prices are found by lookup key `oylabs_messaging_<plan>_<month|year>`, created by `scripts/stripe-setup.mjs`.
+- **Stripe flow.** The owner picks a plan in `/app/billing`, which opens Stripe Checkout (subscription mode, trial, `workspace_id` metadata). Webhooks to `/api/stripe/webhook` then update the subscription fields on `workspaces`. Each event is applied once (`stripe_events`) and older events are ignored (`stripe_synced_at`). Invoice and checkout events re-fetch the subscription. The success redirect also syncs, so the page is right before the webhook lands. Plan changes, card, invoices and cancellation happen in the Stripe Customer Portal (configuration tagged `metadata.oylabs=messaging`).
+- **Service rules** (`src/lib/billing/entitlements.ts`). The service is on when the workspace is complimentary, trialing, active, or past due for at most 7 days. Otherwise the worker holds deliveries (they stay `pending` with no attempts used and go out once billing is active), the Send API returns `402 subscription_inactive`, portal replies are disabled, and new Page connections are refused (`ConnectError('billing')`). Page limits are enforced when a connection is finalised; reconnecting an existing Page is always allowed. Staff can set **complimentary** and a Page-limit override per workspace. Workspaces that existed before billing were migrated to complimentary.
+
+### Stripe setup (test mode first)
+
+1. `STRIPE_SECRET_KEY=sk_test_… APP_BASE_URL=https://oylabs.co node scripts/stripe-setup.mjs`. This creates the products, prices and Customer Portal configuration, and is safe to re-run.
+2. Stripe Dashboard → Developers → Webhooks → add `https://oylabs.co/api/stripe/webhook` with the events the script prints; put the signing secret in `STRIPE_WEBHOOK_SECRET`.
+3. Stripe settings: customer emails for receipts, failed payments and trial ending; Smart Retries on; public business name `OY Labs Ltd`, support email `hi@oylabs.co`.
+4. Local testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook` (Stripe CLI) gives a local `whsec_…`, and test card `4242 4242 4242 4242` completes Checkout.
+5. Repeat 1–3 with live keys when going live.
+
 ## Code map
 
 | Path | Purpose |
@@ -46,7 +62,14 @@ Staff console reply box ──────────────────�
 | `src/lib/auth/*` | Password hashing, sessions |
 | `src/app/api/meta/*` | Webhook, OAuth start/callback, data deletion, deauthorize |
 | `src/app/api/v1/messages` | Client Send API |
-| `src/app/console/*` | Staff console (overview, workspaces, inbox) |
+| `src/lib/accounts/accounts.ts` | Client users, sign-up, verification, password reset, team and invites |
+| `src/lib/auth/client-session.ts` | Client sessions and guards (`requireClient`, `assertClient`) |
+| `src/lib/billing/*` | Plans, service rules, Stripe Checkout/Portal/webhook sync |
+| `src/app/(auth)/*` | `/login`, `/signup`, password reset, email verification, invites |
+| `src/app/app/*` | Client portal: overview, inbox, connections, developers, team, billing, settings |
+| `src/app/pricing`, `src/app/developers/messaging-api` | Public pricing page and API guide (rendered from `docs/client-integration.md`) |
+| `src/components/messaging/*` | Inbox, connection list, delivery log and developer forms shared by console and portal |
+| `src/app/console/*` | Staff console (overview, workspaces, inbox; `/console/login`) |
 | `src/app/connect/*` | Client connect flow |
 | `src/app/{tech-provider,privacy,terms,data-deletion}` | Public pages |
 
@@ -67,6 +90,9 @@ Set in `.env.production` on the server (and `.env.development.local` locally). R
 | `MESSAGING_DB_PATH` | no | `data/messaging.db` (default) | |
 | `MESSAGE_RETENTION_DAYS` | no | `90` (default) | Must match the privacy policy |
 | `MESSAGING_WORKER` | no | `off` | Disables the background worker |
+| `STRIPE_SECRET_KEY` | for billing | `sk_test_…` / `sk_live_…` | Without it, clients can sign up but not subscribe |
+| `STRIPE_WEBHOOK_SECRET` | for billing | `whsec_…` from the Stripe webhook endpoint | |
+| `RESEND_API_KEY` | yes in prod | Resend dashboard | Account emails (verify, reset, invites) and the contact form. Locally, links are printed to the server log instead. |
 
 Until the five required Meta/encryption variables are set, the public pages and console work, but `/api/meta/*` and `/api/v1/messages` return 503 and the console shows a banner.
 
@@ -86,7 +112,7 @@ npm run dev                                   # creates data/messaging.db on sta
 node scripts/create-staff-user.mjs --email you@oylabs.co --name "You"
 ```
 
-Then sign in at http://localhost:3000/login. Real Facebook Login needs a real app and an HTTPS redirect URI. Locally you can exercise webhooks by signing payloads with `META_APP_SECRET` (see `test/webhook-processing.test.ts` for shapes). Forwarding URLs may be `http://localhost` only outside production.
+Then sign in at http://localhost:3000/console/login (staff) or sign up at http://localhost:3000/signup (client; the verification link is printed in the server log when `RESEND_API_KEY` is unset). Real Facebook Login needs a real app and an HTTPS redirect URI. Locally you can exercise webhooks by signing payloads with `META_APP_SECRET` (see `test/webhook-processing.test.ts` for shapes). Forwarding URLs may be `http://localhost` only outside production.
 
 Checks before committing: `npm test`, `npx tsc --noEmit`, `npx eslint <changed paths>` (the repo has pre-existing lint errors in older files), `npm run build`.
 
@@ -97,9 +123,9 @@ Ask before deploying. Steps:
 1. Server working tree: before the first `git pull` of this branch, the server's untracked/modified files must match git (commit `85bb115` captured them). `git status` on the server should show only `DEPLOY.md`, `next.config.ts` etc. as modified with identical content; run `git stash push -m pre-meta-deploy` (or `git checkout -- .` after confirming the diff is empty) so `git pull` can fast-forward.
 2. Add the env vars above to `/var/www/oylabs/.env.production`, then `chmod 600 .env.production`. **Only `.env.production` is available at runtime**: the standalone build copies it, but not `.env.local`. For the same reason, move `RESEND_API_KEY` and `TURNSTILE_SECRET_KEY` from `.env.local` into `.env.production`. Right now the live contact form fails with "Missing API key" and Turnstile verification is skipped.
 3. `./deploy.sh`. It now also backs up `data/messaging.db` using SQLite's online backup.
-4. Create staff logins: `cd /var/www/oylabs && node scripts/create-staff-user.mjs --email … --name …` (after the app has started once).
+4. Create staff logins: `cd /var/www/oylabs && node scripts/create-staff-user.mjs --email … --name …` (after the app has started once). Staff sign in at `/console/login`.
 5. The old `NEXT_PUBLIC_ADMIN_PIN` is no longer used; remove it from `.env.production` and `.env.local`.
-6. Verify: `/tech-provider`, `/privacy`, `/terms`, `/data-deletion`, `/login`; `curl "https://oylabs.co/api/meta/webhook?hub.mode=subscribe&hub.verify_token=$META_VERIFY_TOKEN&hub.challenge=ok"` returns `ok`.
+6. Verify: `/tech-provider`, `/pricing`, `/privacy`, `/terms`, `/data-deletion`, `/signup`, `/login`, `/console/login`; `curl "https://oylabs.co/api/meta/webhook?hub.mode=subscribe&hub.verify_token=$META_VERIFY_TOKEN&hub.challenge=ok"` returns `ok`.
 
 Nginx needs no change (everything is under the existing `location /` proxy). Keep `client_max_body_size` ≥ 1m for webhooks.
 

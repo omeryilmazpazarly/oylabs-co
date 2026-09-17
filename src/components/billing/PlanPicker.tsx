@@ -48,15 +48,15 @@ export default function PlanPicker({ initialInterval = 'month', highlight = 'gro
             <div key={plan.id} className={`relative flex flex-col rounded-2xl border bg-panel p-6 ${featured ? 'border-line-hi shadow-[0_0_0_1px_var(--_line-hi)]' : 'border-line'}`}>
               {featured && <span className="absolute -top-3 left-6 rounded-full bg-cta px-2.5 py-0.5 text-[11px] font-semibold text-cta-fg">Most popular</span>}
               <h3 className="text-lg font-semibold text-ink">{plan.name}</h3>
-              <p className="mt-1 text-sm text-ink-dim">{plan.blurb}</p>
+              <p className="mt-1 min-h-[2.5rem] text-sm text-ink-dim">{plan.blurb}</p>
               <div className="mt-5 flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight text-ink">${price}</span>
+                <span className="text-4xl font-bold tracking-tight text-ink">${price.toLocaleString('en-US')}</span>
                 <span className="text-sm text-ink-dim">/ {interval === 'month' ? 'month' : 'year'}</span>
               </div>
-              {interval === 'year' && <p className="mt-1 text-xs text-ink-dull">${(plan.yearlyUsd / 12).toFixed(2)} per month, billed yearly</p>}
+              <p className="mt-1 min-h-8 text-xs text-ink-dull">{interval === 'year' ? `$${(plan.yearlyUsd / 12).toFixed(2)} per month, billed yearly` : 'Billed monthly'}</p>
               <ul className="mt-6 space-y-2.5 text-sm text-ink">
-                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><strong className="font-semibold">{plan.pages} Facebook Page{plan.pages === 1 ? '' : 's'}</strong>{' '}+ linked Instagram</li>
-                {FEATURES.map((f) => <li key={f} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" />{f}</li>)}
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><span><strong className="font-semibold">{plan.pages} Facebook Page{plan.pages === 1 ? '' : 's'}</strong>{' '}+ linked Instagram</span></li>
+                {FEATURES.map((f) => <li key={f} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" /><span>{f}</span></li>)}
               </ul>
               <div className="mt-auto pt-6">{renderAction(plan.id, interval, featured)}</div>
             </div>

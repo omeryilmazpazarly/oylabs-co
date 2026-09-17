@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import {
   acceptInvite, AccountError, requestPasswordReset, resetPassword, sendVerificationEmail, signUp, signUpFromInvite,
 } from '@/lib/accounts/accounts';
-import { assertClient, checkClientCredentials, clientLoginThrottle, createClientSession, getClient } from '@/lib/auth/client-session';
+import { assertClient, checkClientCredentials, clientLoginThrottle, createClientSession, destroyClientSession, getClient } from '@/lib/auth/client-session';
 import { clientIp, createThrottle } from '@/lib/auth/throttle';
 import { isInterval, isPlanId } from '@/lib/billing/plans';
 import { errorSummary, log } from '@/lib/log';
@@ -118,4 +118,9 @@ export async function inviteSignupAction(_prev: AuthState, fd: FormData): Promis
     return { error: err instanceof AccountError ? err.message : 'Could not create your account.' };
   }
   redirect('/app');
+}
+
+export async function signOutForInviteAction(fd: FormData) {
+  await destroyClientSession();
+  redirect(`/invite/${encodeURIComponent(str(fd, 'token'))}`);
 }

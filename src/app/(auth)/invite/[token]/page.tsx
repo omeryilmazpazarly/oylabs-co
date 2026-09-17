@@ -4,6 +4,7 @@ import { getClient } from '@/lib/auth/client-session';
 import { Notice } from '@/components/console/ui';
 import AuthShell from '../../AuthShell';
 import { AcceptInviteForm, InviteSignupForm } from '../../forms';
+import { signOutForInviteAction } from '../../actions';
 
 export const metadata = { title: 'Join your team — OY Labs', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,15 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
       <AuthShell title={`Join ${invite.workspaceName}`} subtitle={subtitle}>
         {matches
           ? <AcceptInviteForm token={token} />
-          : <Notice tone="amber">This invitation was sent to {invite.email}, but you&rsquo;re signed in as {ctx.user.email}. Sign out and sign in with the invited email.</Notice>}
+          : (
+            <div className="space-y-4">
+              <Notice tone="amber">This invitation was sent to {invite.email}, but you&rsquo;re signed in as {ctx.user.email}.</Notice>
+              <form action={signOutForInviteAction}>
+                <input type="hidden" name="token" value={token} />
+                <button className="w-full rounded-lg border border-line px-4 py-2.5 text-sm text-ink hover:border-line-hi">Sign out and continue as {invite.email}</button>
+              </form>
+            </div>
+          )}
       </AuthShell>
     );
   }

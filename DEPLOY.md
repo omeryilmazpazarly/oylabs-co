@@ -37,7 +37,8 @@ A     www.oylabs.co  34.239.24.172
 - **Deploy Log:** `/var/log/oylabs-deploy.log`
 
 ## Admin Panel & Console
-- Staff sign in at `https://oylabs.co/login` (individual accounts; the old PIN is gone).
+- Staff sign in at `https://oylabs.co/console/login` (individual accounts; the old PIN is gone).
+- Clients sign up at `/signup` and sign in at `/login` (client portal: `/app`).
 - Portfolio admin: `/admin`. Messaging console: `/console`.
 - Create or reset a login on the server (after the app has started once):
   `cd /var/www/oylabs && node scripts/create-staff-user.mjs --email you@oylabs.co --name "Your Name"`
@@ -46,7 +47,7 @@ A     www.oylabs.co  34.239.24.172
 See `docs/messaging-system.md` (env vars, deploy notes, operations) and
 `docs/meta-onboarding-checklist.md`. Requires `TOKEN_ENCRYPTION_KEY`, `META_APP_ID`,
 `META_APP_SECRET`, `META_VERIFY_TOKEN`, `META_LOGIN_CONFIG_ID`, `APP_BASE_URL` in
-`.env.production` (template: `.env.example.messaging`). Its database is
+`.env.production` (template: `.env.example.messaging`), plus `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` for billing. Its database is
 `/var/www/oylabs/data/messaging.db`, backed up by `deploy.sh`.
 
 ## Persistent Data Layout (IMPORTANT)
