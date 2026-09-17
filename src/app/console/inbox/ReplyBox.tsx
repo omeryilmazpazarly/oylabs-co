@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { SendHorizontal } from 'lucide-react';
 import { sendReplyAction, type ReplyState } from '../actions';
 import { SubmitButton } from '@/components/console/client';
@@ -12,12 +12,15 @@ export default function ReplyBox({ conversationId, windowKind, closesLabel, maxL
   closesLabel: string | null;
   maxLength: number;
 }) {
-  const [state, action] = useActionState<ReplyState, FormData>(sendReplyAction, { status: 'idle' });
+  const [text, setText] = useState('');
+  // Controlled textarea: React resets uncontrolled fields after every form action,
+  // which would throw away a reply that failed to send. Clear only on success.
+  const [state, action] = useActionState<ReplyState, FormData>(async (prev, formData) => {
+    const result = await sendReplyAction(prev, formData);
+    if (result.status === 'sent') setText('');
+    return result;
+  }, { status: 'idle' });
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (state.status === 'sent') formRef.current?.reset();
-  }, [state]);
 
   const disabled = windowKind === 'closed';
 
@@ -35,6 +38,8 @@ export default function ReplyBox({ conversationId, windowKind, closesLabel, maxL
       <div className="flex items-end gap-2">
         <textarea
           name="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           required
           rows={2}
           maxLength={maxLength}

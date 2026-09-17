@@ -45,7 +45,7 @@ export default function ConsoleOverviewPage() {
           {o.attention.map((a) => (
             <Notice key={a.id} tone="amber">
               <span className="inline-flex items-center gap-2 font-medium"><AlertTriangle size={14} /> {a.page_name}</span>{' '}
-              in <Link className="underline" href={`/console/workspaces/${a.workspace_id}`}>{a.workspace_name}</Link> needs reconnecting.
+              in <Link className="underline" href={`/console/workspaces/${a.workspace_id}`}>{a.workspace_name}</Link>{' '}needs reconnecting.
               {a.status_detail && <span className="text-ink-dim"> {a.status_detail}.</span>}
             </Notice>
           ))}

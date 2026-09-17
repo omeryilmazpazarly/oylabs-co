@@ -10,7 +10,7 @@ export default function ConnectShell({ children }: { children: ReactNode }) {
         <div className="mb-8 flex justify-center"><Link href="/tech-provider"><Wordmark /></Link></div>
         <div className="rounded-2xl border border-line bg-panel p-6 sm:p-8">{children}</div>
         <p className="mt-6 text-center text-xs text-ink-dull">
-          OY Labs Ltd · <Link href="/privacy" className="hover:text-ink">Privacy</Link> · <Link href="/terms" className="hover:text-ink">Terms</Link> · <Link href="/data-deletion" className="hover:text-ink">Data deletion</Link> · <a href="mailto:hi@oylabs.co" className="hover:text-ink">hi@oylabs.co</a>
+          OY Labs Ltd · <Link href="/privacy" className="hover:text-ink">Privacy</Link>{' '}· <Link href="/terms" className="hover:text-ink">Terms</Link>{' '}· <Link href="/data-deletion" className="hover:text-ink">Data deletion</Link>{' '}· <a href="mailto:hi@oylabs.co" className="hover:text-ink">hi@oylabs.co</a>
         </p>
       </div>
     </div>

@@ -72,7 +72,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
 
       <div className="mt-4">
         <Notice>
-          <span className="flex gap-2"><MessageCircle size={15} className="mt-0.5 shrink-0" /><span>For Instagram, turn on <strong>Allow access to messages</strong> in the Instagram app: Settings → Messages and story replies → Message controls → Connected tools.</span></span>
+          <span className="flex gap-2"><MessageCircle size={15} className="mt-0.5 shrink-0" /><span>For Instagram, turn on <strong>Allow access to messages</strong>{' '}in the Instagram app: Settings → Messages and story replies → Message controls → Connected tools.</span></span>
         </Notice>
       </div>
 
@@ -83,7 +83,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
         <FacebookIcon size={18} /> Continue with Facebook
       </a>
       <p className="mt-3 text-center text-xs text-ink-dull">
-        By continuing you agree to the <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>. Link expires {formatDate(link.expiresAt)}.
+        By continuing you agree to the <Link href="/terms" className="underline">Terms</Link>{' '}and <Link href="/privacy" className="underline">Privacy Policy</Link>. Link expires {formatDate(link.expiresAt)}.
       </p>
     </ConnectShell>
   );

@@ -91,7 +91,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
       />
 
       {params.deleted && (
-        <div className="mb-4"><Notice tone="green">Conversation data deleted. Confirmation code <code className="font-mono">{params.deleted}</code> — include it in your reply to the requester.</Notice></div>
+        <div className="mb-4"><Notice tone="green">Conversation data deleted. Confirmation code <code className="font-mono">{params.deleted}</code>{' '}— include it in your reply to the requester.</Notice></div>
       )}
 
       <div className="grid h-[calc(100vh-15rem)] min-h-[520px] overflow-hidden rounded-2xl border border-line bg-panel lg:grid-cols-[320px_1fr]">
@@ -170,7 +170,11 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                   maxLength={conversation.channel === 'instagram' ? 1000 : 2000}
                 />
               ) : (
-                <div className="border-t border-line-sub p-4 text-xs text-ink-dim">This account is not connected, so replies are unavailable.</div>
+                <div className="border-t border-line-sub p-4 text-xs text-ink-dim">
+                  {conversation.connection_status === 'reconnect_needed'
+                    ? <>Meta rejected this Page&rsquo;s access token, so replies are paused. <Link href={`/console/workspaces/${selected.id}`} className="text-ink underline">Reconnect the Page</Link>{' '}to resume.</>
+                    : 'This account is disconnected, so replies are unavailable.'}
+                </div>
               )}
             </>
           )}

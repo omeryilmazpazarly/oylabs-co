@@ -111,7 +111,7 @@ export default function PrivacyPage() {
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-10 text-sm text-ink-dim leading-relaxed space-y-3">
           <p>
-            <Strong>Summary.</Strong> This policy covers our website, our contact form, and our Messenger and
+            <Strong>Summary.</Strong>{' '}This policy covers our website, our contact form, and our Messenger and
             Instagram messaging integration. When a business connects its Facebook Page and Instagram professional
             account to us, we receive the messages its customers send and deliver them to that business&rsquo;s own
             inbox. We do that on the business&rsquo;s behalf and for no other purpose.
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
 
         <Section id="who-we-are" title="1. Who we are">
           <p>
-            <Strong>OY Labs Ltd</Strong> (&ldquo;OY Labs&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a software
+            <Strong>OY Labs Ltd</Strong>{' '}(&ldquo;OY Labs&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a software
             company registered in England and Wales, United Kingdom. Our registered address is 71-75 Shelton Street,
             Covent Garden, London, WC2H 9JQ, United Kingdom. You can contact us about anything in this policy at{' '}
             <Email />.
@@ -143,12 +143,12 @@ export default function PrivacyPage() {
           <p>We handle personal data in two different roles:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <Strong>As a controller</Strong> for data about visitors to oylabs.co, people who use our contact form
+              <Strong>As a controller</Strong>{' '}for data about visitors to oylabs.co, people who use our contact form
               or email us, our client businesses and their staff (for example, console accounts), and the data needed
               to set up and manage a Page connection. We decide how and why this data is used.
             </li>
             <li>
-              <Strong>As a processor</Strong> for the conversations between a client business and its customers on
+              <Strong>As a processor</Strong>{' '}for the conversations between a client business and its customers on
               Messenger and Instagram. The client business is the controller of those conversations. We process them
               only on its instructions, to deliver messages between it and its customers.
             </li>
@@ -164,14 +164,14 @@ export default function PrivacyPage() {
           <SubHeading>Website visitors and enquiries</SubHeading>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <Strong>Contact form:</Strong> your name, email address, the type of project you select and the
+              <Strong>Contact form:</Strong>{' '}your name, email address, the type of project you select and the
               message you write. We send a confirmation to the email address you give us.
             </li>
             <li>
-              <Strong>Emails you send us:</Strong> your email address, name and whatever you choose to include.
+              <Strong>Emails you send us:</Strong>{' '}your email address, name and whatever you choose to include.
             </li>
             <li>
-              <Strong>Technical data:</Strong> our servers record standard request information such as IP address,
+              <Strong>Technical data:</Strong>{' '}our servers record standard request information such as IP address,
               browser type, the page requested and the time. These logs never contain message content. Cloudflare
               Turnstile processes device and browser signals to check that a form submission comes from a person.
             </li>
@@ -297,15 +297,15 @@ export default function PrivacyPage() {
           <p>We share personal data only as follows:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <Strong>The client business</Strong> that owns the connected Page or Instagram account receives the
+              <Strong>The client business</Strong>{' '}that owns the connected Page or Instagram account receives the
               conversations with its own customers. We do not share one business&rsquo;s data with another.
             </li>
             <li>
-              <Strong>Meta</Strong> receives the replies a client business sends, because replies are delivered
+              <Strong>Meta</Strong>{' '}receives the replies a client business sends, because replies are delivered
               through Messenger and Instagram.
             </li>
             <li>
-              <Strong>Service providers (sub-processors)</Strong> that host and run our website and service under
+              <Strong>Service providers (sub-processors)</Strong>{' '}that host and run our website and service under
               contract with us:
             </li>
           </ul>
@@ -386,15 +386,15 @@ export default function PrivacyPage() {
         <Section id="rights" title="9. Your rights">
           <p>Under UK data protection law (the UK GDPR and the Data Protection Act 2018) you have the right to:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li><Strong>access</Strong> the personal data we hold about you;</li>
-            <li><Strong>rectification</Strong> of data that is inaccurate or incomplete;</li>
-            <li><Strong>erasure</Strong> of your data in certain circumstances;</li>
-            <li><Strong>restriction</Strong> of how we use your data in certain circumstances;</li>
-            <li><Strong>object</Strong> to our use of your data where we rely on legitimate interests;</li>
+            <li><Strong>access</Strong>{' '}the personal data we hold about you;</li>
+            <li><Strong>rectification</Strong>{' '}of data that is inaccurate or incomplete;</li>
+            <li><Strong>erasure</Strong>{' '}of your data in certain circumstances;</li>
+            <li><Strong>restriction</Strong>{' '}of how we use your data in certain circumstances;</li>
+            <li><Strong>object</Strong>{' '}to our use of your data where we rely on legitimate interests;</li>
             <li><Strong>data portability</Strong>, to receive data you gave us in a commonly used format;</li>
-            <li><Strong>withdraw consent</Strong> at any time, where we rely on consent; and</li>
+            <li><Strong>withdraw consent</Strong>{' '}at any time, where we rely on consent; and</li>
             <li>
-              <Strong>complain</Strong> to the UK Information Commissioner&rsquo;s Office (ICO) at{' '}
+              <Strong>complain</Strong>{' '}to the UK Information Commissioner&rsquo;s Office (ICO) at{' '}
               <a href="https://ico.org.uk" className={linkCls} target="_blank" rel="noopener noreferrer">ico.org.uk</a>.
               We would appreciate the chance to deal with your concern first, so please contact us.
             </li>
@@ -414,13 +414,13 @@ export default function PrivacyPage() {
           <p>There are two ways to have data deleted:</p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              <Strong>If you connected a Page using Facebook Login,</Strong> remove the OY Labs app in your Facebook
+              <Strong>If you connected a Page using Facebook Login,</Strong>{' '}remove the OY Labs app in your Facebook
               settings. Meta then sends us a data deletion request automatically. We delete the access tokens and all
               conversation data stored for the Pages you connected, and give you a confirmation code so you can check
               the status of your request.
             </li>
             <li>
-              <Strong>If you messaged a business that uses OY Labs,</Strong> email <Email /> with the business name
+              <Strong>If you messaged a business that uses OY Labs,</Strong>{' '}email <Email /> with the business name
               and your Facebook or Instagram name. We will verify the request, delete your messages within 30 days, and
               tell the business so it can remove its own copy.
             </li>

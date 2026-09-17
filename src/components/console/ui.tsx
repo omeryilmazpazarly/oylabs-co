@@ -7,9 +7,9 @@ export const inputCls =
   'w-full bg-input border border-line rounded-lg px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-dull focus:outline-none focus:border-line-hi transition-colors';
 export const labelCls = 'block text-[11px] text-ink-dim tracking-[0.14em] uppercase mb-1.5';
 export const primaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg bg-cta text-cta-fg px-4 py-2.5 text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-cta text-cta-fg px-4 py-2.5 text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition disabled:opacity-40 disabled:pointer-events-none';
 export const secondaryBtn =
-  'inline-flex items-center justify-center gap-2 rounded-lg border border-line px-3.5 py-2 text-sm text-ink-dim hover:text-ink hover:border-line-hi transition disabled:opacity-40 disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-line px-3.5 py-2 text-sm text-ink-dim hover:text-ink hover:border-line-hi transition disabled:opacity-40 disabled:pointer-events-none';
 export const dangerBtn =
   'inline-flex items-center justify-center gap-2 rounded-lg border border-red-500/30 px-3.5 py-2 text-sm text-red-400 hover:bg-red-500/10 transition disabled:opacity-40';
 

@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { metaConfigured } from '@/lib/messaging/env';
+import { env, metaConfigured } from '@/lib/messaging/env';
 import { beginOAuth, ConnectError, STATE_COOKIE } from '@/lib/messaging/connections';
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('link') ?? '';
-  const back = new URL(`/connect/${encodeURIComponent(token)}`, request.nextUrl.origin);
+  const back = new URL(`/connect/${encodeURIComponent(token)}`, env.appBaseUrl());
   if (!metaConfigured()) {
     back.searchParams.set('error', 'not_configured');
     return NextResponse.redirect(back, 303);

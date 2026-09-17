@@ -54,7 +54,7 @@ export default function DataDeletionPage() {
         </p>
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-12 text-sm text-ink-dim leading-relaxed">
-          <Strong>Summary.</Strong> If you connected a Facebook Page to OY Labs, remove our app in your Facebook
+          <Strong>Summary.</Strong>{' '}If you connected a Facebook Page to OY Labs, remove our app in your Facebook
           settings and we delete your data automatically. If you messaged a business that uses OY Labs, email{' '}
           <Email /> and we delete your messages within 30 days.
         </div>
@@ -149,7 +149,7 @@ export default function DataDeletionPage() {
           <p>
             Questions about deletion or your data: <Email />. OY Labs Ltd, 71-75 Shelton Street, Covent Garden,
             London, WC2H 9JQ, United Kingdom. See also our{' '}
-            <Link href="/privacy" className={linkCls}>Privacy Policy</Link> and{' '}
+            <Link href="/privacy" className={linkCls}>Privacy Policy</Link>{' '}and{' '}
             <Link href="/terms" className={linkCls}>Terms of Service</Link>.
           </p>
         </Section>

@@ -46,7 +46,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
             {!configured && <div className="mb-4"><Notice tone="amber">Meta isn&rsquo;t configured on this server, so accounts can&rsquo;t be connected yet.</Notice></div>}
             {connections.length === 0 ? (
               <EmptyState icon={<Plug size={18} />} title="Nothing connected yet">
-                Use <strong>Connect Facebook &amp; Instagram</strong> if you manage the client&rsquo;s Page, or create a connect link for their Page admin.
+                Use <strong>Connect Facebook &amp; Instagram</strong>{' '}if you manage the client&rsquo;s Page, or create a connect link for their Page admin.
               </EmptyState>
             ) : (
               <ul className="-my-3 divide-y divide-line-sub">

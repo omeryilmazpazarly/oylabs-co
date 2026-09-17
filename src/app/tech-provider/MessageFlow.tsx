@@ -8,7 +8,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 function Connector({ delay }: { delay: number }) {
   const reduce = useReducedMotion();
   return (
-    <div className="relative flex items-center justify-center h-10 w-px md:h-px md:w-full md:min-w-10" aria-hidden>
+    <div className="relative flex items-center justify-center h-10 w-px md:h-px md:w-full md:self-center" aria-hidden>
       <div className="absolute inset-0 bg-line-hi" />
       {!reduce && (
         <>
@@ -46,7 +46,7 @@ function Node({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EASE, delay: 0.15 + index * 0.1 }}
-      className="w-full md:w-auto md:flex-1 rounded-2xl border border-line bg-panel px-5 py-4 flex items-center gap-3 md:flex-col md:text-center md:py-6"
+      className="w-full rounded-2xl border border-line bg-panel px-5 py-4 flex items-center gap-3 md:flex-col md:text-center md:py-6"
     >
       <div className="w-10 h-10 shrink-0 rounded-xl bg-elevated border border-line flex items-center justify-center text-ink">
         {icon}
@@ -63,7 +63,7 @@ function Node({
 export default function MessageFlow() {
   return (
     <figure className="mt-12 sm:mt-16">
-      <div className="flex flex-col md:flex-row items-center">
+      <div className="flex flex-col items-center md:grid md:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)_3rem_minmax(0,1fr)] md:items-stretch lg:grid-cols-[minmax(0,1fr)_5rem_minmax(0,1fr)_5rem_minmax(0,1fr)]">
         <Node
           index={0}
           icon={<span className="flex -space-x-1"><MessageCircle size={16} /><Camera size={16} /></span>}

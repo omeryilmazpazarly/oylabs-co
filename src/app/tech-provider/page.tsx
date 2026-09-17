@@ -195,7 +195,7 @@ export default function TechProviderPage() {
         <SectionAtmosphere theme="services" showTopEdge={false} />
         <div className="relative z-10 max-w-6xl mx-auto">
           <span className="text-xs text-ink-dim tracking-[0.3em] uppercase font-medium">
-            Meta Tech Provider
+            Messaging integration
           </span>
           <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink leading-[1.05] max-w-4xl">
             Messenger &amp; Instagram messaging integration
@@ -207,7 +207,7 @@ export default function TechProviderPage() {
           </p>
           <p className="mt-4 text-sm text-ink-dim max-w-2xl leading-relaxed">
             The service is operated by <strong className="text-ink font-semibold">OY Labs Ltd</strong>, a software
-            company registered in England and Wales, as a Meta Tech Provider.
+            company registered in England and Wales, using Meta&rsquo;s official Messenger Platform and Instagram messaging APIs.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <a

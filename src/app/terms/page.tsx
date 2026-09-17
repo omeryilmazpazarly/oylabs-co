@@ -58,7 +58,7 @@ export default function TermsPage() {
         </p>
 
         <div className="rounded-2xl border border-line bg-panel p-5 sm:p-6 mb-12 text-sm text-ink-dim leading-relaxed">
-          <Strong>Summary.</Strong> These terms apply to our Messenger and Instagram messaging integration and to
+          <Strong>Summary.</Strong>{' '}These terms apply to our Messenger and Instagram messaging integration and to
           our website. You must have authority over any Page or account you connect and follow Meta&rsquo;s rules
           when messaging your customers. We process your customer conversations only on your behalf, keep them for
           no more than 90 days, and delete your access tokens as soon as you disconnect. These terms are governed by
@@ -67,7 +67,7 @@ export default function TermsPage() {
 
         <Section id="parties" title="1. About these terms">
           <p>
-            These terms are an agreement between <Strong>OY Labs Ltd</Strong> (&ldquo;OY Labs&rdquo;,
+            These terms are an agreement between <Strong>OY Labs Ltd</Strong>{' '}(&ldquo;OY Labs&rdquo;,
             &ldquo;we&rdquo;, &ldquo;us&rdquo;), a company registered in England and Wales whose registered address is
             71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, United Kingdom, and:
           </p>
@@ -164,7 +164,7 @@ export default function TermsPage() {
 
         <Section id="data-protection" title="6. Data protection">
           <p>
-            For the conversations between you and your customers, <Strong>you are the controller</Strong> and{' '}
+            For the conversations between you and your customers, <Strong>you are the controller</Strong>{' '}and{' '}
             <Strong>OY Labs is your processor</Strong>. We process that data only on your documented instructions,
             which are to deliver messages between you and your customers, send your replies and show conversations to
             your authorised staff. We will sign a data processing agreement with you on request.
