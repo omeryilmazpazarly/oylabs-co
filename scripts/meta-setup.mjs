@@ -45,9 +45,17 @@ try {
 console.log('✓ App secret is valid');
 
 // 2. The endpoint must answer Meta's verification handshake.
+//    Retried for up to 30s, since this often runs straight after a restart.
 const challenge = String(Date.now());
-const probe = await fetch(`${base}/api/meta/webhook?hub.mode=subscribe&hub.verify_token=${encodeURIComponent(verifyToken)}&hub.challenge=${challenge}`);
-if ((await probe.text()) !== challenge) fail(`${base}/api/meta/webhook did not echo the challenge (HTTP ${probe.status}). Is the app running with the current .env.production?`);
+let probeStatus = 0;
+let echoed = false;
+for (let attempt = 0; attempt < 15 && !echoed; attempt++) {
+  if (attempt) await new Promise((r) => setTimeout(r, 2000));
+  const probe = await fetch(`${base}/api/meta/webhook?hub.mode=subscribe&hub.verify_token=${encodeURIComponent(verifyToken)}&hub.challenge=${challenge}`).catch(() => null);
+  probeStatus = probe?.status ?? 0;
+  echoed = probe ? (await probe.text()) === challenge : false;
+}
+if (!echoed) fail(`${base}/api/meta/webhook did not echo the challenge (HTTP ${probeStatus}). Is the app running with the current .env.production?`);
 console.log('✓ Webhook endpoint answers the handshake');
 
 // 3. Subscribe each object.
