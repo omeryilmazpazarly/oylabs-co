@@ -23,7 +23,7 @@ export function BillingBadge({ w, nowMs }: { w: BillingFields; nowMs: number }) 
 export function billingSummary(w: BillingFields, nowMs: number): string {
   const state = serviceState(w, nowMs);
   switch (state.kind) {
-    case 'complimentary': return `Complimentary account · up to ${pageLimit(w)} Page${pageLimit(w) === 1 ? '' : 's'}.`;
+    case 'complimentary': return `Complimentary account · up to ${pageLimit(w)} channel${pageLimit(w) === 1 ? '' : 's'}.`;
     case 'trialing': return `Free trial${w.trial_ends_at ? ` until ${formatDate(w.trial_ends_at)}` : ''}${w.cancel_at_period_end ? ' · set to cancel' : ''}.`;
     case 'active': return w.cancel_at_period_end && w.current_period_end ? `Cancels on ${formatDate(w.current_period_end)}.` : w.current_period_end ? `Renews on ${formatDate(w.current_period_end)}.` : 'Active.';
     case 'grace': return `The last payment failed. Service pauses on ${formatDate(state.pausesAt)} unless the card is updated.`;

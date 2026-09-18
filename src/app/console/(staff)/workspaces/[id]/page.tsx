@@ -192,7 +192,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
                   Complimentary (no subscription needed, never paused)
                 </label>
                 <div>
-                  <label htmlFor="pageLimit" className={labelCls}>Page limit override</label>
+                  <label htmlFor="pageLimit" className={labelCls}>Channel limit override</label>
                   <input id="pageLimit" name="pageLimit" type="number" min={0} max={500} defaultValue={workspace.page_limit_override ?? ''} placeholder="Use plan limit" className={inputCls} />
                 </div>
               </StatusForm>

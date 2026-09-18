@@ -211,7 +211,7 @@ export async function staffRevokeInviteAction(fd: FormData) {
 /* ── WhatsApp (staff acting for a client workspace) ──────────────────── */
 
 const WA_ERRORS: Record<string, string> = {
-  limit: 'This workspace has reached its channel limit. Raise the plan or set a Page limit override.',
+  limit: 'This workspace has reached its channel limit. Raise the plan or set a channel limit override.',
   billing: 'This workspace has no active subscription. Mark it complimentary or ask the client to choose a plan.',
   taken: 'That WhatsApp number is already connected to another workspace.',
   expired_code: 'The WhatsApp window timed out. Please try again.',
