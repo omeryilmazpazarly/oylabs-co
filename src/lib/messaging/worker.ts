@@ -4,6 +4,7 @@ import { env } from './env';
 import { processDueEvents } from './processor';
 import { deliverDue } from './deliveries';
 import { errorSummary, log } from '@/lib/log';
+import { checkWaTokenExpiry } from '@/lib/whatsapp/numbers';
 
 /**
  * In-process background worker, started once from instrumentation.ts.
@@ -30,6 +31,7 @@ async function tick() {
     if (now() - worker.lastRetention > RETENTION_EVERY_MS) {
       worker.lastRetention = now();
       purgeExpiredData();
+      await checkWaTokenExpiry();
     }
   } catch (err) {
     log.error('worker.tick.failed', { error: errorSummary(err) });

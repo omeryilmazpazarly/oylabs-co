@@ -6,6 +6,7 @@ import { sendMessage, SendError, validateSendInput } from '@/lib/messaging/send'
 import { buildWhatsAppBody } from '@/lib/whatsapp/send';
 import { buildTemplateComponents, buildSendComponents, templateFormFields, type TemplateDraft } from '@/lib/whatsapp/templates';
 import { activeChannelCount } from '@/lib/messaging/workspaces';
+import { checkWaTokenExpiry } from '@/lib/whatsapp/numbers';
 import type { Db } from '@/lib/messaging/db';
 
 let db: Db;
@@ -279,5 +280,35 @@ describe('templates', () => {
       { type: 'body', parameters: [{ type: 'text', text: 'Aisha' }, { type: 'text', text: 'Friday' }] },
       { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: 'A-1001' }] },
     ]);
+  });
+});
+
+describe('WhatsApp token expiry', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const seedOwner = (email: string) => {
+    const { lastInsertRowid } = db.prepare(`INSERT INTO client_users (email, name, password_hash, email_verified_at, created_at) VALUES (?, 'Owner', 'x', ?, ?)`)
+      .run(email, Date.now(), Date.now());
+    db.prepare(`INSERT INTO workspace_members (workspace_id, user_id, role, created_at) VALUES (?, ?, 'owner', ?)`).run(workspaceId, Number(lastInsertRowid), Date.now());
+  };
+
+  it('reminds owners once, a week before, and flags the number when access lapses', async () => {
+    seedOwner('owner@brightkids.test');
+    const soon = seedWaNumber(db, workspaceId);
+    const later = seedWaNumber(db, workspaceId, { phoneNumberId: 'PN2' });
+    const gone = seedWaNumber(db, workspaceId, { phoneNumberId: 'PN3' });
+    const now = Date.now();
+    db.prepare('UPDATE wa_numbers SET token_expires_at = ? WHERE id = ?').run(now + 3 * DAY, soon);
+    db.prepare('UPDATE wa_numbers SET token_expires_at = ? WHERE id = ?').run(now + 30 * DAY, later);
+    db.prepare('UPDATE wa_numbers SET token_expires_at = ? WHERE id = ?').run(now - 1000, gone);
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    expect(await checkWaTokenExpiry(now)).toEqual({ expired: 1, reminded: 1 });
+    expect(log.mock.calls.some(([line]) => String(line).includes('owner@brightkids.test') && String(line).includes('Reconnect WhatsApp'))).toBe(true);
+    expect((db.prepare('SELECT status FROM wa_numbers WHERE id = ?').get(gone) as { status: string }).status).toBe('reconnect_needed');
+    expect((db.prepare('SELECT status FROM wa_numbers WHERE id = ?').get(later) as { status: string }).status).toBe('active');
+
+    // Running again the same hour sends nothing new.
+    expect(await checkWaTokenExpiry(now + 60_000)).toEqual({ expired: 0, reminded: 0 });
+    log.mockRestore();
   });
 });

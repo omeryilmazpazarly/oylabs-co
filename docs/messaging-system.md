@@ -53,7 +53,15 @@ Staff console reply box ──────────────────�
 - **Sending** (`src/lib/whatsapp/send.ts`): free-form text and media need the 24-hour customer service window; an approved template can be sent at any time, including to a phone number with no conversation, which creates one. Bodies carry both `to` (phone) and `recipient` (BSUID) when known.
 - **Templates** (`src/lib/whatsapp/templates.ts`) mirror Meta's per-WABA templates in `wa_templates`. The portal can create, edit and delete them; media headers upload an example file through the Resumable Upload API to get the `header_handle`. Approval decisions arrive on the `message_template_status_update` webhook.
 - **Plan limits** count *channels*: connected Pages plus connected WhatsApp numbers (`activeChannelCount`).
+- **Token lifetime.** Meta's WhatsApp Embedded Signup template issues 60-day tokens. The expiry is recorded at signup (`wa_numbers.token_expires_at`); the hourly worker emails workspace owners 7 days before, and marks the number *Reconnect needed* once it lapses. Reconnecting the same number resets the clock and keeps its history.
 - **Meta bills the business directly** for WhatsApp messages; OY Labs neither pays nor marks up those fees.
+
+## Meta app (OY Labs Messaging)
+
+- App ID `2626971604401918`, business portfolio OY LABS LTD (`100100196329006`). Use cases: Messenger, Instagram (messaging), WhatsApp.
+- Login for Business configurations: **Pages and Instagram** `1717528022693255` (user token; pages_show_list, pages_manage_metadata, pages_messaging, pages_read_engagement, instagram_basic, instagram_manage_messages, business_management) → `META_LOGIN_CONFIG_ID`; **WhatsApp Embedded Signup** `1487124386534713` (system-user token, 60 days) → `META_WA_CONFIG_ID`.
+- Webhooks are registered by `node --env-file=.env.production scripts/meta-setup.mjs` on the server (Page, Instagram and WhatsApp Business Account objects). It checks the app secret and the handshake first; `--check` only reports.
+- The running app reads `.next/standalone/.env.production`, which `deploy.sh` links to `/var/www/oylabs/.env.production` — edit the real file, then restart.
 
 ## Code map
 

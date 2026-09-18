@@ -12,8 +12,10 @@ const HISTORY_LABEL: Record<string, string> = {
 };
 
 /** WhatsApp numbers with their connection and (for coexistence) import state. */
-export function WaNumberList({ numbers, disconnectAction, retrySyncAction, emptyHint }: {
+export function WaNumberList({ numbers, disconnectAction, retrySyncAction, emptyHint, nowMs }: {
   numbers: WaNumber[];
+  /** Server time, for the reconnect-by warning. */
+  nowMs: number;
   disconnectAction?: PlainAction;
   retrySyncAction?: PlainAction;
   emptyHint: string;
@@ -46,6 +48,11 @@ export function WaNumberList({ numbers, disconnectAction, retrySyncAction, empty
               {n.history_status ? ` · ${HISTORY_LABEL[n.history_status] ?? n.history_status}` : ''}
               {n.status_detail ? ` · ${n.status_detail}` : ''}
             </p>
+            {n.status === 'active' && n.token_expires_at && (
+              <p className={`mt-0.5 text-xs ${n.token_expires_at - nowMs < 14 * 24 * 60 * 60 * 1000 ? 'text-amber-400' : 'text-ink-dull'}`}>
+                Meta&rsquo;s access renews every 60 days — reconnect by {new Date(n.token_expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. We&rsquo;ll email a reminder a week before.
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             {retrySyncAction && Boolean(n.coexistence) && n.history_status === 'failed' && n.status === 'active' && (

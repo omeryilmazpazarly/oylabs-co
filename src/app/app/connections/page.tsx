@@ -72,6 +72,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
       </div>
       <Card>
         <WaNumberList
+          nowMs={now()}
           numbers={waNumbers}
           disconnectAction={isOwner ? disconnectWhatsAppAction : undefined}
           retrySyncAction={isOwner ? retryWhatsAppSyncAction : undefined}

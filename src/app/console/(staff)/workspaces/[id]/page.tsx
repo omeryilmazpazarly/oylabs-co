@@ -87,6 +87,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
             )}
           >
             <WaNumberList
+              nowMs={nowMs}
               numbers={listWaNumbers(workspace.id)}
               disconnectAction={staffDisconnectWhatsAppAction}
               retrySyncAction={staffRetryWhatsAppSyncAction}

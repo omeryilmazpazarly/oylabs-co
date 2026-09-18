@@ -352,6 +352,12 @@ const MIGRATIONS: string[] = [
   CREATE INDEX messages_thread ON messages(conversation_id, meta_timestamp);
   CREATE INDEX messages_age ON messages(created_at);
   `,
+
+  /* 4 — WhatsApp token expiry: Embedded Signup tokens last 60 days, so owners are reminded to reconnect. */
+  `
+  ALTER TABLE wa_numbers ADD COLUMN token_expires_at INTEGER;
+  ALTER TABLE wa_numbers ADD COLUMN expiry_reminded_at INTEGER;
+  `,
 ];
 
 export type Db = Database.Database;
