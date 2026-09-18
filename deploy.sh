@@ -64,6 +64,10 @@ for link in "$STANDALONE/data" "$STANDALONE/public/uploads"; do
 done
 ln -sfn "$DATA_DIR" "$STANDALONE/data"
 ln -sfn "$UPLOADS_DIR" "$STANDALONE/public/uploads"
+# Next copies .env.production into standalone at build time; link it instead so
+# editing the real file (e.g. adding a key) takes effect on the next restart.
+rm -f "$STANDALONE/.env.production"
+ln -s "$APP_DIR/.env.production" "$STANDALONE/.env.production"
 # Guard against the July failure mode: a link created inside the real uploads folder.
 if [ -L "$UPLOADS_DIR/uploads" ]; then rm "$UPLOADS_DIR/uploads"; fi
 # The app runs as root under pm2. Create messaging.db as ubuntu first: SQLite
