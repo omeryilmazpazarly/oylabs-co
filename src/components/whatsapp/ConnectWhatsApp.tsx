@@ -19,6 +19,32 @@ declare global {
 interface FbLoginResponse { authResponse?: { code?: string } | null; status?: string }
 interface SignupPayload { code: string; wabaId: string; phoneNumberId: string; coexistence: boolean; linkToken?: string }
 
+const SDK_URL = 'https://connect.facebook.net/en_US/sdk.js';
+
+/** Loads and initialises the Facebook SDK once per page. */
+function loadSdk(appId: string): Promise<void> {
+  const w = window as Window & { __oyFbSdk?: Promise<void> };
+  if (w.FB) return Promise.resolve();
+  if (w.__oyFbSdk) return w.__oyFbSdk;
+  w.__oyFbSdk = new Promise<void>((resolve, reject) => {
+    window.fbAsyncInit = () => {
+      window.FB!.init({ appId, autoLogAppEvents: true, xfbml: false, version: 'v23.0' });
+      resolve();
+    };
+    const script = document.createElement('script');
+    script.src = SDK_URL;
+    script.async = true;
+    script.defer = true;
+    script.crossOrigin = 'anonymous';
+    script.onerror = () => {
+      w.__oyFbSdk = undefined;
+      reject(new Error('Facebook could not be reached.'));
+    };
+    document.body.appendChild(script);
+  });
+  return w.__oyFbSdk;
+}
+
 export function ConnectWhatsApp({ appId, configId, linkToken, onComplete, disabled }: {
   appId: string;
   configId: string;
@@ -26,9 +52,16 @@ export function ConnectWhatsApp({ appId, configId, linkToken, onComplete, disabl
   onComplete: (payload: SignupPayload) => Promise<{ error?: string } | void>;
   disabled?: boolean;
 }) {
-  const [busy, setBusy] = useState<'existing' | 'new' | null>(null);
+  const [sdk, setSdk] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [busy, setBusy] = useState<'existing' | 'new' | 'saving' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
   const session = useRef<{ wabaId?: string; phoneNumberId?: string }>({});
+
+  // Load the SDK up front: the pop-up must open straight from the click, or browsers block it.
+  useEffect(() => {
+    loadSdk(appId).then(() => setSdk('ready'), () => setSdk('failed'));
+  }, [appId]);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -46,42 +79,45 @@ export function ConnectWhatsApp({ appId, configId, linkToken, onComplete, disabl
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
-  const loadSdk = useCallback(() => new Promise<void>((resolve, reject) => {
-    if (window.FB) return resolve();
-    const script = document.createElement('script');
-    script.src = 'https://connect.facebook.net/en_US/sdk.js';
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-    script.onload = () => {
-      window.FB?.init({ appId, autoLogAppEvents: true, xfbml: false, version: 'v25.0' });
-      resolve();
-    };
-    script.onerror = () => reject(new Error('Facebook could not be reached.'));
-    document.body.appendChild(script);
-  }), [appId]);
-
-  const start = async (coexistence: boolean) => {
-    setError(null);
-    setBusy(coexistence ? 'existing' : 'new');
-    session.current = {};
-    try {
-      await loadSdk();
-    } catch {
-      setError('Facebook could not be loaded. Check your connection or any ad blocker, then try again.');
+  const finish = useCallback(async (code: string, coexistence: boolean) => {
+    // The WhatsApp session message can arrive just after the login callback.
+    for (let i = 0; i < 10 && !session.current.wabaId; i++) await new Promise((r) => setTimeout(r, 300));
+    const { wabaId, phoneNumberId } = session.current;
+    if (!wabaId || !phoneNumberId) {
       setBusy(null);
+      setError('WhatsApp did not return the number details. Please try again.');
       return;
     }
-    window.FB!.login(async (response) => {
+    setBusy('saving');
+    try {
+      const result = await onComplete({ code, wabaId, phoneNumberId, coexistence, linkToken });
+      if (result?.error) setError(result.error);
+      else setDone(true);
+    } catch {
+      setError('Something went wrong saving the connection. Please try again.');
+    } finally {
+      setBusy(null);
+    }
+  }, [onComplete, linkToken]);
+
+  const start = (coexistence: boolean) => {
+    if (!window.FB) {
+      setError('Facebook is still loading — please try again in a moment.');
+      return;
+    }
+    setError(null);
+    setDone(false);
+    setBusy(coexistence ? 'existing' : 'new');
+    session.current = {};
+    // Called synchronously from the click so the pop-up isn't blocked. The SDK
+    // rejects async callbacks, so this one is a plain function.
+    window.FB.login((response) => {
       const code = response.authResponse?.code;
-      const { wabaId, phoneNumberId } = session.current;
-      if (!code || !wabaId || !phoneNumberId) {
-        setBusy(null);
-        if (code || response.status === 'connected') setError('WhatsApp did not return the number details. Please try again.');
+      if (!code) {
+        setBusy(null); // closed, cancelled or blocked
         return;
       }
-      const result = await onComplete({ code, wabaId, phoneNumberId, coexistence, linkToken });
-      setBusy(null);
-      if (result?.error) setError(result.error);
+      void finish(code, coexistence);
     }, {
       config_id: configId,
       response_type: 'code',
@@ -94,17 +130,21 @@ export function ConnectWhatsApp({ appId, configId, linkToken, onComplete, disabl
     });
   };
 
+  const blocked = disabled || busy !== null || sdk !== 'ready';
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => start(true)} disabled={disabled || busy !== null} className={`${primaryBtn} disabled:opacity-60`}>
-          <WhatsAppIcon size={15} /> {busy === 'existing' ? 'Opening WhatsApp…' : 'Use my WhatsApp Business app number'}
+        <button type="button" onClick={() => start(true)} disabled={blocked} className={`${primaryBtn} disabled:opacity-60`}>
+          <WhatsAppIcon size={15} /> {busy === 'existing' ? 'Waiting for WhatsApp…' : busy === 'saving' ? 'Connecting…' : sdk === 'loading' ? 'Loading…' : 'Use my WhatsApp Business app number'}
         </button>
-        <button type="button" onClick={() => start(false)} disabled={disabled || busy !== null} className={`${secondaryBtn} disabled:opacity-60`}>
-          {busy === 'new' ? 'Opening WhatsApp…' : 'Connect a new number'}
+        <button type="button" onClick={() => start(false)} disabled={blocked} className={`${secondaryBtn} disabled:opacity-60`}>
+          {busy === 'new' ? 'Waiting for WhatsApp…' : 'Connect a new number'}
         </button>
       </div>
+      {sdk === 'failed' && <p className="text-sm text-red-300">Facebook could not be loaded. Check your connection or any ad or privacy blocker, then reload the page.</p>}
+      {busy === 'existing' || busy === 'new' ? <p className="text-xs text-ink-dull">Finish the steps in the Facebook window. If no window opened, allow pop-ups for oylabs.co and try again.</p> : null}
       {error && <p className="text-sm text-red-300">{error}</p>}
+      {done && <p className="text-sm text-emerald-300">WhatsApp connected.</p>}
     </div>
   );
 }
