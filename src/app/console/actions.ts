@@ -12,7 +12,7 @@ import { retryDelivery, sendTestDelivery } from '@/lib/messaging/deliveries';
 import { sendMessage, SendError } from '@/lib/messaging/send';
 import { getConversation } from '@/lib/messaging/conversations';
 import { deleteConversationData } from '@/lib/messaging/deletion';
-import { completeEmbeddedSignup, disconnectWaNumber, getWaNumber, startCoexistenceSync } from '@/lib/whatsapp/numbers';
+import { completeEmbeddedSignup, connectWithSystemToken, DirectConnectError, disconnectWaNumber, getWaNumber, startCoexistenceSync } from '@/lib/whatsapp/numbers';
 import { syncTemplates } from '@/lib/whatsapp/templates';
 import { errorSummary, log } from '@/lib/log';
 import type { ReplyState } from '@/components/messaging/ReplyBox';
@@ -256,5 +256,29 @@ export async function staffRetryWhatsAppSyncAction(fd: FormData) {
   if (number) {
     await startCoexistenceSync(number.id);
     revalidatePath(`/console/workspaces/${number.workspace_id}`);
+  }
+}
+
+/** Direct WhatsApp connection with a system-user token (no Embedded Signup, no Tech Provider needed). */
+export async function staffConnectWhatsAppDirectAction(_prev: FormResult, fd: FormData): Promise<FormResult> {
+  await assertStaff();
+  const workspaceId = id(fd, 'workspaceId');
+  const register = fd.get('register') === 'on';
+  try {
+    const number = await connectWithSystemToken({
+      workspaceId,
+      wabaId: String(fd.get('wabaId') ?? '').trim(),
+      phoneNumberId: String(fd.get('phoneNumberId') ?? '').trim(),
+      token: String(fd.get('token') ?? ''),
+      registerPin: register ? String(fd.get('pin') ?? '').trim() : null,
+    });
+    void syncTemplates(workspaceId).catch(() => {});
+    revalidatePath(`/console/workspaces/${workspaceId}`);
+    return { status: 'ok', message: `Connected ${number.verified_name || number.display_phone_number} (${number.display_phone_number}).` };
+  } catch (err) {
+    if (err instanceof DirectConnectError) return { status: 'error', message: err.message };
+    if (err instanceof ConnectError) return { status: 'error', message: WA_ERRORS[err.reason] ?? WA_ERRORS.meta };
+    log.error('whatsapp.direct_connect.failed', { workspaceId, error: errorSummary(err) });
+    return { status: 'error', message: WA_ERRORS.meta };
   }
 }

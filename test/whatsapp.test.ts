@@ -6,7 +6,7 @@ import { sendMessage, SendError, validateSendInput } from '@/lib/messaging/send'
 import { buildWhatsAppBody } from '@/lib/whatsapp/send';
 import { buildTemplateComponents, buildSendComponents, templateFormFields, type TemplateDraft } from '@/lib/whatsapp/templates';
 import { activeChannelCount } from '@/lib/messaging/workspaces';
-import { checkWaTokenExpiry } from '@/lib/whatsapp/numbers';
+import { checkWaTokenExpiry, connectWithSystemToken } from '@/lib/whatsapp/numbers';
 import type { Db } from '@/lib/messaging/db';
 
 let db: Db;
@@ -310,5 +310,42 @@ describe('WhatsApp token expiry', () => {
     // Running again the same hour sends nothing new.
     expect(await checkWaTokenExpiry(now + 60_000)).toEqual({ expired: 0, reminded: 0 });
     log.mockRestore();
+  });
+});
+
+describe('direct WhatsApp connection (system-user token)', () => {
+  const TOKEN = 'EAA' + 'x'.repeat(120);
+  const graphOk = (scopes = ['whatsapp_business_management', 'whatsapp_business_messaging'], expiresAt = 0) => mockFetch({
+    'GET debug_token': () => ({ body: { data: { is_valid: true, user_id: 'SYSUSER1', expires_at: expiresAt, scopes } } }),
+    'GET 109876543210987': () => ({ body: { id: '109876543210987', display_phone_number: '+44 20 3951 5794', verified_name: 'OY Labs', quality_rating: 'GREEN' } }),
+    'POST 102030405060708/subscribed_apps': () => ({ body: { success: true } }),
+    'POST 109876543210987/register': () => ({ body: { success: true } }),
+  });
+  const input = { wabaId: '102030405060708', phoneNumberId: '109876543210987', token: TOKEN };
+
+  it('checks the token, subscribes the account and stores a never-expiring connection', async () => {
+    const calls = graphOk();
+    const number = await connectWithSystemToken({ workspaceId, ...input });
+    expect(number).toMatchObject({ status: 'active', coexistence: 0, display_phone_number: '+44 20 3951 5794', token_expires_at: null });
+    expect(calls.map((c) => `${c.method} ${c.url.pathname.split('/').slice(2).join('/')}`)).toEqual([
+      'GET debug_token', 'GET 109876543210987', 'POST 102030405060708/subscribed_apps',
+    ]);
+    expect(activeChannelCount(workspaceId)).toBe(1);
+  });
+
+  it('registers the number only when asked, with the chosen PIN', async () => {
+    const calls = graphOk();
+    await connectWithSystemToken({ workspaceId, ...input, registerPin: '482913' });
+    const register = calls.find((c) => c.url.pathname.endsWith('/register'));
+    expect(register?.body).toEqual({ messaging_product: 'whatsapp', pin: '482913' });
+  });
+
+  it('explains what is wrong instead of connecting', async () => {
+    graphOk(['whatsapp_business_messaging']);
+    await expect(connectWithSystemToken({ workspaceId, ...input })).rejects.toThrow(/missing: whatsapp_business_management/);
+    await expect(connectWithSystemToken({ workspaceId, ...input, wabaId: 'abc' })).rejects.toThrow(/WhatsApp Business Account ID/);
+    await expect(connectWithSystemToken({ workspaceId, ...input, registerPin: '12' })).rejects.toThrow(/6 digits/);
+    await expect(connectWithSystemToken({ workspaceId, ...input, token: 'short' })).rejects.toThrow(/system-user access token/);
+    expect(activeChannelCount(workspaceId)).toBe(0);
   });
 });

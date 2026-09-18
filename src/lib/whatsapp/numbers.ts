@@ -77,7 +77,6 @@ const ID_RE = /^\d{5,25}$/;
  */
 export async function completeEmbeddedSignup(input: SignupInput): Promise<WaNumber> {
   if (!input.code || !ID_RE.test(input.wabaId) || !ID_RE.test(input.phoneNumberId)) throw new ConnectError('invalid');
-  const db = getDb();
   const existing = waNumberByPhoneId(input.phoneNumberId);
   if (existing && existing.workspace_id !== input.workspaceId && existing.status !== 'disconnected') throw new ConnectError('taken');
   assertCanAddChannel(input.workspaceId, Boolean(existing && existing.workspace_id === input.workspaceId && existing.status !== 'disconnected'));
@@ -110,8 +109,23 @@ export async function completeEmbeddedSignup(input: SignupInput): Promise<WaNumb
     }
   }
 
+  saveWaNumber({
+    workspaceId: input.workspaceId, wabaId: input.wabaId, phoneNumberId: input.phoneNumberId, info, metaUserId,
+    token, pin, coexistence: input.coexistence, tokenExpiresAt,
+  });
+  const number = waNumberByPhoneId(input.phoneNumberId)!;
+  log.info('whatsapp.number.connected', { workspaceId: input.workspaceId, numberId: number.id, coexistence: input.coexistence });
+
+  if (input.coexistence) await startCoexistenceSync(number.id);
+  return getWaNumber(number.id)!;
+}
+
+function saveWaNumber(args: {
+  workspaceId: number; wabaId: string; phoneNumberId: string; info: wa.PhoneNumberInfo; metaUserId: string | null;
+  token: string; pin: string | null; coexistence: boolean; tokenExpiresAt: number | null;
+}) {
   const t = now();
-  db.prepare(`
+  getDb().prepare(`
     INSERT INTO wa_numbers (workspace_id, waba_id, phone_number_id, display_phone_number, verified_name, meta_user_id, token_enc, pin_enc,
                             coexistence, quality_rating, status, status_detail, history_status, token_expires_at, expiry_reminded_at, created_at, updated_at)
     VALUES (@workspaceId, @wabaId, @phoneNumberId, @display, @verifiedName, @metaUserId, @token, @pin, @coexistence, @quality, 'active', NULL, NULL, @expiresAt, NULL, @t, @t)
@@ -122,16 +136,84 @@ export async function completeEmbeddedSignup(input: SignupInput): Promise<WaNumb
       status = 'active', status_detail = NULL, token_expires_at = excluded.token_expires_at, expiry_reminded_at = NULL,
       updated_at = excluded.updated_at
   `).run({
-    workspaceId: input.workspaceId, wabaId: input.wabaId, phoneNumberId: input.phoneNumberId,
-    display: info.display_phone_number, verifiedName: info.verified_name ?? null, metaUserId,
-    token: encryptSecret(token), pin: pin ? encryptSecret(pin) : null, coexistence: input.coexistence ? 1 : 0,
-    quality: info.quality_rating ?? null, expiresAt: tokenExpiresAt, t,
+    workspaceId: args.workspaceId, wabaId: args.wabaId, phoneNumberId: args.phoneNumberId,
+    display: args.info.display_phone_number, verifiedName: args.info.verified_name ?? null, metaUserId: args.metaUserId,
+    token: encryptSecret(args.token), pin: args.pin ? encryptSecret(args.pin) : null, coexistence: args.coexistence ? 1 : 0,
+    quality: args.info.quality_rating ?? null, expiresAt: args.tokenExpiresAt, t,
+  });
+}
+
+export class DirectConnectError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DirectConnectError';
+  }
+}
+
+const REQUIRED_SCOPES = ['whatsapp_business_management', 'whatsapp_business_messaging'];
+
+/**
+ * Direct connection with a system-user token from Meta Business Settings — no
+ * Embedded Signup, so no Tech Provider status is needed. For numbers in a
+ * business OY Labs manages (its own, or a client's whose settings we control).
+ * Coexistence isn't possible this way; Meta only offers it through Embedded Signup.
+ */
+export async function connectWithSystemToken(input: {
+  workspaceId: number; wabaId: string; phoneNumberId: string; token: string; registerPin?: string | null;
+}): Promise<WaNumber> {
+  const token = input.token.trim();
+  if (!ID_RE.test(input.wabaId)) throw new DirectConnectError('The WhatsApp Business Account ID should be the long number from WhatsApp Manager.');
+  if (!ID_RE.test(input.phoneNumberId)) throw new DirectConnectError('The phone number ID should be the long number shown next to the number in the app’s WhatsApp API setup.');
+  if (token.length < 50) throw new DirectConnectError('That doesn’t look like a system-user access token.');
+  if (input.registerPin && !/^\d{6}$/.test(input.registerPin)) throw new DirectConnectError('The two-step verification PIN must be 6 digits.');
+
+  const existing = waNumberByPhoneId(input.phoneNumberId);
+  if (existing && existing.workspace_id !== input.workspaceId && existing.status !== 'disconnected') {
+    throw new DirectConnectError('That number is already connected to another workspace.');
+  }
+  assertCanAddChannel(input.workspaceId, Boolean(existing && existing.workspace_id === input.workspaceId && existing.status !== 'disconnected'));
+
+  let debug: Awaited<ReturnType<typeof metaGraph.debugToken>>;
+  try {
+    debug = await metaGraph.debugToken(token);
+  } catch (err) {
+    log.warn('whatsapp.direct.debug_failed', { error: errorSummary(err) });
+    throw new DirectConnectError('Meta could not check that token. Make sure it was generated for the OY Labs Messaging app.');
+  }
+  if (!debug.is_valid) throw new DirectConnectError('Meta says that token is not valid (expired or revoked). Generate a new one.');
+  const missing = REQUIRED_SCOPES.filter((scope) => !debug.scopes?.includes(scope));
+  if (missing.length) throw new DirectConnectError(`The token is missing: ${missing.join(', ')}. Tick both WhatsApp permissions when generating it.`);
+
+  let info: wa.PhoneNumberInfo;
+  try {
+    info = await wa.getPhoneNumber(input.phoneNumberId, token);
+  } catch (err) {
+    log.warn('whatsapp.direct.number_failed', { error: errorSummary(err) });
+    throw new DirectConnectError('Meta could not find that phone number ID with this token. Check the ID, and that the system user was given the WhatsApp account.');
+  }
+  try {
+    await wa.subscribeWaba(input.wabaId, token);
+  } catch (err) {
+    log.warn('whatsapp.direct.subscribe_failed', { error: errorSummary(err) });
+    throw new DirectConnectError('Meta refused to send this WhatsApp account’s messages to OY Labs. Check the WhatsApp Business Account ID and that the system user has full control of it.');
+  }
+  if (input.registerPin) {
+    try {
+      await wa.registerNumber(input.phoneNumberId, token, input.registerPin);
+    } catch (err) {
+      log.warn('whatsapp.direct.register_failed', { error: errorSummary(err) });
+      throw new DirectConnectError(`Meta refused to register the number: ${err instanceof Error ? err.message : 'unknown error'}. If it is already registered, leave "Register" unticked.`);
+    }
+  }
+
+  saveWaNumber({
+    workspaceId: input.workspaceId, wabaId: input.wabaId, phoneNumberId: input.phoneNumberId, info,
+    metaUserId: debug.user_id ?? null, token, pin: input.registerPin ?? null, coexistence: false,
+    tokenExpiresAt: debug.expires_at ? debug.expires_at * 1000 : null,
   });
   const number = waNumberByPhoneId(input.phoneNumberId)!;
-  log.info('whatsapp.number.connected', { workspaceId: input.workspaceId, numberId: number.id, coexistence: input.coexistence });
-
-  if (input.coexistence) await startCoexistenceSync(number.id);
-  return getWaNumber(number.id)!;
+  log.info('whatsapp.number.connected', { workspaceId: input.workspaceId, numberId: number.id, via: 'system_token' });
+  return number;
 }
 
 /** One-time contact + history sync for coexistence numbers (Meta allows it once, within 24 hours of onboarding). */

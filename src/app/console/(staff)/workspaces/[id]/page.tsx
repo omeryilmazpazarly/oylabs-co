@@ -16,11 +16,12 @@ import { ConnectLinkForm, ForwardingForm, RotateSecretForm } from '@/components/
 import { ConnectionsList, DeliveriesTable } from '@/components/messaging/lists';
 import { WaCoexistenceNote, WaNumberList } from '@/components/whatsapp/NumberList';
 import { ConnectWhatsApp } from '@/components/whatsapp/ConnectWhatsApp';
+import { DirectConnectForm } from '@/components/whatsapp/DirectConnectForm';
 import { listWaNumbers } from '@/lib/whatsapp/numbers';
 import { whatsappConfigured } from '@/lib/messaging/env';
 import {
   connectNowAction, createConnectLinkAction, disconnectAction, inviteClientAction, retryDeliveryAction, revokeLinkAction,
-  staffConnectWhatsAppAction, staffDisconnectWhatsAppAction, staffRetryWhatsAppSyncAction,
+  staffConnectWhatsAppAction, staffConnectWhatsAppDirectAction, staffDisconnectWhatsAppAction, staffRetryWhatsAppSyncAction,
   rotateSecretAction, setComplimentaryAction, staffRemoveMemberAction, staffRevokeInviteAction, testDeliveryAction, updateWorkspaceAction,
 } from '@/app/console/actions';
 
@@ -94,6 +95,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
               emptyHint="Connect here if you manage the client's WhatsApp, or send them the onboarding link below."
             />
             <p className="mt-3 text-xs text-ink-dull"><WaCoexistenceNote /></p>
+            {configured && <div className="mt-4"><DirectConnectForm workspaceId={workspace.id} action={staffConnectWhatsAppDirectAction} /></div>}
           </Card>
 
           <Card title="Client onboarding link" description="For when someone at the client business administers the Page or WhatsApp number.">
