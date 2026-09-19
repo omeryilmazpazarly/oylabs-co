@@ -115,7 +115,8 @@ Set in `.env.production` on the server (and `.env.development.local` locally). R
 | `MESSAGING_WORKER` | no | `off` | Disables the background worker |
 | `STRIPE_SECRET_KEY` | for billing | `sk_test_…` / `sk_live_…` | Without it, clients can sign up but not subscribe |
 | `STRIPE_WEBHOOK_SECRET` | for billing | `whsec_…` from the Stripe webhook endpoint | |
-| `META_WA_CONFIG_ID` | for WhatsApp | The WhatsApp Embedded Signup configuration ID | Without it the WhatsApp buttons are hidden |
+| `META_WA_CONFIG_ID` | for WhatsApp | The WhatsApp Embedded Signup configuration ID | |
+| `META_WA_EMBEDDED_SIGNUP` | after Tech Provider approval | `on` | Shows the Embedded Signup / Coexistence buttons. Before approval Meta answers "can't onboard customers", so they stay hidden and staff use the direct connection |
 | `RESEND_API_KEY` | yes in prod | Resend dashboard | Account emails (verify, reset, invites) and the contact form. Locally, links are printed to the server log instead. |
 
 Until the five required Meta/encryption variables are set, the public pages and console work, but `/api/meta/*` and `/api/v1/messages` return 503 and the console shows a banner.

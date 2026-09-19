@@ -3,7 +3,7 @@ import { requireClient } from '@/lib/auth/client-session';
 import { now } from '@/lib/messaging/db';
 import { activeChannelCount } from '@/lib/messaging/workspaces';
 import { listConnections } from '@/lib/messaging/connections';
-import { env, metaConfigured, whatsappConfigured } from '@/lib/messaging/env';
+import { embeddedSignupEnabled, env, metaConfigured } from '@/lib/messaging/env';
 import { listWaNumbers } from '@/lib/whatsapp/numbers';
 import { pageLimit, serviceState } from '@/lib/billing/entitlements';
 import { Card, FacebookIcon, Notice, PageHeader, primaryBtn } from '@/components/console/ui';
@@ -66,7 +66,7 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
           <h2 className="text-lg font-semibold text-ink">WhatsApp</h2>
           <p className="mt-1 text-xs text-ink-dull">Connect the number you already use in the WhatsApp Business app, or a new number for the API.</p>
         </div>
-        {canConnect && whatsappConfigured() && (
+        {canConnect && embeddedSignupEnabled() && (
           <ConnectWhatsApp appId={env.metaAppId()} configId={env.metaWhatsAppConfigId()} onComplete={connectWhatsAppAction} />
         )}
       </div>
@@ -80,7 +80,11 @@ export default async function ConnectionsPage({ searchParams }: { searchParams: 
         />
       </Card>
       <div className="mt-6">
-        <Notice><WaCoexistenceNote /></Notice>
+        <Notice>
+          {embeddedSignupEnabled()
+            ? <WaCoexistenceNote />
+            : <>Self-service WhatsApp connection is opening soon. To connect your number now, email{' '}<a href="mailto:hi@oylabs.co" className="underline">hi@oylabs.co</a>{' '}and we&rsquo;ll set it up with you.</>}
+        </Notice>
       </div>
       <div className="mt-6">
         <Notice>

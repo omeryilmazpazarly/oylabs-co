@@ -18,7 +18,7 @@ import { WaCoexistenceNote, WaNumberList } from '@/components/whatsapp/NumberLis
 import { ConnectWhatsApp } from '@/components/whatsapp/ConnectWhatsApp';
 import { DirectConnectForm } from '@/components/whatsapp/DirectConnectForm';
 import { listWaNumbers } from '@/lib/whatsapp/numbers';
-import { whatsappConfigured } from '@/lib/messaging/env';
+import { embeddedSignupEnabled } from '@/lib/messaging/env';
 import {
   connectNowAction, createConnectLinkAction, disconnectAction, inviteClientAction, retryDeliveryAction, revokeLinkAction,
   staffConnectWhatsAppAction, staffConnectWhatsAppDirectAction, staffDisconnectWhatsAppAction, staffRetryWhatsAppSyncAction,
@@ -76,7 +76,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
           <Card
             title="WhatsApp numbers"
             description="Connect the client's WhatsApp Business app number (chats keep working on their phone), or a new API-only number."
-            actions={whatsappConfigured() && (
+            actions={embeddedSignupEnabled() && (
               <ConnectWhatsApp
                 appId={env.metaAppId()}
                 configId={env.metaWhatsAppConfigId()}
@@ -94,7 +94,11 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
               retrySyncAction={staffRetryWhatsAppSyncAction}
               emptyHint="Connect here if you manage the client's WhatsApp, or send them the onboarding link below."
             />
-            <p className="mt-3 text-xs text-ink-dull"><WaCoexistenceNote /></p>
+            <p className="mt-3 text-xs text-ink-dull">
+              {embeddedSignupEnabled()
+                ? <WaCoexistenceNote />
+                : <>Embedded Signup and Coexistence switch on after Meta approves OY Labs as a Tech Provider (set <code>META_WA_EMBEDDED_SIGNUP=on</code>). Until then, connect numbers directly below.</>}
+            </p>
             {configured && <div className="mt-4"><DirectConnectForm workspaceId={workspace.id} action={staffConnectWhatsAppDirectAction} /></div>}
           </Card>
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Check, Lock, MessageCircle, ShieldCheck } from 'lucide-react';
 import { resolveConnectLink } from '@/lib/messaging/connections';
 import { FacebookIcon, InstagramIcon, Notice, WhatsAppIcon, formatDate } from '@/components/console/ui';
-import { env, whatsappConfigured } from '@/lib/messaging/env';
+import { embeddedSignupEnabled, env } from '@/lib/messaging/env';
 import { ConnectWhatsApp } from '@/components/whatsapp/ConnectWhatsApp';
 import { connectWhatsAppViaLinkAction } from '../actions';
 import ConnectShell from '../ConnectShell';
@@ -85,7 +85,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
       >
         <FacebookIcon size={18} /> Continue with Facebook
       </a>
-      {whatsappConfigured() && (
+      {embeddedSignupEnabled() && (
         <div className="mt-6 border-t border-line pt-6">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-ink"><WhatsAppIcon size={16} className="text-emerald-500" /> Or connect WhatsApp</h2>
           <p className="mt-1.5 mb-3 text-xs leading-relaxed text-ink-dim">

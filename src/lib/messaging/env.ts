@@ -47,3 +47,12 @@ export function metaConfigured(): boolean {
 export function whatsappConfigured(): boolean {
   return metaConfigured() && Boolean(process.env.META_WA_CONFIG_ID);
 }
+
+/**
+ * WhatsApp Embedded Signup (client self-serve + Coexistence) only works once
+ * Meta approves OY Labs as a Tech Provider; before that Meta shows "can't
+ * onboard customers". Switch on with META_WA_EMBEDDED_SIGNUP=on.
+ */
+export function embeddedSignupEnabled(): boolean {
+  return whatsappConfigured() && process.env.META_WA_EMBEDDED_SIGNUP === 'on';
+}

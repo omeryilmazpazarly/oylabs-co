@@ -142,7 +142,12 @@ export function ConnectWhatsApp({ appId, configId, linkToken, onComplete, disabl
         </button>
       </div>
       {sdk === 'failed' && <p className="text-sm text-red-300">Facebook could not be loaded. Check your connection or any ad or privacy blocker, then reload the page.</p>}
-      {busy === 'existing' || busy === 'new' ? <p className="text-xs text-ink-dull">Finish the steps in the Facebook window. If no window opened, allow pop-ups for oylabs.co and try again.</p> : null}
+      {busy === 'existing' || busy === 'new' ? (
+        <p className="text-xs text-ink-dull">
+          Finish the steps in the Facebook window. If Chrome asks to sign in to oylabs.co with Facebook, choose Continue. No window?{' '}Allow pop-ups for oylabs.co.{' '}
+          <button type="button" onClick={() => setBusy(null)} className="underline hover:text-ink">Cancel</button>
+        </p>
+      ) : null}
       {error && <p className="text-sm text-red-300">{error}</p>}
       {done && <p className="text-sm text-emerald-300">WhatsApp connected.</p>}
     </div>
