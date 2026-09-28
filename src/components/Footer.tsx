@@ -43,8 +43,14 @@ export default function Footer() {
         <p className="text-xs text-ink-dull leading-relaxed">
           <span className="inline-block">OY Labs Ltd</span>
           <span className="mx-2" aria-hidden>·</span>
+          <span className="inline-block">Registered in England &amp; Wales no. 17267898</span>
+          <span className="mx-2" aria-hidden>·</span>
           <span className="inline-block">71-75 Shelton Street, Covent Garden,</span>{' '}
           <span className="inline-block">London WC2H 9JQ, United Kingdom</span>
+          <span className="mx-2" aria-hidden>·</span>
+          <a href="tel:+442039515794" className="inline-block hover:text-ink transition-colors">
+            +44 20 3951 5794
+          </a>
           <span className="mx-2" aria-hidden>·</span>
           <a href="mailto:hi@oylabs.co" className="inline-block hover:text-ink transition-colors">
             hi@oylabs.co

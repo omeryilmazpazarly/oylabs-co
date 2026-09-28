@@ -69,8 +69,8 @@ export default function TermsPage() {
         <Section id="parties" title="1. About these terms">
           <p>
             These terms are an agreement between <Strong>OY Labs Ltd</Strong>{' '}(&ldquo;OY Labs&rdquo;,
-            &ldquo;we&rdquo;, &ldquo;us&rdquo;), a company registered in England and Wales whose registered address is
-            71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, United Kingdom, and:
+            &ldquo;we&rdquo;, &ldquo;us&rdquo;), a company registered in England and Wales under number 17267898, whose registered
+            address is 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, United Kingdom, and:
           </p>
           <ul className="list-disc pl-5 space-y-2">
             <li>

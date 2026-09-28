@@ -136,8 +136,8 @@ export default function PrivacyPage() {
         <Section id="who-we-are" title="1. Who we are">
           <p>
             <Strong>OY Labs Ltd</Strong>{' '}(&ldquo;OY Labs&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;) is a software
-            company registered in England and Wales, United Kingdom. Our registered address is 71-75 Shelton Street,
-            Covent Garden, London, WC2H 9JQ, United Kingdom. You can contact us about anything in this policy at{' '}
+            company registered in England and Wales, company number 17267898. Our registered address is 71-75 Shelton Street,
+            Covent Garden, London, WC2H 9JQ, United Kingdom, and our telephone number is +44 20 3951 5794. You can contact us about anything in this policy at{' '}
             <Email />.
           </p>
           <p>We handle personal data in two different roles:</p>
