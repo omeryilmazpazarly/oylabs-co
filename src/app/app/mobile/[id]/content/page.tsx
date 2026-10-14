@@ -40,7 +40,7 @@ export default async function MobileContentPage({ params }: { params: Promise<{ 
           <div>
             <label htmlFor="wa" className={labelCls}>WhatsApp number</label>
             <input id="wa" name="contact.whatsapp" defaultValue={contact.whatsapp ?? ''} placeholder="+201012345678" className={inputCls} />
-            <p className="mt-1.5 text-xs text-ink-dim">International format. Powers "Ask on WhatsApp" and order help.</p>
+            <p className="mt-1.5 text-xs text-ink-dim">International format. Powers &ldquo;Ask on WhatsApp&rdquo; and order help.</p>
           </div>
           <div>
             <label htmlFor="email" className={labelCls}>Support email</label>
