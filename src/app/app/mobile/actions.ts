@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { stripeConfigured } from '@/lib/billing/stripe';
-import { createSetupCheckout } from '@/lib/apps/billing';
+import { createCareCheckout, createSetupCheckout } from '@/lib/apps/billing';
+import { createPortalSession } from '@/lib/billing/subscriptions';
 import { assertClient } from '@/lib/auth/client-session';
 import {
   AppError,
@@ -185,6 +186,34 @@ export async function paySetupFeeAction(fd: FormData): Promise<void> {
     url = await createSetupCheckout(app, ctx.user.email, ctx.workspace.stripe_customer_id ?? null);
   } catch (err) {
     log.error('mobile_setup_checkout_failed', { appId: app.id, error: errorSummary(err) });
+    redirect(`/app/mobile/${app.id}?error=billing`);
+  }
+  redirect(url);
+}
+
+export async function startCarePlanAction(fd: FormData): Promise<void> {
+  const { ctx, app } = await ownedApp(fd, true);
+  if (app.care_status === 'active' || app.care_status === 'trialing') redirect(`/app/mobile/${app.id}`);
+  if (!stripeConfigured()) redirect(`/app/mobile/${app.id}?error=billing`);
+  let url: string;
+  try {
+    url = await createCareCheckout(app, ctx.user.email, ctx.workspace.stripe_customer_id ?? null);
+  } catch (err) {
+    log.error('mobile_care_checkout_failed', { appId: app.id, error: errorSummary(err) });
+    redirect(`/app/mobile/${app.id}?error=billing`);
+  }
+  redirect(url);
+}
+
+/** Stripe's billing portal: card, invoices and cancelling the care plan. */
+export async function manageCarePlanAction(fd: FormData): Promise<void> {
+  const { ctx, app } = await ownedApp(fd, true);
+  if (!stripeConfigured() || !ctx.workspace.stripe_customer_id) redirect(`/app/mobile/${app.id}?error=billing`);
+  let url: string;
+  try {
+    url = await createPortalSession(ctx.workspace, `/app/mobile/${app.id}`);
+  } catch (err) {
+    log.error('mobile_care_portal_failed', { appId: app.id, error: errorSummary(err) });
     redirect(`/app/mobile/${app.id}?error=billing`);
   }
   redirect(url);

@@ -1,5 +1,5 @@
 import 'server-only';
-import { handleSetupPayment } from '@/lib/apps/billing';
+import { handleCareSubscription, handleSetupPayment } from '@/lib/apps/billing';
 import type Stripe from 'stripe';
 import { getDb, now } from '@/lib/messaging/db';
 import { env } from '@/lib/messaging/env';
@@ -194,7 +194,10 @@ export async function handleStripeEvent(event: Stripe.Event, deps: StripeDeps = 
         const session = event.data.object;
         const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
         if (handleSetupPayment(session)) break;
-        if (session.mode === 'subscription' && subId) syncSubscription(await deps.retrieveSubscription(subId));
+        if (session.mode === 'subscription' && subId) {
+          const sub = await deps.retrieveSubscription(subId);
+          if (!handleCareSubscription(sub)) syncSubscription(sub);
+        }
         else outcome = 'ignored';
         break;
       }
@@ -204,13 +207,15 @@ export async function handleStripeEvent(event: Stripe.Event, deps: StripeDeps = 
       case 'customer.subscription.paused':
       case 'customer.subscription.resumed':
       case 'customer.subscription.trial_will_end':
-        syncSubscription(event.data.object, event.created);
+        if (!handleCareSubscription(event.data.object)) syncSubscription(event.data.object, event.created);
         break;
       case 'invoice.paid':
       case 'invoice.payment_failed': {
         const subId = invoiceSubscriptionId(event.data.object);
-        if (subId) syncSubscription(await deps.retrieveSubscription(subId));
-        else outcome = 'ignored';
+        if (subId) {
+          const sub = await deps.retrieveSubscription(subId);
+          if (!handleCareSubscription(sub)) syncSubscription(sub);
+        } else outcome = 'ignored';
         break;
       }
       default:

@@ -5,12 +5,13 @@ import { deviceStats } from '@/lib/apps/push';
 import { listBanners } from '@/lib/apps/apps';
 import { formatDate } from '@/components/console/ui';
 import { loadApp } from './load';
-import { paySetupFeeAction } from '../actions';
+import { manageCarePlanAction, paySetupFeeAction, startCarePlanAction } from '../actions';
 import { primaryBtn } from '@/components/console/ui';
 
-export default async function MobileOverviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; error?: string }> }) {
+export default async function MobileOverviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; care?: string; error?: string }> }) {
   const { app, settings, isOwner } = await loadApp(params);
-  const { paid, error } = await searchParams;
+  const { paid, care, error } = await searchParams;
+  const careLive = app.care_status === 'active' || app.care_status === 'trialing' || app.care_status === 'past_due';
   const devices = deviceStats(app.id);
   const banners = listBanners(app.id).filter((b) => b.active).length;
   const steps = [
@@ -21,6 +22,7 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
   ];
   return (
     <div className="space-y-6">
+      {care && <Notice tone="green">Your care plan is active. Thank you!</Notice>}
       {paid && <Notice tone="green">Thank you, your payment went through. We&apos;ll start building your app.</Notice>}
       {error === 'billing' && <Notice tone="red">Online payment isn&apos;t available right now. Email hi@oylabs.co and we&apos;ll send an invoice.</Notice>}
       {!app.setup_paid_at && !paid && (
@@ -41,6 +43,31 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
         <Stat label="Live home sections" value={banners} href={`/app/mobile/${app.id}/home`} />
         <Stat label="Last change" value={formatDate(app.updated_at)} hint={`Config version ${app.config_version}`} />
       </div>
+      <Card
+        title="Care plan"
+        description="Optional, $200/month: app and Shopify updates, Google Play and App Store releases, new features as they ship, and priority WhatsApp support. Cancel any time."
+      >
+        {careLive ? (
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className={app.care_status === 'past_due' ? 'text-red-600' : 'text-emerald-600'}>
+              {app.care_status === 'past_due' ? 'Payment failed: please update your card.' : 'Active'}
+            </span>
+            {isOwner && (
+              <form action={manageCarePlanAction}>
+                <input type="hidden" name="appId" value={app.id} />
+                <button className="text-ink underline">Manage card, invoices or cancel</button>
+              </form>
+            )}
+          </div>
+        ) : isOwner ? (
+          <form action={startCarePlanAction} className="flex flex-wrap items-center gap-3">
+            <input type="hidden" name="appId" value={app.id} />
+            <button className={primaryBtn}>Start care plan · $200/month</button>
+          </form>
+        ) : (
+          <p className="text-sm text-ink-dim">The workspace owner can start the care plan here.</p>
+        )}
+      </Card>
       <Card title="Getting started">
         <ol className="space-y-2">
           {steps.map((s) => (

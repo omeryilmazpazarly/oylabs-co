@@ -145,4 +145,21 @@ describe('setup fee', () => {
     expect(w.subscription_status).toBeNull();
     expect(await handleStripeEvent(event)).toBe('duplicate');
   });
+
+  it('routes care-plan subscription events to the app, not the messaging plan', async () => {
+    const { handleStripeEvent } = await import('@/lib/billing/subscriptions');
+    const app = createApp({ workspaceId: ws, name: 'Care', slug: 'care-co' });
+    const event = {
+      id: 'evt_care_1',
+      type: 'customer.subscription.updated',
+      created: 2,
+      data: { object: { id: 'sub_care', status: 'active', customer: 'cus_1', items: { data: [] }, metadata: { kind: 'mobile_app_care', app_id: String(app.id) } } },
+    } as unknown as import('stripe').Stripe.Event;
+    expect(await handleStripeEvent(event)).toBe('processed');
+    expect(getApp(app.id)!.care_status).toBe('active');
+    expect(getApp(app.id)!.care_subscription_id).toBe('sub_care');
+    const w = db.prepare('SELECT subscription_status, stripe_customer_id FROM workspaces WHERE id = ?').get(ws) as { subscription_status: string | null; stripe_customer_id: string | null };
+    expect(w.subscription_status).toBeNull();
+    expect(w.stripe_customer_id).toBe('cus_1');
+  });
 });
