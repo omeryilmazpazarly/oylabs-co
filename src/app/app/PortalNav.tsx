@@ -2,24 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Code2, CreditCard, FileText, LayoutDashboard, MessagesSquare, Plug, Settings, Users } from 'lucide-react';
+import { Code2, CreditCard, FileText, LayoutDashboard, MessagesSquare, Plug, Settings, Smartphone, Users } from 'lucide-react';
 
 const ITEMS = [
-  { href: '/app', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/app/inbox', label: 'Inbox', icon: MessagesSquare },
-  { href: '/app/connections', label: 'Connections', icon: Plug },
-  { href: '/app/templates', label: 'Templates', icon: FileText, whatsappOnly: true },
-  { href: '/app/developers', label: 'Developers', icon: Code2 },
+  { href: '/app/mobile', label: 'Mobile app', icon: Smartphone, appsOnly: true },
+  { href: '/app', label: 'Overview', icon: LayoutDashboard, exact: true, messaging: true },
+  { href: '/app/inbox', label: 'Inbox', icon: MessagesSquare, messaging: true },
+  { href: '/app/connections', label: 'Connections', icon: Plug, messaging: true },
+  { href: '/app/templates', label: 'Templates', icon: FileText, whatsappOnly: true, messaging: true },
+  { href: '/app/developers', label: 'Developers', icon: Code2, messaging: true },
   { href: '/app/team', label: 'Team', icon: Users },
   { href: '/app/billing', label: 'Billing', icon: CreditCard },
   { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
 
-export default function PortalNav({ isOwner, hasWhatsApp }: { isOwner: boolean; hasWhatsApp?: boolean }) {
+/** Messaging pages are hidden for businesses that only bought a mobile app. */
+export default function PortalNav({ isOwner, hasWhatsApp, hasApps, appOnly }: { isOwner: boolean; hasWhatsApp?: boolean; hasApps?: boolean; appOnly?: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:pb-0">
-      {ITEMS.filter((i) => (isOwner || i.href !== '/app/billing') && (hasWhatsApp || !i.whatsappOnly)).map(({ href, label, icon: Icon, exact }) => {
+      {ITEMS.filter(
+        (i) =>
+          (isOwner || i.href !== '/app/billing') &&
+          (hasWhatsApp || !i.whatsappOnly) &&
+          (hasApps || !i.appsOnly) &&
+          !(appOnly && i.messaging),
+      ).map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
         return (
           <Link

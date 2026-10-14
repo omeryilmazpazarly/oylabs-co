@@ -9,8 +9,9 @@ import { clientLogoutAction, switchWorkspaceAction } from './actions';
 import PortalNav from './PortalNav';
 import { listWaNumbers } from '@/lib/whatsapp/numbers';
 import BillingBanner from './BillingBanner';
+import { isAppOnlyWorkspace, listApps } from '@/lib/apps/apps';
 
-export const metadata = { title: 'OY Labs — Messaging', robots: { index: false, follow: false } };
+export const metadata = { title: 'OY Labs — Portal', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 // Pages call requireClient() too: layouts don't re-run on client navigation.
@@ -19,6 +20,8 @@ export default async function PortalLayout({ children }: { children: React.React
   const hasWhatsApp = listWaNumbers(ctx.workspace.id).some((n) => n.status !== 'disconnected');
   const nowMs = now();
   const state = serviceState(ctx.workspace, nowMs);
+  const hasApps = listApps(ctx.workspace.id).length > 0;
+  const appOnly = hasApps && isAppOnlyWorkspace(ctx.workspace);
 
   return (
     <div className="min-h-screen bg-page lg:flex">
@@ -43,7 +46,7 @@ export default async function PortalLayout({ children }: { children: React.React
           )}
           <div className="mt-1.5"><BillingBadge w={ctx.workspace} nowMs={nowMs} /></div>
         </div>
-        <PortalNav hasWhatsApp={hasWhatsApp} isOwner={ctx.role === 'owner'} />
+        <PortalNav hasWhatsApp={hasWhatsApp} isOwner={ctx.role === 'owner'} hasApps={hasApps} appOnly={appOnly} />
         <div className="hidden border-t border-line-sub p-4 lg:mt-auto lg:block">
           <div className="truncate text-sm text-ink">{ctx.user.name}</div>
           <div className="truncate text-xs text-ink-dim">{ctx.user.email} · {ctx.role}</div>
@@ -53,7 +56,8 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <BillingBanner state={state} isOwner={ctx.role === 'owner'} trialEndsAt={ctx.workspace.trial_ends_at} />
+        {/* The messaging plan banner is irrelevant to businesses that only bought an app. */}
+        {!appOnly && <BillingBanner state={state} isOwner={ctx.role === 'owner'} trialEndsAt={ctx.workspace.trial_ends_at} />}
         {children}
       </main>
     </div>

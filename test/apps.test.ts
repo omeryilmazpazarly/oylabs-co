@@ -127,3 +127,22 @@ describe('webhooks', () => {
     expect(verifyWebhook(body, null, 'shh')).toBe(false);
   });
 });
+
+describe('setup fee', () => {
+  it('marks the app paid from a completed setup checkout and leaves messaging billing alone', async () => {
+    const { handleStripeEvent } = await import('@/lib/billing/subscriptions');
+    const app = createApp({ workspaceId: ws, name: 'Leyla', slug: 'leyla' });
+    const event = {
+      id: 'evt_setup_1',
+      type: 'checkout.session.completed',
+      created: 1,
+      data: { object: { id: 'cs_1', mode: 'payment', payment_status: 'paid', metadata: { kind: 'mobile_app_setup', app_id: String(app.id) } } },
+    } as unknown as import('stripe').Stripe.Event;
+    expect(await handleStripeEvent(event)).toBe('processed');
+    expect(getApp(app.id)!.setup_paid_at).toBeTypeOf('number');
+    expect(getApp(app.id)!.setup_checkout_id).toBe('cs_1');
+    const w = db.prepare('SELECT subscription_status FROM workspaces WHERE id = ?').get(ws) as { subscription_status: string | null };
+    expect(w.subscription_status).toBeNull();
+    expect(await handleStripeEvent(event)).toBe('duplicate');
+  });
+});

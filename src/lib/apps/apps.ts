@@ -78,6 +78,20 @@ export function listApps(workspaceId: number): MobileApp[] {
   return getDb().prepare('SELECT * FROM mobile_apps WHERE workspace_id = ? ORDER BY created_at').all(workspaceId) as MobileApp[];
 }
 
+/**
+ * A business that bought only a mobile app (no messaging plan, nothing connected):
+ * the portal opens on its app and doesn't ask it to pick a messaging plan.
+ */
+export function isAppOnlyWorkspace(w: { id: number; complimentary: number; subscription_status: string | null }): boolean {
+  if (w.complimentary || w.subscription_status) return false;
+  const db = getDb();
+  if (!db.prepare('SELECT 1 FROM mobile_apps WHERE workspace_id = ?').get(w.id)) return false;
+  const channels =
+    db.prepare("SELECT 1 FROM connections WHERE workspace_id = ? AND status != 'disconnected'").get(w.id) ||
+    db.prepare("SELECT 1 FROM wa_numbers WHERE workspace_id = ? AND status != 'disconnected'").get(w.id);
+  return !channels;
+}
+
 export function listAllApps(): (MobileApp & { workspace_name: string })[] {
   return getDb()
     .prepare('SELECT a.*, w.name AS workspace_name FROM mobile_apps a JOIN workspaces w ON w.id = a.workspace_id ORDER BY a.created_at DESC')

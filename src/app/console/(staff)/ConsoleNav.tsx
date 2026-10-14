@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, MessagesSquare, Building2, Images, Globe } from 'lucide-react';
+import { LayoutDashboard, MessagesSquare, Building2, Images, Globe, Smartphone } from 'lucide-react';
 
 const ITEMS = [
   { href: '/console', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/console/inbox', label: 'Inbox', icon: MessagesSquare },
+  { href: '/console/apps', label: 'Mobile apps', icon: Smartphone },
   { href: '/console/workspaces/new', label: 'New workspace', icon: Building2 },
   { href: '/admin', label: 'Portfolio admin', icon: Images },
   { href: '/tech-provider', label: 'Public service page', icon: Globe },

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, Check, Code2, CreditCard, MessagesSquare, Plug } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { requireClient } from '@/lib/auth/client-session';
+import { isAppOnlyWorkspace } from '@/lib/apps/apps';
 import { now } from '@/lib/messaging/db';
 import { activeChannelCount } from '@/lib/messaging/workspaces';
 import { listConnections } from '@/lib/messaging/connections';
@@ -16,6 +18,7 @@ export default async function PortalOverview({ searchParams }: { searchParams: P
   const { error } = await searchParams;
   const ctx = await requireClient();
   const w = ctx.workspace;
+  if (isAppOnlyWorkspace(w)) redirect('/app/mobile');
   const nowMs = now();
   const state = serviceState(w, nowMs);
   const connections = listConnections(w.id);
