@@ -358,6 +358,107 @@ const MIGRATIONS: string[] = [
   ALTER TABLE wa_numbers ADD COLUMN token_expires_at INTEGER;
   ALTER TABLE wa_numbers ADD COLUMN expiry_reminded_at INTEGER;
   `,
+
+  /* 5 — Shopify mobile apps: one or more white-label store apps per workspace, their
+     dashboard-controlled settings and home banners, push devices, push campaigns and
+     back-in-stock alerts. Billing is a one-time setup fee plus an optional monthly plan. */
+  `
+  CREATE TABLE mobile_apps (
+    id                    INTEGER PRIMARY KEY,
+    workspace_id          INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    name                  TEXT    NOT NULL,
+    slug                  TEXT    NOT NULL UNIQUE,
+    public_key            TEXT    NOT NULL UNIQUE,
+    status                TEXT    NOT NULL DEFAULT 'setup' CHECK (status IN ('setup', 'building', 'live', 'paused')),
+    android_package       TEXT,
+    ios_bundle_id         TEXT,
+    eas_project_id        TEXT,
+    store_domain          TEXT,
+    storefront_token      TEXT,
+    customer_shop_id      TEXT,
+    customer_client_id    TEXT,
+    customer_api_endpoint TEXT,
+    customer_auth_endpoint TEXT,
+    admin_token_enc       TEXT,
+    webhook_secret_enc    TEXT,
+    settings              TEXT    NOT NULL DEFAULT '{}',
+    config_version        INTEGER NOT NULL DEFAULT 1,
+    setup_paid_at         INTEGER,
+    setup_checkout_id     TEXT,
+    care_subscription_id  TEXT,
+    care_status           TEXT,
+    created_at            INTEGER NOT NULL,
+    updated_at            INTEGER NOT NULL
+  );
+  CREATE INDEX mobile_apps_workspace ON mobile_apps(workspace_id);
+
+  CREATE TABLE mobile_app_banners (
+    id                INTEGER PRIMARY KEY,
+    app_id            INTEGER NOT NULL REFERENCES mobile_apps(id) ON DELETE CASCADE,
+    kind              TEXT    NOT NULL CHECK (kind IN ('hero', 'banner', 'collection_row', 'product_grid', 'text')),
+    position          INTEGER NOT NULL DEFAULT 0,
+    title_en          TEXT,
+    title_ar          TEXT,
+    subtitle_en       TEXT,
+    subtitle_ar       TEXT,
+    cta_en            TEXT,
+    cta_ar            TEXT,
+    image_url         TEXT,
+    link              TEXT,
+    collection_handle TEXT,
+    active            INTEGER NOT NULL DEFAULT 1,
+    starts_at         INTEGER,
+    ends_at           INTEGER,
+    created_at        INTEGER NOT NULL,
+    updated_at        INTEGER NOT NULL
+  );
+  CREATE INDEX mobile_app_banners_app ON mobile_app_banners(app_id, position);
+
+  CREATE TABLE mobile_app_devices (
+    id            INTEGER PRIMARY KEY,
+    app_id        INTEGER NOT NULL REFERENCES mobile_apps(id) ON DELETE CASCADE,
+    push_token    TEXT    NOT NULL,
+    platform      TEXT    NOT NULL CHECK (platform IN ('android', 'ios', 'web')),
+    language      TEXT,
+    customer_id   TEXT,
+    topics        TEXT    NOT NULL DEFAULT '["orderUpdates","backInStock"]',
+    created_at    INTEGER NOT NULL,
+    last_seen_at  INTEGER NOT NULL,
+    UNIQUE (app_id, push_token)
+  );
+  CREATE INDEX mobile_app_devices_customer ON mobile_app_devices(app_id, customer_id) WHERE customer_id IS NOT NULL;
+
+  CREATE TABLE mobile_app_pushes (
+    id               INTEGER PRIMARY KEY,
+    app_id           INTEGER NOT NULL REFERENCES mobile_apps(id) ON DELETE CASCADE,
+    kind             TEXT    NOT NULL CHECK (kind IN ('campaign', 'order_update', 'back_in_stock')),
+    title            TEXT    NOT NULL,
+    body             TEXT    NOT NULL,
+    link             TEXT,
+    audience         TEXT    NOT NULL DEFAULT 'all',
+    status           TEXT    NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'sending', 'sent', 'failed')),
+    sent_count       INTEGER NOT NULL DEFAULT 0,
+    error            TEXT,
+    sent_by_user_id  INTEGER REFERENCES client_users(id) ON DELETE SET NULL,
+    sent_by_staff_id INTEGER REFERENCES staff_users(id) ON DELETE SET NULL,
+    created_at       INTEGER NOT NULL,
+    sent_at          INTEGER
+  );
+  CREATE INDEX mobile_app_pushes_app ON mobile_app_pushes(app_id, created_at DESC);
+
+  CREATE TABLE mobile_app_stock_alerts (
+    id             INTEGER PRIMARY KEY,
+    app_id         INTEGER NOT NULL REFERENCES mobile_apps(id) ON DELETE CASCADE,
+    device_id      INTEGER NOT NULL REFERENCES mobile_app_devices(id) ON DELETE CASCADE,
+    variant_id     TEXT    NOT NULL,
+    product_handle TEXT    NOT NULL,
+    product_title  TEXT,
+    created_at     INTEGER NOT NULL,
+    notified_at    INTEGER,
+    UNIQUE (device_id, variant_id)
+  );
+  CREATE INDEX mobile_app_stock_alerts_variant ON mobile_app_stock_alerts(app_id, variant_id) WHERE notified_at IS NULL;
+  `,
 ];
 
 export type Db = Database.Database;
