@@ -44,7 +44,7 @@ export default async function PortalLayout({ children }: { children: React.React
           ) : (
             <div className="truncate text-sm font-medium text-ink">{ctx.workspace.name}</div>
           )}
-          <div className="mt-1.5"><BillingBadge w={ctx.workspace} nowMs={nowMs} /></div>
+          {!appOnly && <div className="mt-1.5"><BillingBadge w={ctx.workspace} nowMs={nowMs} /></div>}
         </div>
         <PortalNav hasWhatsApp={hasWhatsApp} isOwner={ctx.role === 'owner'} hasApps={hasApps} appOnly={appOnly} />
         <div className="hidden border-t border-line-sub p-4 lg:mt-auto lg:block">
