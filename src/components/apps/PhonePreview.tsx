@@ -2,12 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-/** The web build of the real app (storefront-app demo client), served next to the landing page. */
-export const APP_PREVIEW_ORIGIN = 'https://dev1024.oylabs.co';
-const BASE = `${APP_PREVIEW_ORIGIN}/app-preview`;
-
-export const storePreviewUrl = (store: string, layout: string) => `${BASE}/preview?store=${encodeURIComponent(store)}&layout=${encodeURIComponent(layout)}`;
-export const appPreviewUrl = (appKey: string) => `${BASE}/preview?key=${encodeURIComponent(appKey)}`;
+import { APP_PREVIEW_ORIGIN } from '@/lib/apps/preview-urls';
 
 /**
  * A phone running the real app. `draft` is sent to it whenever it changes, so unsaved

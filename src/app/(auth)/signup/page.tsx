@@ -4,7 +4,8 @@ import { getClient } from '@/lib/auth/client-session';
 import { isInterval, isPlanId, planById, TRIAL_DAYS } from '@/lib/billing/plans';
 import { appPlanById, SETUP_ADDON_USD } from '@/lib/apps/plans';
 import { isLayoutId, LAYOUTS } from '@/lib/apps/layouts';
-import { PhonePreview, storePreviewUrl } from '@/components/apps/PhonePreview';
+import { PhonePreview } from '@/components/apps/PhonePreview';
+import { storePreviewUrl } from '@/lib/apps/preview-urls';
 import AuthShell from '../AuthShell';
 import { SignupForm } from '../forms';
 

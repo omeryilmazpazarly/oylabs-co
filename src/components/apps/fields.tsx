@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import { inputCls, labelCls } from '@/components/console/ui';
 import { LAYOUTS, LAYOUT_IDS, type LayoutId } from '@/lib/apps/layouts';
-import { appPreviewUrl, PhonePreview } from './PhonePreview';
+import { appPreviewUrl } from '@/lib/apps/preview-urls';
+import { PhonePreview } from './PhonePreview';
 
 /** Uploads an image for the app and keeps its URL in a hidden input named `name`. */
 export function ImageField({ appId, name, label, defaultValue, hint, aspect = 'aspect-[16/9]', onChange }: {
