@@ -35,13 +35,15 @@ function Terms() {
   );
 }
 
-export function SignupForm({ plan, interval, setup }: { plan?: string; interval?: string; setup?: boolean }) {
+export function SignupForm({ plan, interval, setup, store, layout }: { plan?: string; interval?: string; setup?: boolean; store?: string; layout?: string }) {
   const [state, action] = useActionState<AuthState, FormData>(signupAction, {});
   return (
     <form action={action} className="space-y-4">
       <input type="hidden" name="plan" value={plan ?? ''} />
       <input type="hidden" name="interval" value={interval ?? ''} />
       {setup && <input type="hidden" name="setup" value="1" />}
+      {store && <input type="hidden" name="store" value={store} />}
+      {layout && <input type="hidden" name="layout" value={layout} />}
       <Field label="Your name"><input name="name" autoComplete="name" required className={inputCls} /></Field>
       <Field label="Business name"><input name="company" autoComplete="organization" required className={inputCls} /></Field>
       <Field label="Work email"><input name="email" type="email" autoComplete="email" required className={inputCls} /></Field>

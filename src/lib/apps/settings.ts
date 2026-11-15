@@ -9,6 +9,7 @@
  * `sanitizeSettings` is the single gate for client input: unknown keys are dropped,
  * colours must be #RRGGBB, URLs http(s), texts are trimmed and capped.
  */
+import { isLayoutId, type LayoutId } from './layouts';
 
 export const LANGUAGES = ['en', 'ar'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -22,6 +23,8 @@ export interface TrustItem {
 }
 
 export interface AppSettings {
+  /** App Builder layout: tab bar, tabs, header, home arrangement and fonts (lib/apps/layouts). */
+  layout: LayoutId;
   branding: {
     /** Text wordmark in the header when there's no logo image. */
     wordmark: string;
@@ -74,6 +77,7 @@ export interface AppSettings {
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
+  layout: 'classic',
   branding: {
     wordmark: 'STORE',
     tagline: {},
@@ -171,6 +175,7 @@ export function sanitizeSettings(input: unknown, base: AppSettings = DEFAULT_SET
     : base.content.trust;
 
   return {
+    layout: isLayoutId(i.layout) ? i.layout : base.layout,
     branding: {
       wordmark: text(b.wordmark, 24) ?? base.branding.wordmark,
       tagline: 'tagline' in b ? localized(b.tagline, 60) : base.branding.tagline,

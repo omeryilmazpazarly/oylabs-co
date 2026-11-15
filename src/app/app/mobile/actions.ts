@@ -71,6 +71,7 @@ export async function saveSettingsAction(_prev: Result, fd: FormData): Promise<R
   try {
     const { app } = await ownedApp(fd);
     const patch = nested(fd, ['branding', 'content', 'contact', 'integrations', 'features']);
+    if (fd.has('layout')) patch.layout = str(fd, 'layout');
     // Unchecked checkboxes send nothing; the form lists which booleans it shows.
     for (const key of str(fd, 'booleans').split(',').filter(Boolean)) {
       const [group, field] = key.split('.');

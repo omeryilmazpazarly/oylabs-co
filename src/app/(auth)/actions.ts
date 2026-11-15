@@ -38,6 +38,8 @@ export async function signupAction(_prev: AuthState, fd: FormData): Promise<Auth
       plan: isPlanId(plan) || isAppPlanId(plan) ? plan : undefined,
       interval: isInterval(interval) ? interval : undefined,
       setup: isAppPlanId(plan) && fd.get('setup') === '1',
+      store: isAppPlanId(plan) ? str(fd, 'store').slice(0, 200) || undefined : undefined,
+      layout: str(fd, 'layout') || undefined,
     }));
   } catch (err) {
     signupThrottle.fail(ip);

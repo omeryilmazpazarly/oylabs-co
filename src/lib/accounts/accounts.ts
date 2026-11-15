@@ -5,6 +5,8 @@ import { env } from '@/lib/messaging/env';
 import { createWorkspace } from '@/lib/messaging/workspaces';
 import { createSignupApp } from '@/lib/apps/apps';
 import { isAppPlanId } from '@/lib/apps/plans';
+import { setUpAppFromStore } from '@/lib/apps/autofill';
+import { isLayoutId } from '@/lib/apps/layouts';
 import { hashPassword, MIN_PASSWORD_LENGTH } from '@/lib/auth/password';
 import { sendAccountEmail } from '@/lib/email';
 import { errorSummary, log } from '@/lib/log';
@@ -100,6 +102,9 @@ export interface SignupInput {
   plan?: string;
   /** App plans only: the done-for-you setup add-on was ticked on the landing page. */
   setup?: boolean;
+  /** App plans only: the store previewed on the landing page, and the layout picked there. */
+  store?: string;
+  layout?: string;
   interval?: string;
 }
 
@@ -121,8 +126,8 @@ export async function signUp(input: SignupInput): Promise<{ userId: number; work
     const { workspace } = createWorkspace(company, '');
     db.prepare(`INSERT INTO workspace_members (workspace_id, user_id, role, created_at) VALUES (?, ?, 'owner', ?)`).run(workspace.id, userId, now());
     // App Builder sign-ups get their app straight away, so the portal opens on it, not on messaging.
-    if (isAppPlanId(input.plan)) createSignupApp(workspace.id, company);
-    return { userId, workspaceId: workspace.id };
+    const appId = isAppPlanId(input.plan) ? createSignupApp(workspace.id, company).id : null;
+    return { userId, workspaceId: workspace.id, appId };
   })();
 
   try {
@@ -131,8 +136,10 @@ export async function signUp(input: SignupInput): Promise<{ userId: number; work
     // The account exists either way; the user can resend from the verification screen.
     log.error('account.verification_email.failed', { userId: result.userId, error: errorSummary(err) });
   }
+  // Filled in the background while the owner confirms their email and pays.
+  if (result.appId && input.store) void setUpAppFromStore(result.appId, input.store, isLayoutId(input.layout) ? input.layout : 'classic');
   log.info('account.signup', { userId: result.userId, workspaceId: result.workspaceId });
-  return result;
+  return { userId: result.userId, workspaceId: result.workspaceId };
 }
 
 export async function sendVerificationEmail(userId: number, data: { plan?: string; interval?: string; setup?: string } = {}) {

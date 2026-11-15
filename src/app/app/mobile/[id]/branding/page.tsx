@@ -8,10 +8,10 @@ export default async function MobileBrandingPage({ params }: { params: Promise<{
   const { app, settings } = await loadApp(params);
   const b = settings.branding;
   return (
-    <Card title="Branding" description="Colours, logo and shapes. The preview shows roughly how the app will look.">
+    <Card title="Branding" description="Layout, colours, logo and shapes. Everything was filled from your store; change anything you like.">
       <StatusForm action={saveSettingsAction} submitLabel="Save branding" pendingText="Saving…" submitClassName={primaryBtn} className="space-y-6">
         <input type="hidden" name="appId" value={app.id} />
-        <BrandingEditor appId={app.id} colors={b.colors} radius={b.radius} buttonStyle={b.buttonStyle} wordmark={b.wordmark} logoUrl={b.logoUrl} />
+        <BrandingEditor appId={app.id} appKey={app.public_key} layout={settings.layout} colors={b.colors} radius={b.radius} buttonStyle={b.buttonStyle} wordmark={b.wordmark} logoUrl={b.logoUrl} />
         <LocalizedField name="branding.tagline" label="Tagline under the name" value={b.tagline} maxLength={60} />
       </StatusForm>
     </Card>

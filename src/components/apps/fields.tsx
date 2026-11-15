@@ -3,17 +3,24 @@
 import { useState } from 'react';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import { inputCls, labelCls } from '@/components/console/ui';
+import { LAYOUTS, LAYOUT_IDS, type LayoutId } from '@/lib/apps/layouts';
+import { appPreviewUrl, PhonePreview } from './PhonePreview';
 
 /** Uploads an image for the app and keeps its URL in a hidden input named `name`. */
-export function ImageField({ appId, name, label, defaultValue, hint, aspect = 'aspect-[16/9]' }: {
+export function ImageField({ appId, name, label, defaultValue, hint, aspect = 'aspect-[16/9]', onChange }: {
   appId: number;
   name: string;
   label: string;
   defaultValue?: string | null;
   hint?: string;
   aspect?: string;
+  onChange?: (url: string) => void;
 }) {
-  const [value, setValue] = useState(defaultValue ?? '');
+  const [value, setStored] = useState(defaultValue ?? '');
+  const setValue = (v: string) => {
+    setStored(v);
+    onChange?.(v);
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -94,14 +101,18 @@ export interface PreviewColors {
 }
 
 /** Colour pickers that drive a live phone preview, so the merchant sees the result before saving. */
-export function BrandingEditor({ colors, radius, buttonStyle, wordmark, logoUrl, appId }: {
+export function BrandingEditor({ colors, radius, buttonStyle, wordmark, logoUrl, appId, appKey, layout }: {
   colors: PreviewColors;
   radius: number;
   buttonStyle: 'rounded' | 'pill' | 'square';
   wordmark: string;
   logoUrl: string | null;
   appId: number;
+  appKey: string;
+  layout: LayoutId;
 }) {
+  const [logo, setLogo] = useState(logoUrl ?? '');
+  const [lay, setLay] = useState(layout);
   const [c, setC] = useState(colors);
   const [r, setR] = useState(radius);
   const [style, setStyle] = useState(buttonStyle);
@@ -114,17 +125,29 @@ export function BrandingEditor({ colors, radius, buttonStyle, wordmark, logoUrl,
     { key: 'text', label: 'Text' },
     { key: 'sale', label: 'Sale prices' },
   ];
-  const btnRadius = style === 'pill' ? 999 : style === 'square' ? 2 : r;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_280px]">
+    <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
       <div className="space-y-5">
+        <div>
+          <div className={labelCls}>Layout</div>
+          <input type="hidden" name="layout" value={lay} />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {LAYOUT_IDS.map((id) => (
+              <button key={id} type="button" onClick={() => setLay(id)}
+                className={`rounded-xl border px-3 py-2.5 text-left text-sm ${lay === id ? 'border-ink text-ink' : 'border-line text-ink-dim hover:text-ink'}`}>
+                <div className="font-semibold">{LAYOUTS[id].name.en}</div>
+                <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug">{LAYOUTS[id].description.en}</div>
+              </button>
+            ))}
+          </div>
+        </div>
         <div>
           <label htmlFor="wordmark" className={labelCls}>Name shown in the header</label>
           <input id="wordmark" name="branding.wordmark" value={word} onChange={(e) => setWord(e.target.value)} maxLength={24} className={inputCls} />
           <p className="mt-1.5 text-xs text-ink-dim">Used when there&apos;s no logo image.</p>
         </div>
-        <ImageField appId={appId} name="branding.logoUrl" label="Header logo (optional)" defaultValue={logoUrl} aspect="aspect-[4/1]"
+        <ImageField appId={appId} name="branding.logoUrl" label="Header logo (optional)" defaultValue={logoUrl} aspect="aspect-[4/1]" onChange={setLogo}
           hint="A transparent PNG works best, at least 600 px wide." />
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map(({ key, label }) => (
@@ -153,31 +176,12 @@ export function BrandingEditor({ colors, radius, buttonStyle, wordmark, logoUrl,
         </div>
       </div>
 
-      <div aria-label="Preview" className="mx-auto w-[260px] overflow-hidden rounded-[32px] border-[7px] border-neutral-900 shadow-xl" style={{ background: c.background }}>
-        <div className="flex h-10 items-center justify-center text-[11px] font-semibold tracking-[0.3em]" style={{ color: c.text }}>
-          {word || 'STORE'}
-        </div>
-        <div className="mx-3 h-24 rounded" style={{ background: c.canvas, borderRadius: r }} />
-        <div className="grid grid-cols-2 gap-2 p-3">
-          {[0, 1].map((i) => (
-            <div key={i}>
-              <div className="relative h-24" style={{ background: c.canvas, borderRadius: r }}>
-                <span className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white" style={{ background: c.sale }}>−20%</span>
-              </div>
-              <div className="mt-1.5 text-[11px] font-semibold" style={{ color: c.text }}>Product name</div>
-              <div className="text-[11px] font-semibold" style={{ color: c.sale }}>EGP 699</div>
-            </div>
-          ))}
-        </div>
-        <div className="px-3 pb-3">
-          <div className="text-[10px] underline" style={{ color: c.accent }}>See all</div>
-          <div className="mt-2 flex h-9 items-center justify-center text-[11px] font-semibold text-white" style={{ background: c.primary, borderRadius: btnRadius }}>
-            Add to bag
-          </div>
-        </div>
-        <div className="flex justify-around border-t py-2 text-[9px]" style={{ borderColor: c.canvas, color: c.text }}>
-          <span style={{ color: c.primary, fontWeight: 600 }}>Home</span><span>Shop</span><span>Bag</span><span>Account</span>
-        </div>
+      <div className="lg:sticky lg:top-6 lg:self-start">
+        <PhonePreview
+          src={appPreviewUrl(appKey)}
+          draft={{ layout: lay, branding: { wordmark: word, logoUrl: logo || null, colors: c, buttonStyle: style, radius: r } }}
+        />
+        <p className="mt-3 text-center text-xs text-ink-dim">Your real app, with your products. Changes show here before you save.</p>
       </div>
     </div>
   );

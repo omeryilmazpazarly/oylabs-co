@@ -1,8 +1,10 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { errorSummary, log } from '@/lib/log';
-import { createBanner, getApp, listBanners, updateSettings } from './apps';
-import { DEFAULT_SETTINGS, parseSettings, type AppSettings } from './settings';
+import { createBanner, getApp, linkStore, listBanners, updateSettings, type PublicConfig, type PublicSection } from './apps';
+import { LAYOUTS, type LayoutId } from './layouts';
+import { lookupStore } from './shopify';
+import { DEFAULT_SETTINGS, parseSettings, sanitizeSettings, type AppSettings } from './settings';
 
 /**
  * One-click setup: when an owner connects their store, everything the app shows is
@@ -218,12 +220,13 @@ export async function aiStoreCopy(name: string, html: string): Promise<StoreCopy
 const isBlank = (l: Partial<Record<string, string>> | undefined) => !l || !Object.values(l).some((v) => v?.trim());
 
 /** The settings patch: only fields still empty or default are filled. */
-export function settingsPatch(current: AppSettings, facts: StoreFacts, copy: StoreCopy | null): Record<string, unknown> {
+export function settingsPatch(current: AppSettings, facts: StoreFacts, copy: StoreCopy | null, replaceableWordmark?: string): Record<string, unknown> {
   const b = current.branding;
   const defaultColors = JSON.stringify(b.colors) === JSON.stringify(DEFAULT_SETTINGS.branding.colors);
   const branding: Record<string, unknown> = {};
   if (!b.logoUrl && facts.logoUrl) branding.logoUrl = facts.logoUrl;
-  if (b.wordmark === DEFAULT_SETTINGS.branding.wordmark || !b.wordmark) branding.wordmark = facts.name.toUpperCase().slice(0, 24);
+  // The sign-up placeholder (the business name) counts as unset: the store's own name wins.
+  if (!b.wordmark || b.wordmark === DEFAULT_SETTINGS.branding.wordmark || b.wordmark === replaceableWordmark) branding.wordmark = facts.name.toUpperCase().slice(0, 24);
   if (copy && defaultColors) branding.colors = { ...b.colors, ...copy.colors, canvas: b.colors.canvas };
   if (copy && isBlank(b.tagline)) branding.tagline = copy.tagline;
 
@@ -266,19 +269,81 @@ export function defaultSections(facts: StoreFacts, tagline?: { en: string; ar: s
   return sections;
 }
 
-export async function autofillApp(appId: number, domain: string, fetcher: typeof fetch = fetch): Promise<{ filled: string[] }> {
+/* ── Store setup: one lookup per store, shared by preview, sign-up and the dashboard ── */
+
+export interface StoreSetup {
+  /** .myshopify.com when Shopify exposes it, else the primary domain. */
+  domain: string;
+  facts: StoreFacts;
+  copy: StoreCopy | null;
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+const setups = new Map<string, { at: number; setup: Promise<StoreSetup> }>();
+
+/**
+ * Everything the app needs from a store, cached for a day per address so the landing
+ * preview, sign-up and "Connect store" agree and the AI runs once per store.
+ */
+export function storeSetup(address: string, fetcher: typeof fetch = fetch): Promise<StoreSetup> {
+  const key = address.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/[/?#].*$/, '');
+  const hit = setups.get(key);
+  if (hit && Date.now() - hit.at < DAY) return hit.setup;
+  const setup = (async () => {
+    const { domain } = await lookupStore(key, fetcher);
+    const { facts, html } = await readStore(domain, fetcher);
+    return { domain, facts, copy: await aiStoreCopy(facts.name, html) };
+  })();
+  setups.set(key, { at: Date.now(), setup });
+  setup.catch(() => setups.delete(key));
+  if (setups.size > 500) setups.delete(setups.keys().next().value!);
+  return setup;
+}
+
+/** The look a new app starts with: the layout's defaults, then the store's own details. */
+export function initialSettings(setup: StoreSetup, layout: LayoutId): AppSettings {
+  const preset = LAYOUTS[layout].branding;
+  const base = sanitizeSettings({ layout, branding: { ...preset } });
+  return sanitizeSettings(settingsPatch(base, setup.facts, setup.copy), base);
+}
+
+/** A complete app config for a store that has no app yet (landing preview, sign-up). */
+export function previewConfig(setup: StoreSetup, layout: LayoutId): PublicConfig {
+  const settings = initialSettings(setup, layout);
+  const home: PublicSection[] = defaultSections(setup.facts, setup.copy?.tagline).map((s, i) => ({
+    id: `preview-${i}`,
+    type: s.kind,
+    title: { ...(s.titleEn ? { en: s.titleEn } : {}), ...(s.titleAr ? { ar: s.titleAr } : {}) },
+    subtitle: { ...(s.subtitleEn ? { en: s.subtitleEn } : {}), ...(s.subtitleAr ? { ar: s.subtitleAr } : {}) },
+    cta: { ...(s.ctaEn ? { en: s.ctaEn } : {}), ...(s.ctaAr ? { ar: s.ctaAr } : {}) },
+    image: s.imageUrl ?? null,
+    link: s.link ?? null,
+    collection: s.collectionHandle ?? null,
+  }));
+  return {
+    version: 1,
+    updatedAt: Date.now(),
+    status: 'setup',
+    store: { domain: setup.domain, storefrontToken: null, shopId: null, customerAccountClientId: null, customerAccountEndpoint: null, customerAccountAuthEndpoint: null },
+    settings,
+    home,
+    layout: LAYOUTS[layout].layout,
+    theme: LAYOUTS[layout].theme,
+  };
+}
+
+export async function autofillApp(appId: number, address: string, fetcher: typeof fetch = fetch): Promise<{ filled: string[] }> {
   const app = getApp(appId);
   if (!app) return { filled: [] };
-  const { facts, html } = await readStore(domain, fetcher);
-  const copy = await aiStoreCopy(facts.name, html);
-  const patch = settingsPatch(parseSettings(app.settings), facts, copy);
+  const { facts, copy } = await storeSetup(address, fetcher);
+  const patch = settingsPatch(parseSettings(app.settings), facts, copy, app.name.toUpperCase().slice(0, 24));
   updateSettings(appId, patch);
   const filled = Object.entries(patch).flatMap(([group, fields]) => Object.keys(fields as object).map((f) => `${group}.${f}`));
   if (!listBanners(appId).length) {
-    for (const s of defaultSections(facts, copy?.tagline)) {
+    for (const section of defaultSections(facts, copy?.tagline)) {
       try {
-        createBanner(appId, s);
-        filled.push(`home.${s.kind}`);
+        createBanner(appId, section);
+        filled.push(`home.${section.kind}`);
       } catch (err) {
         log.warn('mobile_app.autofill.section_skipped', { appId, error: errorSummary(err) });
       }
@@ -286,4 +351,19 @@ export async function autofillApp(appId: number, domain: string, fetcher: typeof
   }
   log.info('mobile_app.autofill.done', { appId, filled: filled.length, ai: Boolean(copy) });
   return { filled };
+}
+
+/**
+ * Sign-up with a store already chosen on the landing page: link it, apply the layout
+ * and fill everything, so the app is complete by the time payment finishes.
+ */
+export async function setUpAppFromStore(appId: number, address: string, layout: LayoutId): Promise<void> {
+  try {
+    const setup = await storeSetup(address);
+    linkStore(appId, setup.domain);
+    updateSettings(appId, { layout });
+    await autofillApp(appId, address);
+  } catch (err) {
+    log.warn('mobile_app.signup_setup_failed', { appId, error: errorSummary(err) });
+  }
 }

@@ -1,6 +1,7 @@
 import 'server-only';
 import { getDb, now } from '@/lib/messaging/db';
 import { decryptSecret, encryptSecret, randomToken } from '@/lib/messaging/crypto';
+import { LAYOUTS, type LayoutId } from './layouts';
 import { DEFAULT_SETTINGS, parseSettings, sanitizeSettings, url, type AppSettings, type Language } from './settings';
 
 /**
@@ -256,7 +257,8 @@ export function createSignupApp(workspaceId: number, company: string): MobileApp
   const base = company.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'store';
   let slug = base.length >= 3 ? base : `${base}-app`;
   while (getDb().prepare('SELECT 1 FROM mobile_apps WHERE slug = ?').get(slug)) slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
-  return createApp({ workspaceId, name: company, slug });
+  // STORE until the store is linked; autofill then writes the store's own name.
+  return createApp({ workspaceId, name: company, slug, wordmark: 'STORE' });
 }
 
 // ---------------------------------------------------------------------------
@@ -389,6 +391,8 @@ export interface PublicConfig {
   };
   settings: AppSettings;
   home: PublicSection[];
+  layout: (typeof LAYOUTS)[LayoutId]['layout'];
+  theme: (typeof LAYOUTS)[LayoutId]['theme'];
 }
 
 const loc = (en: string | null, ar: string | null) => ({ ...(en ? { en } : {}), ...(ar ? { ar } : {}) });
@@ -428,5 +432,8 @@ export function buildPublicConfig(app: MobileApp, baseUrl: string, nowMs = now()
     },
     settings,
     home,
+    // Structure and fonts of the chosen layout; colours come from settings.branding.
+    layout: LAYOUTS[settings.layout].layout,
+    theme: LAYOUTS[settings.layout].theme,
   };
 }

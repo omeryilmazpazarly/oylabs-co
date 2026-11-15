@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { freshDb, seedWorkspace } from './helpers';
 import { createApp, getApp, listBanners, updateSettings } from '@/lib/apps/apps';
-import { autofillApp, defaultSections, findContacts, findLogo, settingsPatch, type StoreFacts } from '@/lib/apps/autofill';
+import { autofillApp, defaultSections, findContacts, findLogo, previewConfig, settingsPatch, type StoreFacts } from '@/lib/apps/autofill';
+import { LAYOUTS } from '@/lib/apps/layouts';
 import { DEFAULT_SETTINGS, parseSettings } from '@/lib/apps/settings';
 
 let ws: number;
@@ -87,5 +88,21 @@ describe('filling settings', () => {
     await autofillApp(app.id, 'shop.com', fetcher);
     expect(parseSettings(getApp(app.id)!.settings).branding.wordmark).toBe('EDITED');
     expect(listBanners(app.id)).toHaveLength(2);
+  });
+});
+
+describe('preview config', () => {
+  it('starts from the layout, then the store: logo, name, layout structure and sections', () => {
+    const config = previewConfig({ domain: 'shop.myshopify.com', facts, copy: null }, 'bold');
+    expect(config.settings.layout).toBe('bold');
+    expect(config.settings.branding).toMatchObject({ wordmark: 'SHOP', logoUrl: facts.logoUrl, colors: LAYOUTS.bold.branding.colors });
+    expect(config.layout).toEqual(LAYOUTS.bold.layout);
+    expect(config.store.domain).toBe('shop.myshopify.com');
+    expect(config.home.map((s) => s.type)).toEqual(['hero', 'collection_row', 'collection_row', 'product_grid']);
+  });
+
+  it('replaces the sign-up placeholder name with the store name', () => {
+    const current = { ...DEFAULT_SETTINGS, branding: { ...DEFAULT_SETTINGS.branding, wordmark: 'OY LABS' } };
+    expect(settingsPatch(current, facts, null, 'OY LABS').branding).toMatchObject({ wordmark: 'SHOP' });
   });
 });
