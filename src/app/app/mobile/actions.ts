@@ -21,6 +21,7 @@ import {
 } from '@/lib/apps/apps';
 import { sendCampaign, type Audience } from '@/lib/apps/push';
 import { lookupStore, registerWebhooks } from '@/lib/apps/shopify';
+import { autofillApp } from '@/lib/apps/autofill';
 import { errorSummary, log } from '@/lib/log';
 
 type Result = { status: 'idle' } | { status: 'error'; message: string } | { status: 'ok'; message: string };
@@ -89,7 +90,14 @@ export async function connectStoreAction(_prev: Result, fd: FormData): Promise<R
     const store = await lookupStore(str(fd, 'address'));
     linkStore(app.id, store.domain);
     log.info('mobile_app.store_linked', { appId: app.id, domain: store.domain });
-    return done(app.id, `Connected to ${store.name}. Your app now shows its products.`);
+    // Fill logo, colours, contacts, copy and home sections from the store; edits stay the owner's.
+    const { filled } = await autofillApp(app.id, store.domain).catch((err) => {
+      log.error('mobile_app.autofill.failed', { appId: app.id, error: errorSummary(err) });
+      return { filled: [] as string[] };
+    });
+    return done(app.id, filled.length
+      ? `Connected to ${store.name}. We filled your logo, colours, contacts and home page from your store; check them in the other tabs.`
+      : `Connected to ${store.name}. Your app now shows its products.`);
   } catch (err) {
     return fail(err);
   }
