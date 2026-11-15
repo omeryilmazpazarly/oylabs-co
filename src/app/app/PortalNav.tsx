@@ -12,7 +12,8 @@ const ITEMS = [
   { href: '/app/templates', label: 'Templates', icon: FileText, whatsappOnly: true, messaging: true },
   { href: '/app/developers', label: 'Developers', icon: Code2, messaging: true },
   { href: '/app/team', label: 'Team', icon: Users },
-  { href: '/app/billing', label: 'Billing', icon: CreditCard },
+  // App-only businesses pay for their app on the app page; this is the messaging plan.
+  { href: '/app/billing', label: 'Billing', icon: CreditCard, messaging: true },
   { href: '/app/settings', label: 'Settings', icon: Settings },
 ];
 

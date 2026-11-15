@@ -5,13 +5,17 @@ import { deviceStats } from '@/lib/apps/push';
 import { listBanners } from '@/lib/apps/apps';
 import { formatDate } from '@/components/console/ui';
 import { loadApp } from './load';
-import { manageCarePlanAction, paySetupFeeAction, startCarePlanAction } from '../actions';
+import { manageCarePlanAction, paySetupFeeAction, startAppPlanAction } from '../actions';
+import { APP_PLANS, appPlanById, SETUP_ADDON_USD } from '@/lib/apps/plans';
 import { primaryBtn } from '@/components/console/ui';
 
-export default async function MobileOverviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; care?: string; error?: string }> }) {
+export default async function MobileOverviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; care?: string; subscribed?: string; checkout?: string; error?: string }> }) {
   const { app, settings, isOwner } = await loadApp(params);
-  const { paid, care, error } = await searchParams;
+  const { paid, care, subscribed, checkout, error } = await searchParams;
   const careLive = app.care_status === 'active' || app.care_status === 'trialing' || app.care_status === 'past_due';
+  // Self-serve apps keep their monthly plan in the same subscription columns as the legacy care plan.
+  const plan = appPlanById(app.plan);
+  const planLive = careLive && !!plan;
   const devices = deviceStats(app.id);
   const banners = listBanners(app.id).filter((b) => b.active).length;
   const steps = [
@@ -23,18 +27,37 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
   return (
     <div className="space-y-6">
       {care && <Notice tone="green">Your care plan is active. Thank you!</Notice>}
-      {paid && <Notice tone="green">Thank you, your payment went through. We&apos;ll start building your app.</Notice>}
-      {error === 'billing' && <Notice tone="red">Online payment isn&apos;t available right now. Email hi@oylabs.co and we&apos;ll send an invoice.</Notice>}
-      {!app.setup_paid_at && !paid && (
-        <Card title="Setup fee" description="One-time $1,400: design, build and publication on Google Play and the App Store.">
+      {subscribed && <Notice tone="green">You&apos;re subscribed to {plan?.name ?? 'your plan'}. Thank you! Follow the steps below to finish your app.</Notice>}
+      {paid && <Notice tone="green">Thank you, your done-for-you setup is paid. We&apos;ll email you within one business day to connect and publish your app.</Notice>}
+      {checkout === 'cancelled' && <Notice>Payment was cancelled, nothing was charged. Pick a plan below when you&apos;re ready.</Notice>}
+      {error === 'billing' && <Notice tone="red">Online payment isn&apos;t available right now. Please try again in a few minutes.</Notice>}
+      {!planLive && !careLive && (
+        <Card title="Choose your plan" description="Monthly, no setup fee, cancel any time. Your settings stay saved if you stop.">
           {isOwner ? (
-            <form action={paySetupFeeAction} className="flex flex-wrap items-center gap-3">
+            <form action={startAppPlanAction} className="space-y-4">
               <input type="hidden" name="appId" value={app.id} />
-              <button className={primaryBtn}>Pay $1,400 securely</button>
-              <span className="text-xs text-ink-dim">Card payment by Stripe. Prefer a bank transfer? Email hi@oylabs.co.</span>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {APP_PLANS.map((p) => (
+                  <label key={p.id} className="flex cursor-pointer flex-col gap-1 rounded-xl border border-line p-4 has-[:checked]:border-ink">
+                    <span className="flex items-center gap-2">
+                      <input type="radio" name="plan" value={p.id} defaultChecked={p.id === (app.plan ?? 'app-growth')} />
+                      <span className="font-semibold text-ink">{p.name}</span>
+                    </span>
+                    <span className="text-lg font-semibold text-ink">${p.monthlyUsd}<span className="text-xs font-normal text-ink-dim">/month</span></span>
+                    <span className="text-xs leading-relaxed text-ink-dim">{p.blurb}</span>
+                  </label>
+                ))}
+              </div>
+              {!app.setup_paid_at && (
+                <label className="flex items-start gap-2 text-sm text-ink">
+                  <input type="checkbox" name="setup" value="1" className="mt-0.5" />
+                  <span>Add done-for-you setup, ${SETUP_ADDON_USD} once: we connect your store, design your app and publish it for you.</span>
+                </label>
+              )}
+              <button className={primaryBtn}>Continue to payment</button>
             </form>
           ) : (
-            <p className="text-sm text-ink-dim">The workspace owner can pay the setup fee here.</p>
+            <p className="text-sm text-ink-dim">The workspace owner can choose a plan here.</p>
           )}
         </Card>
       )}
@@ -43,11 +66,8 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
         <Stat label="Live home sections" value={banners} href={`/app/mobile/${app.id}/home`} />
         <Stat label="Last change" value={formatDate(app.updated_at)} hint={`Config version ${app.config_version}`} />
       </div>
-      <Card
-        title="Care plan"
-        description="Optional, $200/month: app and Shopify updates, Google Play and App Store releases, new features as they ship, and priority WhatsApp support. Cancel any time."
-      >
-        {careLive ? (
+      {planLive && (
+        <Card title={`Plan: ${plan?.name ?? 'App'}`} description={`$${plan?.monthlyUsd ?? ''}/month. Cancel any time; your settings stay saved.`}>
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className={app.care_status === 'past_due' ? 'text-red-600' : 'text-emerald-600'}>
               {app.care_status === 'past_due' ? 'Payment failed: please update your card.' : 'Active'}
@@ -59,15 +79,31 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
               </form>
             )}
           </div>
-        ) : isOwner ? (
-          <form action={startCarePlanAction} className="flex flex-wrap items-center gap-3">
+        </Card>
+      )}
+      {planLive && !app.setup_paid_at && isOwner && (
+        <Card title="Rather we do it for you?" description={`Done-for-you setup, $${SETUP_ADDON_USD} once: we connect your store, design your app and publish it on Google Play and the App Store.`}>
+          <form action={paySetupFeeAction}>
             <input type="hidden" name="appId" value={app.id} />
-            <button className={primaryBtn}>Start care plan · $200/month</button>
+            <button className={primaryBtn}>Add done-for-you setup · ${SETUP_ADDON_USD}</button>
           </form>
-        ) : (
-          <p className="text-sm text-ink-dim">The workspace owner can start the care plan here.</p>
-        )}
-      </Card>
+        </Card>
+      )}
+      {careLive && !app.plan && (
+        <Card title="Care plan" description="App and Shopify updates, store releases, new features and priority support.">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className={app.care_status === 'past_due' ? 'text-red-600' : 'text-emerald-600'}>
+              {app.care_status === 'past_due' ? 'Payment failed: please update your card.' : 'Active'}
+            </span>
+            {isOwner && (
+              <form action={manageCarePlanAction}>
+                <input type="hidden" name="appId" value={app.id} />
+                <button className="text-ink underline">Manage card, invoices or cancel</button>
+              </form>
+            )}
+          </div>
+        </Card>
+      )}
       <Card title="Getting started">
         <ol className="space-y-2">
           {steps.map((s) => (

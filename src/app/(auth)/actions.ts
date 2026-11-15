@@ -7,6 +7,7 @@ import {
 import { assertClient, checkClientCredentials, clientLoginThrottle, createClientSession, destroyClientSession, getClient } from '@/lib/auth/client-session';
 import { clientIp, createThrottle } from '@/lib/auth/throttle';
 import { isInterval, isPlanId } from '@/lib/billing/plans';
+import { isAppPlanId } from '@/lib/apps/plans';
 import { errorSummary, log } from '@/lib/log';
 
 export type AuthState = { error?: string; message?: string };
@@ -34,8 +35,9 @@ export async function signupAction(_prev: AuthState, fd: FormData): Promise<Auth
       company: str(fd, 'company'),
       email: str(fd, 'email'),
       password: str(fd, 'password'),
-      plan: isPlanId(plan) ? plan : undefined,
+      plan: isPlanId(plan) || isAppPlanId(plan) ? plan : undefined,
       interval: isInterval(interval) ? interval : undefined,
+      setup: isAppPlanId(plan) && fd.get('setup') === '1',
     }));
   } catch (err) {
     signupThrottle.fail(ip);

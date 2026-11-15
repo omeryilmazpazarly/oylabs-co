@@ -21,5 +21,6 @@ export default async function VerifyEmailPage({ params }: { params: Promise<{ to
   }
   const ctx = await getClient();
   if (!ctx || ctx.user.id !== result.userId) redirect('/login?verified=1');
+  if (result.plan?.startsWith('app-')) redirect(`/app/mobile/start?plan=${result.plan}${result.setup === '1' ? '&setup=1' : ''}`);
   redirect(result.plan ? `/app/billing?plan=${result.plan}&interval=${result.interval ?? 'month'}` : '/app/billing');
 }

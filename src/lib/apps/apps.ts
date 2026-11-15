@@ -38,6 +38,8 @@ export interface MobileApp {
   setup_checkout_id: string | null;
   care_subscription_id: string | null;
   care_status: string | null;
+  /** Self-serve plan (lib/apps/plans), null for apps sold the old way. */
+  plan: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -234,8 +236,18 @@ export function markSetupPaid(appId: number, checkoutId: string | null): void {
     .run(now(), checkoutId, now(), appId);
 }
 
-export function setCareSubscription(appId: number, subscriptionId: string | null, status: string | null): void {
-  getDb().prepare('UPDATE mobile_apps SET care_subscription_id = ?, care_status = ?, updated_at = ? WHERE id = ?').run(subscriptionId, status, now(), appId);
+export function setCareSubscription(appId: number, subscriptionId: string | null, status: string | null, plan?: string): void {
+  getDb()
+    .prepare('UPDATE mobile_apps SET care_subscription_id = ?, care_status = ?, plan = COALESCE(?, plan), updated_at = ? WHERE id = ?')
+    .run(subscriptionId, status, plan ?? null, now(), appId);
+}
+
+/** The first app of a self-serve sign-up, named after the business; the slug is made unique. */
+export function createSignupApp(workspaceId: number, company: string): MobileApp {
+  const base = company.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'store';
+  let slug = base.length >= 3 ? base : `${base}-app`;
+  while (getDb().prepare('SELECT 1 FROM mobile_apps WHERE slug = ?').get(slug)) slug = `${base}-${Math.random().toString(36).slice(2, 7)}`;
+  return createApp({ workspaceId, name: company, slug });
 }
 
 // ---------------------------------------------------------------------------

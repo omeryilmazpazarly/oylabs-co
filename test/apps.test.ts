@@ -16,6 +16,9 @@ import {
 import { DEFAULT_SETTINGS, sanitizeSettings } from '@/lib/apps/settings';
 import { claimStockAlerts, registerDevice, sendCampaign, subscribeStockAlert } from '@/lib/apps/push';
 import { verifyWebhook } from '@/lib/apps/shopify';
+import { sendAccountEmail } from '@/lib/email';
+
+vi.mock('@/lib/email', () => ({ sendAccountEmail: vi.fn(async () => {}) }));
 
 let db: Db;
 let ws: number;
@@ -161,5 +164,56 @@ describe('setup fee', () => {
     const w = db.prepare('SELECT subscription_status, stripe_customer_id FROM workspaces WHERE id = ?').get(ws) as { subscription_status: string | null; stripe_customer_id: string | null };
     expect(w.subscription_status).toBeNull();
     expect(w.stripe_customer_id).toBe('cus_1');
+  });
+});
+
+describe('self-serve app plans', () => {
+  const stripeEvent = (id: string, type: string, object: object) => ({ id, type, created: 1_800_000_000, data: { object } });
+
+  it('records the monthly plan from its subscription without touching messaging billing', async () => {
+    const { handleStripeEvent } = await import('@/lib/billing/subscriptions');
+    const app = createApp({ workspaceId: ws, name: 'Plan', slug: 'plan-co' });
+    const sub = { id: 'sub_app', status: 'active', customer: 'cus_9', items: { data: [] }, metadata: { kind: 'mobile_app_plan', plan: 'app-growth', app_id: String(app.id) } };
+    expect(await handleStripeEvent(stripeEvent('evt_plan_1', 'customer.subscription.created', sub) as never)).toBe('processed');
+    expect(getApp(app.id)).toMatchObject({ plan: 'app-growth', care_status: 'active', care_subscription_id: 'sub_app' });
+    const w = db.prepare('SELECT subscription_status FROM workspaces WHERE id = ?').get(ws) as { subscription_status: string | null };
+    expect(w.subscription_status).toBeNull();
+
+    await handleStripeEvent(stripeEvent('evt_plan_2', 'customer.subscription.deleted', { ...sub, status: 'canceled' }) as never);
+    expect(getApp(app.id)).toMatchObject({ plan: 'app-growth', care_status: 'canceled' });
+  });
+
+  it('marks the setup add-on paid with the first invoice and alerts OY Labs once', async () => {
+    const { handleStripeEvent } = await import('@/lib/billing/subscriptions');
+    vi.mocked(sendAccountEmail).mockClear();
+    const app = createApp({ workspaceId: ws, name: 'Setup', slug: 'setup-co' });
+    const sub = { id: 'sub_s', status: 'active', customer: 'cus_s', items: { data: [] }, metadata: { kind: 'mobile_app_plan', plan: 'app-pro', setup: '1', app_id: String(app.id) } };
+    const session = { id: 'cs_s', mode: 'subscription', payment_status: 'paid', subscription: 'sub_s', metadata: sub.metadata };
+    const retrieveSubscription = vi.fn(async () => sub);
+    await handleStripeEvent(stripeEvent('evt_s1', 'checkout.session.completed', session) as never, { retrieveSubscription } as never);
+    expect(getApp(app.id)!.setup_paid_at).toBeTypeOf('number');
+    expect(getApp(app.id)!.plan).toBe('app-pro');
+    expect(vi.mocked(sendAccountEmail)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(sendAccountEmail).mock.calls[0][0].subject).toContain('done-for-you');
+
+    await handleStripeEvent(stripeEvent('evt_s2', 'checkout.session.completed', { ...session, id: 'cs_s2' }) as never, { retrieveSubscription } as never);
+    expect(vi.mocked(sendAccountEmail)).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not mark setup paid for a plan checkout without the add-on', async () => {
+    const { handleStripeEvent } = await import('@/lib/billing/subscriptions');
+    const app = createApp({ workspaceId: ws, name: 'NoSetup', slug: 'nosetup-co' });
+    const sub = { id: 'sub_n', status: 'active', customer: 'cus_n', items: { data: [] }, metadata: { kind: 'mobile_app_plan', plan: 'app-starter', setup: '0', app_id: String(app.id) } };
+    await handleStripeEvent(stripeEvent('evt_n1', 'checkout.session.completed', { id: 'cs_n', mode: 'subscription', payment_status: 'paid', subscription: 'sub_n', metadata: sub.metadata }) as never, { retrieveSubscription: async () => sub } as never);
+    expect(getApp(app.id)).toMatchObject({ setup_paid_at: null, plan: 'app-starter' });
+  });
+
+  it('gives a sign-up app a unique slug from the business name', async () => {
+    const { createSignupApp } = await import('@/lib/apps/apps');
+    const a = createSignupApp(ws, 'Leyla Store!');
+    const b = createSignupApp(ws, 'Leyla Store');
+    expect(a.slug).toBe('leyla-store');
+    expect(b.slug).toMatch(/^leyla-store-[a-z0-9]+$/);
+    expect(createSignupApp(ws, 'لبان').slug).toBe('store');
   });
 });

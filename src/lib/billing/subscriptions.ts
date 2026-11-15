@@ -1,5 +1,5 @@
 import 'server-only';
-import { handleCareSubscription, handleSetupPayment } from '@/lib/apps/billing';
+import { handleCareSubscription, handlePlanCheckout, handleSetupPayment } from '@/lib/apps/billing';
 import type Stripe from 'stripe';
 import { getDb, now } from '@/lib/messaging/db';
 import { env } from '@/lib/messaging/env';
@@ -193,7 +193,8 @@ export async function handleStripeEvent(event: Stripe.Event, deps: StripeDeps = 
       case 'checkout.session.completed': {
         const session = event.data.object;
         const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
-        if (handleSetupPayment(session)) break;
+        if (await handleSetupPayment(session)) break;
+        await handlePlanCheckout(session);
         if (session.mode === 'subscription' && subId) {
           const sub = await deps.retrieveSubscription(subId);
           if (!handleCareSubscription(sub)) syncSubscription(sub);

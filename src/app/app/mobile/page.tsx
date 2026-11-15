@@ -16,9 +16,8 @@ export default async function MobileAppsPage() {
       {apps.length === 0 ? (
         <Card>
           <EmptyState icon={<Smartphone size={20} />} title="No app yet">
-            A branded iPhone and Android app for your Shopify store: live stock, cash on delivery, reviews, Arabic and English.
-            One-time setup of $1,400, then an optional monthly care plan. Email{' '}
-            <a className="text-ink underline" href="mailto:hi@oylabs.co?subject=Shopify%20mobile%20app">hi@oylabs.co</a> to start.
+            Turn your Shopify store into its own Android and iPhone app, from $49 a month.{' '}
+            <Link className="text-ink underline" href="/app/mobile/start?plan=app-growth">Choose a plan</Link> to start.
           </EmptyState>
         </Card>
       ) : (

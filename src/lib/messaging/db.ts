@@ -459,6 +459,12 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX mobile_app_stock_alerts_variant ON mobile_app_stock_alerts(app_id, variant_id) WHERE notified_at IS NULL;
   `,
+
+  /* 6 — Self-serve app plans: the monthly plan an app is on. Its Stripe subscription
+     uses care_subscription_id / care_status (one recurring subscription per app). */
+  `
+  ALTER TABLE mobile_apps ADD COLUMN plan TEXT;
+  `,
 ];
 
 export type Db = Database.Database;

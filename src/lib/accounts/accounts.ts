@@ -3,6 +3,8 @@ import { getDb, now } from '@/lib/messaging/db';
 import { randomToken, sha256Hex } from '@/lib/messaging/crypto';
 import { env } from '@/lib/messaging/env';
 import { createWorkspace } from '@/lib/messaging/workspaces';
+import { createSignupApp } from '@/lib/apps/apps';
+import { isAppPlanId } from '@/lib/apps/plans';
 import { hashPassword, MIN_PASSWORD_LENGTH } from '@/lib/auth/password';
 import { sendAccountEmail } from '@/lib/email';
 import { errorSummary, log } from '@/lib/log';
@@ -96,6 +98,8 @@ export interface SignupInput {
   email: string;
   password: string;
   plan?: string;
+  /** App plans only: the done-for-you setup add-on was ticked on the landing page. */
+  setup?: boolean;
   interval?: string;
 }
 
@@ -116,11 +120,13 @@ export async function signUp(input: SignupInput): Promise<{ userId: number; work
     const userId = Number(lastInsertRowid);
     const { workspace } = createWorkspace(company, '');
     db.prepare(`INSERT INTO workspace_members (workspace_id, user_id, role, created_at) VALUES (?, ?, 'owner', ?)`).run(workspace.id, userId, now());
+    // App Builder sign-ups get their app straight away, so the portal opens on it, not on messaging.
+    if (isAppPlanId(input.plan)) createSignupApp(workspace.id, company);
     return { userId, workspaceId: workspace.id };
   })();
 
   try {
-    await sendVerificationEmail(result.userId, { plan: input.plan, interval: input.interval });
+    await sendVerificationEmail(result.userId, { plan: input.plan, interval: input.interval, ...(input.setup ? { setup: '1' } : {}) });
   } catch (err) {
     // The account exists either way; the user can resend from the verification screen.
     log.error('account.verification_email.failed', { userId: result.userId, error: errorSummary(err) });
@@ -129,7 +135,7 @@ export async function signUp(input: SignupInput): Promise<{ userId: number; work
   return result;
 }
 
-export async function sendVerificationEmail(userId: number, data: { plan?: string; interval?: string } = {}) {
+export async function sendVerificationEmail(userId: number, data: { plan?: string; interval?: string; setup?: string } = {}) {
   const user = getUser(userId);
   if (!user || user.email_verified_at) return;
   getDb().prepare(`UPDATE email_tokens SET used_at = ? WHERE user_id = ? AND purpose = 'verify_email' AND used_at IS NULL`).run(now(), userId);
@@ -146,7 +152,7 @@ export async function sendVerificationEmail(userId: number, data: { plan?: strin
 }
 
 /** Returns the user and any plan choice carried from sign-up, or null if the link is invalid. */
-export function verifyEmail(token: string): { userId: number; plan?: string; interval?: string } | null {
+export function verifyEmail(token: string): { userId: number; plan?: string; interval?: string; setup?: string } | null {
   const row = findToken(token, 'verify_email');
   if (!row?.user_id) return null;
   const db = getDb();
@@ -154,7 +160,7 @@ export function verifyEmail(token: string): { userId: number; plan?: string; int
     db.prepare('UPDATE client_users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ?').run(now(), row.user_id);
     markUsed(row.token_hash);
   })();
-  const data = row.data ? (JSON.parse(row.data) as { plan?: string; interval?: string }) : {};
+  const data = row.data ? (JSON.parse(row.data) as { plan?: string; interval?: string; setup?: string }) : {};
   return { userId: row.user_id, ...data };
 }
 

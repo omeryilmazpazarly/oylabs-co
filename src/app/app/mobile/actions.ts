@@ -218,3 +218,9 @@ export async function manageCarePlanAction(fd: FormData): Promise<void> {
   }
   redirect(url);
 }
+
+/** Choose (or re-choose after cancelling) a monthly app plan from the app overview. */
+export async function startAppPlanAction(fd: FormData): Promise<void> {
+  await ownedApp(fd, true);
+  redirect(`/app/mobile/start?plan=${encodeURIComponent(str(fd, 'plan'))}${fd.get('setup') === '1' ? '&setup=1' : ''}`);
+}
