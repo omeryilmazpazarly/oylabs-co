@@ -1,7 +1,7 @@
 import 'server-only';
 import { getDb, now } from '@/lib/messaging/db';
 import { decryptSecret, encryptSecret, randomToken } from '@/lib/messaging/crypto';
-import { LAYOUTS, type LayoutId } from './layouts';
+import { LAYOUTS, layoutTheme, type LayoutId } from './layouts';
 import { DEFAULT_SETTINGS, parseSettings, sanitizeSettings, url, type AppSettings, type Language } from './settings';
 
 /**
@@ -392,7 +392,7 @@ export interface PublicConfig {
   settings: AppSettings;
   home: PublicSection[];
   layout: (typeof LAYOUTS)[LayoutId]['layout'];
-  theme: (typeof LAYOUTS)[LayoutId]['theme'];
+  theme: ReturnType<typeof layoutTheme>;
 }
 
 const loc = (en: string | null, ar: string | null) => ({ ...(en ? { en } : {}), ...(ar ? { ar } : {}) });
@@ -434,6 +434,6 @@ export function buildPublicConfig(app: MobileApp, baseUrl: string, nowMs = now()
     home,
     // Structure and fonts of the chosen layout; colours come from settings.branding.
     layout: LAYOUTS[settings.layout].layout,
-    theme: LAYOUTS[settings.layout].theme,
+    theme: layoutTheme(settings.layout),
   };
 }

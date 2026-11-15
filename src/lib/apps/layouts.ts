@@ -254,3 +254,13 @@ export const LAYOUTS = {
     }
   }
 } as const;
+
+/**
+ * What the app gets as `theme`: the layout's fonts only. The layouts' tinted neutrals
+ * were drawn for the demo store's colours; with a store's own brand colours the app
+ * derives its neutrals from them instead.
+ */
+export function layoutTheme(id: LayoutId): { fonts?: unknown } {
+  const theme = LAYOUTS[id].theme as { fonts?: unknown };
+  return theme.fonts ? { fonts: theme.fonts } : {};
+}

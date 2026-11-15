@@ -2,7 +2,7 @@ import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import { errorSummary, log } from '@/lib/log';
 import { createBanner, getApp, linkStore, listBanners, updateSettings, type PublicConfig, type PublicSection } from './apps';
-import { LAYOUTS, type LayoutId } from './layouts';
+import { LAYOUTS, layoutTheme, type LayoutId } from './layouts';
 import { lookupStore } from './shopify';
 import { DEFAULT_SETTINGS, parseSettings, sanitizeSettings, type AppSettings } from './settings';
 
@@ -303,7 +303,9 @@ export function storeSetup(address: string, fetcher: typeof fetch = fetch): Prom
 /** The look a new app starts with: the layout's defaults, then the store's own details. */
 export function initialSettings(setup: StoreSetup, layout: LayoutId): AppSettings {
   const preset = LAYOUTS[layout].branding;
-  const base = sanitizeSettings({ layout, branding: { ...preset } });
+  // The store's own colours win over the layout's; the layout keeps its shapes and fonts.
+  const colors = setup.copy ? { ...preset.colors, ...setup.copy.colors, canvas: DEFAULT_SETTINGS.branding.colors.canvas } : preset.colors;
+  const base = sanitizeSettings({ layout, branding: { ...preset, colors } });
   return sanitizeSettings(settingsPatch(base, setup.facts, setup.copy), base);
 }
 
@@ -328,7 +330,7 @@ export function previewConfig(setup: StoreSetup, layout: LayoutId): PublicConfig
     settings,
     home,
     layout: LAYOUTS[layout].layout,
-    theme: LAYOUTS[layout].theme,
+    theme: layoutTheme(layout),
   };
 }
 
