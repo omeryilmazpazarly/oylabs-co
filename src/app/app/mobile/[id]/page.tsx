@@ -5,6 +5,7 @@ import { deviceStats } from '@/lib/apps/push';
 import { listBanners } from '@/lib/apps/apps';
 import { formatDate } from '@/components/console/ui';
 import { loadApp } from './load';
+import { DEFAULT_SETTINGS } from '@/lib/apps/settings';
 import { manageCarePlanAction, paySetupFeeAction, startAppPlanAction } from '../actions';
 import { APP_PLANS, appPlanById, SETUP_ADDON_USD } from '@/lib/apps/plans';
 import { primaryBtn } from '@/components/console/ui';
@@ -20,7 +21,7 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
   const banners = listBanners(app.id).filter((b) => b.active).length;
   const steps = [
     { done: !!app.store_domain, label: 'Link your Shopify store', href: 'store' },
-    { done: !!(settings.branding.logoUrl || settings.branding.wordmark !== 'STORE'), label: 'Set your logo and colours', href: 'branding' },
+    { done: !!settings.branding.logoUrl || JSON.stringify(settings.branding.colors) !== JSON.stringify(DEFAULT_SETTINGS.branding.colors), label: 'Set your logo and colours', href: 'branding' },
     { done: banners > 0, label: 'Add home banners', href: 'home' },
     { done: !!settings.contact.whatsapp, label: 'Add your WhatsApp number', href: 'content' },
   ];
@@ -29,6 +30,7 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
       {care && <Notice tone="green">Your care plan is active. Thank you!</Notice>}
       {subscribed && <Notice tone="green">You&apos;re subscribed to {plan?.name ?? 'your plan'}. Thank you! Follow the steps below to finish your app.</Notice>}
       {paid && <Notice tone="green">Thank you, your done-for-you setup is paid. We&apos;ll email you within one business day to connect and publish your app.</Notice>}
+      {app.setup_paid_at && !paid && !app.store_domain && <Notice>Your done-for-you setup is paid. We&apos;ll email you within one business day to connect and publish your app.</Notice>}
       {checkout === 'cancelled' && <Notice>Payment was cancelled, nothing was charged. Pick a plan below when you&apos;re ready.</Notice>}
       {error === 'billing' && <Notice tone="red">Online payment isn&apos;t available right now. Please try again in a few minutes.</Notice>}
       {!planLive && !careLive && (

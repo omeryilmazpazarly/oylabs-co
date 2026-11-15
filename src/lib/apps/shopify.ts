@@ -14,6 +14,45 @@ import { claimStockAlerts, customerDevices, sendAutomatic } from './push';
  */
 
 const API_VERSION = '2026-07';
+/**
+ * Finds the Shopify store behind an address the owner typed ("mystore.com",
+ * "https://www.mystore.com/products/x", "mystore.myshopify.com"). Shopify answers
+ * Storefront API queries without a token, so the address alone proves it's a store
+ * and is all the app needs for products, collections and cart.
+ */
+export async function lookupStore(address: string, fetcher: typeof fetch = fetch): Promise<{ domain: string; name: string }> {
+  const host = address.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/[/?#].*$/, '').replace(/:\d+$/, '');
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(host)) throw new AppError('Type your store address, for example mystore.com.');
+  const notFound = new AppError(`We couldn't find a Shopify store at ${host}. Check the address and try again.`);
+  let name: string | undefined;
+  let primary: string | undefined;
+  try {
+    const res = await fetcher(`https://${host}/api/${API_VERSION}/graphql.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ shop { name primaryDomain { host } } }' }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const json = (await res.json()) as { data?: { shop?: { name?: string; primaryDomain?: { host?: string } } } };
+    name = json.data?.shop?.name;
+    primary = json.data?.shop?.primaryDomain?.host;
+  } catch {
+    throw notFound;
+  }
+  if (!name) throw notFound;
+  // The .myshopify.com domain is what the Admin API (notifications) needs later; best effort.
+  let domain = host.endsWith('.myshopify.com') ? host : undefined;
+  if (!domain) {
+    try {
+      const meta = (await (await fetcher(`https://${primary ?? host}/meta.json`, { signal: AbortSignal.timeout(8_000) })).json()) as { myshopify_domain?: string };
+      if (meta.myshopify_domain && /^[a-z0-9-]+\.myshopify\.com$/.test(meta.myshopify_domain)) domain = meta.myshopify_domain;
+    } catch {
+      /* falls back to the primary domain, which works the same for the app */
+    }
+  }
+  return { domain: domain ?? primary ?? host, name };
+}
+
 export const WEBHOOK_TOPICS = ['FULFILLMENTS_CREATE', 'FULFILLMENT_EVENTS_CREATE', 'ORDERS_CANCELLED', 'INVENTORY_LEVELS_UPDATE'] as const;
 
 export function verifyWebhook(rawBody: string, hmacHeader: string | null, secret: string): boolean {

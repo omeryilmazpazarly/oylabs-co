@@ -11,6 +11,7 @@ import {
   createBanner,
   deleteBanner,
   getWorkspaceApp,
+  linkStore,
   moveBanner,
   updateBanner,
   updateSettings,
@@ -19,7 +20,7 @@ import {
   type BannerKind,
 } from '@/lib/apps/apps';
 import { sendCampaign, type Audience } from '@/lib/apps/push';
-import { registerWebhooks } from '@/lib/apps/shopify';
+import { lookupStore, registerWebhooks } from '@/lib/apps/shopify';
 import { errorSummary, log } from '@/lib/log';
 
 type Result = { status: 'idle' } | { status: 'error'; message: string } | { status: 'ok'; message: string };
@@ -77,6 +78,18 @@ export async function saveSettingsAction(_prev: Result, fd: FormData): Promise<R
     }
     updateSettings(app.id, patch);
     return done(app.id, 'Saved. The app picks this up the next time it opens.');
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function connectStoreAction(_prev: Result, fd: FormData): Promise<Result> {
+  try {
+    const { app } = await ownedApp(fd, true);
+    const store = await lookupStore(str(fd, 'address'));
+    linkStore(app.id, store.domain);
+    log.info('mobile_app.store_linked', { appId: app.id, domain: store.domain });
+    return done(app.id, `Connected to ${store.name}. Your app now shows its products.`);
   } catch (err) {
     return fail(err);
   }

@@ -217,3 +217,39 @@ describe('self-serve app plans', () => {
     expect(createSignupApp(ws, 'لبان').slug).toBe('store');
   });
 });
+
+describe('connect a store by its address', () => {
+  const reply = (body: unknown) => new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
+
+  it('finds the store tokenless and prefers its .myshopify.com domain', async () => {
+    const { lookupStore } = await import('@/lib/apps/shopify');
+    const calls: string[] = [];
+    const fetcher = (async (input: string) => {
+      calls.push(input);
+      return input.endsWith('/meta.json')
+        ? reply({ myshopify_domain: 'leyla-1.myshopify.com' })
+        : reply({ data: { shop: { name: 'Leyla', primaryDomain: { host: 'leyla.com' } } } });
+    }) as unknown as typeof fetch;
+    expect(await lookupStore('https://WWW.Leyla.com/products/dress?x=1', fetcher)).toEqual({ domain: 'leyla-1.myshopify.com', name: 'Leyla' });
+    expect(calls[0]).toBe('https://www.leyla.com/api/2026-07/graphql.json');
+  });
+
+  it('falls back to the primary domain and rejects non-Shopify sites', async () => {
+    const { lookupStore } = await import('@/lib/apps/shopify');
+    const shopify = (async (input: string) => (input.endsWith('/meta.json') ? reply({}) : reply({ data: { shop: { name: 'Luban', primaryDomain: { host: 'luban.com' } } } }))) as unknown as typeof fetch;
+    expect(await lookupStore('luban.com', shopify)).toEqual({ domain: 'luban.com', name: 'Luban' });
+    const other = (async () => new Response('<html>', { status: 404 })) as unknown as typeof fetch;
+    await expect(lookupStore('example.com', other)).rejects.toThrow("couldn't find a Shopify store");
+    await expect(lookupStore('not a domain', other)).rejects.toThrow('store address');
+  });
+
+  it('links the store and drops a token saved for a different store', async () => {
+    const { linkStore } = await import('@/lib/apps/apps');
+    const app = createApp({ workspaceId: ws, name: 'Link', slug: 'link-co' });
+    db.prepare("UPDATE mobile_apps SET store_domain = 'a.myshopify.com', storefront_token = 'tok' WHERE id = ?").run(app.id);
+    linkStore(app.id, 'a.myshopify.com');
+    expect(getApp(app.id)).toMatchObject({ store_domain: 'a.myshopify.com', storefront_token: 'tok' });
+    linkStore(app.id, 'b.com');
+    expect(getApp(app.id)).toMatchObject({ store_domain: 'b.com', storefront_token: null, config_version: 3 });
+  });
+});

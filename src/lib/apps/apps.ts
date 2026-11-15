@@ -163,9 +163,10 @@ export interface StoreConnectionInput {
 export function updateStoreConnection(appId: number, input: StoreConnectionInput): void {
   const domain = input.storeDomain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
   if (!SHOP_DOMAIN.test(domain)) throw new AppError('Use the store\'s .myshopify.com domain, e.g. my-store.myshopify.com.');
-  const token = input.storefrontToken.trim();
-  if (!/^[0-9a-f]{32}$/i.test(token)) throw new AppError('The Storefront public access token is 32 letters and numbers.');
-  if (token.startsWith('shpat_')) throw new AppError('That is a private Admin token. Use the Storefront public token.');
+  // Optional: without it the app reads the store tokenless (no stock counts or metafields).
+  const token = input.storefrontToken.trim() || null;
+  if (token?.startsWith('shpat_')) throw new AppError('That is a private Admin token. Use the Storefront public token.');
+  if (token && !/^[0-9a-f]{32}$/i.test(token)) throw new AppError('The Storefront public access token is 32 letters and numbers.');
   const shopId = input.customerShopId?.trim() || null;
   if (shopId && !/^\d{5,20}$/.test(shopId)) throw new AppError('The shop ID is a number.');
   const endpoint = (v?: string) => {
@@ -203,6 +204,14 @@ export function updateStoreConnection(appId: number, input: StoreConnectionInput
       adminToken: adminToken ? encryptSecret(adminToken) : null,
       webhookSecret: webhookSecret ? encryptSecret(webhookSecret) : null,
     });
+  bump(appId);
+}
+
+/** Links the store found by its address (see lookupStore); a token saved for another store is dropped. */
+export function linkStore(appId: number, domain: string): void {
+  getDb()
+    .prepare('UPDATE mobile_apps SET storefront_token = CASE WHEN store_domain = @domain THEN storefront_token END, store_domain = @domain WHERE id = @id')
+    .run({ id: appId, domain });
   bump(appId);
 }
 

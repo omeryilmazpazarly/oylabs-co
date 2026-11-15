@@ -1,6 +1,6 @@
 import { Card, Notice, inputCls, labelCls, primaryBtn, secondaryBtn } from '@/components/console/ui';
 import { StatusForm } from '@/components/console/client';
-import { connectWebhooksAction, saveStoreAction } from '../../actions';
+import { connectStoreAction, connectWebhooksAction, saveStoreAction } from '../../actions';
 import { loadApp } from '../load';
 
 export default async function MobileStorePage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,11 +15,20 @@ export default async function MobileStorePage({ params }: { params: Promise<{ id
   return (
     <div className="space-y-6">
       {!isOwner && <Notice>Only the workspace owner can change the store connection.</Notice>}
-      <Card title="Shopify store" description="The store your app sells from. Shopify admin → Sales channels → Headless → your storefront.">
+      <Card title="Your Shopify store" description="Type your store's address. Your app shows its products, prices and collections right away; checkout stays on Shopify.">
+        <StatusForm action={connectStoreAction} submitLabel={app.store_domain ? 'Change store' : 'Connect store'} pendingText="Finding your store…" submitClassName={primaryBtn}>
+          <input type="hidden" name="appId" value={app.id} />
+          {app.store_domain && <p className="text-sm text-emerald-600">Connected: {app.store_domain}</p>}
+          {field('address', 'Store address', null, 'The address customers visit, for example mystore.com.', app.store_domain ?? 'mystore.com')}
+        </StatusForm>
+      </Card>
+      <details className="rounded-2xl border border-line bg-panel p-5">
+        <summary className="cursor-pointer text-sm font-semibold text-ink">Advanced (optional): stock counts, customer accounts and order notifications</summary>
+        <div className="mt-4">
         <StatusForm action={saveStoreAction} submitLabel="Save connection" pendingText="Saving…" submitClassName={primaryBtn}>
           <input type="hidden" name="appId" value={app.id} />
           {field('storeDomain', 'Store domain', app.store_domain, 'Your .myshopify.com domain.', 'my-store.myshopify.com')}
-          {field('storefrontToken', 'Storefront API public access token', app.storefront_token, 'The PUBLIC token (32 characters). Never paste the private token here.')}
+          {field('storefrontToken', 'Storefront API public access token', app.storefront_token, 'Optional. Adds live stock counts. The PUBLIC token (32 characters), never the private one.')}
           <div className="border-t border-line-sub pt-4 text-xs font-semibold text-ink">Customer accounts (sign-in, orders, addresses)</div>
           {field('customerShopId', 'Shop ID', app.customer_shop_id, 'The number in your Customer Account endpoints.')}
           {field('customerClientId', 'Customer Account API client ID', app.customer_client_id)}
@@ -37,7 +46,8 @@ export default async function MobileStorePage({ params }: { params: Promise<{ id
             <p className="mt-1.5 text-xs text-ink-dim">Used to verify that notifications really come from Shopify.</p>
           </div>
         </StatusForm>
-      </Card>
+        </div>
+      </details>
       {isOwner && app.admin_token_enc && app.webhook_secret_enc && (
         <Card title="Connect notifications" description="Subscribes your store's order and stock updates, so customers get shipped, delivered and back-in-stock pushes.">
           <StatusForm action={connectWebhooksAction} submitLabel="Connect Shopify notifications" pendingText="Connecting…" submitClassName={secondaryBtn}>
