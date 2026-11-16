@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { env } from '@/lib/messaging/env';
 import { getClient } from '@/lib/auth/client-session';
 import { getWorkspaceApp } from '@/lib/apps/apps';
 import { authorizeUrl, NONCE_COOKIE, normalizeShop, shopifyAppConfigured } from '@/lib/apps/shopify-oauth';
@@ -7,9 +8,9 @@ import { authorizeUrl, NONCE_COOKIE, normalizeShop, shopifyAppConfigured } from 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams;
   const appId = Number(q.get('appId'));
-  const back = (error: string) => NextResponse.redirect(new URL(`/app/mobile/${appId || ''}${appId ? '/store' : ''}?shopify=${error}`, request.url));
+  const back = (error: string) => NextResponse.redirect(new URL(`/app/mobile/${appId || ''}${appId ? '/store' : ''}?shopify=${error}`, env.appBaseUrl()));
   const ctx = await getClient();
-  if (!ctx?.workspace) return NextResponse.redirect(new URL('/login', request.url));
+  if (!ctx?.workspace) return NextResponse.redirect(new URL('/login', env.appBaseUrl()));
   if (ctx.role !== 'owner') return back('owner_only');
   const app = getWorkspaceApp(ctx.workspace.id, appId);
   if (!app) return back('not_found');

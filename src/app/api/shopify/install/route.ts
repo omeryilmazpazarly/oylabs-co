@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { env } from '@/lib/messaging/env';
 import {
   authorizeUrl,
   CLAIM_COOKIE,
@@ -19,10 +20,10 @@ export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams;
   const shop = normalizeShop(q.get('shop'));
   if (!shopifyAppConfigured() || !shop || !verifyShopifyQuery(q)) {
-    return NextResponse.redirect(new URL('/shopify-app/', request.url));
+    return NextResponse.redirect(new URL('/shopify-app/', env.appBaseUrl()));
   }
   if (getInstall(shop)) {
-    const res = NextResponse.redirect(new URL('/api/shopify/claim', request.url));
+    const res = NextResponse.redirect(new URL('/api/shopify/claim', env.appBaseUrl()));
     res.cookies.set(CLAIM_COOKIE, signValue([shop, Date.now() + 24 * 3600_000]), { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 24 * 3600, path: '/' });
     return res;
   }
