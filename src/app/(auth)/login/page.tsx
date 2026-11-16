@@ -14,8 +14,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <AuthShell
       title="Sign in"
-      subtitle="Manage your Messenger & Instagram messaging."
-      footer={<>New to OY Labs?{' '}<Link href="/signup" className="text-ink underline">Start a free trial</Link></>}
+      subtitle="Your app and your messaging, in one account."
+      footer={<>New to OY Labs?{' '}<Link href="/signup" className="text-ink underline">Create an account</Link></>}
     >
       {params.reset && <div className="mb-4"><Notice tone="green">Password updated. Sign in with your new password.</Notice></div>}
       {params.verified && <div className="mb-4"><Notice tone="green">Email confirmed. Sign in to continue.</Notice></div>}

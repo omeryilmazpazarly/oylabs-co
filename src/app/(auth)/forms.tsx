@@ -26,11 +26,11 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
   );
 }
 
-function Terms() {
+function Terms({ appBuilder = false }: { appBuilder?: boolean }) {
   return (
     <label className="flex items-start gap-2 text-xs leading-relaxed text-ink-dim">
       <input type="checkbox" name="terms" required className="mt-0.5 accent-current" />
-      <span>I agree to the{' '}<Link href="/terms" target="_blank" className="text-ink underline">Terms</Link>{' '}and{' '}<Link href="/privacy" target="_blank" className="text-ink underline">Privacy Policy</Link>, including the subscription and auto-renewal terms.</span>
+      <span>I agree to the{' '}<Link href="/terms" target="_blank" className="text-ink underline">Terms</Link>{appBuilder && <>,{' '}<Link href="/terms/app-builder" target="_blank" className="text-ink underline">App Builder terms</Link></>}{' '}and{' '}<Link href="/privacy" target="_blank" className="text-ink underline">Privacy Policy</Link>, including the subscription and auto-renewal terms.</span>
     </label>
   );
 }
@@ -48,7 +48,12 @@ export function SignupForm({ plan, interval, setup, store, layout }: { plan?: st
       <Field label="Business name"><input name="company" autoComplete="organization" required className={inputCls} /></Field>
       <Field label="Work email"><input name="email" type="email" autoComplete="email" required className={inputCls} /></Field>
       <Field label="Password" hint="At least 12 characters."><input name="password" type="password" autoComplete="new-password" minLength={12} required className={inputCls} /></Field>
-      <Terms />
+      <Terms appBuilder={Boolean(plan?.startsWith('app-'))} />
+      {plan?.startsWith('app-') && (
+        <p className="text-xs leading-relaxed text-ink-dim">
+          Publishing needs your own Google Play ($25 once) and Apple ($99/year) developer accounts. You open and pay for them directly; they aren&rsquo;t part of your plan.
+        </p>
+      )}
       <Feedback state={state} />
       <SubmitButton className={`${primaryBtn} w-full`} pendingText="Creating account…">Create account</SubmitButton>
     </form>
