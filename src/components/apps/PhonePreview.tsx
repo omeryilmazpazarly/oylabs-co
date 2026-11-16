@@ -24,9 +24,20 @@ export function PhonePreview({ src, draft, className = '' }: { src: string; draf
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serialized]);
 
+  // The app runs at a real phone size (390×844) and is scaled down to fit the frame,
+  // so text and images look as they do on a phone instead of zoomed in.
   return (
-    <div className={`mx-auto w-[300px] max-w-full rounded-[44px] border-[10px] border-neutral-900 bg-neutral-900 shadow-xl ${className}`}>
-      <iframe ref={frame} src={src} title="Your app" className="block h-[600px] w-full rounded-[34px] bg-white" onLoad={send} />
+    <div className={`mx-auto w-[300px] rounded-[44px] border-[10px] border-neutral-900 bg-neutral-900 shadow-xl ${className}`}>
+      <div className="relative h-[607px] w-[280px] overflow-hidden rounded-[34px] bg-white">
+        <iframe
+          ref={frame}
+          src={src}
+          title="Your app"
+          onLoad={send}
+          className="absolute left-0 top-0 block border-0 bg-white"
+          style={{ width: 390, height: 844, transform: `scale(${280 / 390})`, transformOrigin: 'top left' }}
+        />
+      </div>
     </div>
   );
 }
