@@ -465,6 +465,19 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE mobile_apps ADD COLUMN plan TEXT;
   `,
+
+  /* 7 — Stores that installed the OY Labs App Builder Shopify app (one-click connection).
+     The offline Admin token is encrypted; an app claims it by store domain. */
+  `
+  CREATE TABLE shopify_installs (
+    shop             TEXT PRIMARY KEY,
+    token_enc        TEXT    NOT NULL,
+    storefront_token TEXT,
+    scopes           TEXT    NOT NULL DEFAULT '',
+    installed_at     INTEGER NOT NULL,
+    uninstalled_at   INTEGER
+  );
+  `,
 ];
 
 export type Db = Database.Database;
