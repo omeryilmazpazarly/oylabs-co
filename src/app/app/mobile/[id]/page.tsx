@@ -9,6 +9,7 @@ import { DEFAULT_SETTINGS } from '@/lib/apps/settings';
 import { manageCarePlanAction, paySetupFeeAction, startAppPlanAction } from '../actions';
 import { APP_PLANS, appPlanById, SETUP_ADDON_USD } from '@/lib/apps/plans';
 import { primaryBtn } from '@/components/console/ui';
+import { shopifyPricingUrl } from '@/lib/apps/shopify-billing';
 
 export default async function MobileOverviewPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ paid?: string; care?: string; subscribed?: string; checkout?: string; error?: string }> }) {
   const { app, settings, isOwner } = await loadApp(params);
@@ -33,7 +34,12 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
       {app.setup_paid_at && !paid && !app.store_domain && <Notice>Your done-for-you setup is paid. We&apos;ll email you within one business day to connect and publish your app.</Notice>}
       {checkout === 'cancelled' && <Notice>Payment was cancelled, nothing was charged. Pick a plan below when you&apos;re ready.</Notice>}
       {error === 'billing' && <Notice tone="red">Online payment isn&apos;t available right now. Please try again in a few minutes.</Notice>}
-      {!planLive && !careLive && (
+      {!planLive && !careLive && app.billing_source === 'shopify' && app.store_domain && (
+        <Card title="Choose your plan" description="Your plan is billed by Shopify, on your Shopify invoice. Cancel any time; your settings stay saved.">
+          <a href={shopifyPricingUrl(app.store_domain)} className={primaryBtn}>Choose a plan in Shopify</a>
+        </Card>
+      )}
+      {!planLive && !careLive && app.billing_source !== 'shopify' && (
         <Card title="Choose your plan" description="Monthly, no setup fee, cancel any time. Your settings stay saved if you stop.">
           {isOwner ? (
             <form action={startAppPlanAction} className="space-y-4">
@@ -72,9 +78,12 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
         <Card title={`Plan: ${plan?.name ?? 'App'}`} description={`$${plan?.monthlyUsd ?? ''}/month. Cancel any time; your settings stay saved.`}>
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className={app.care_status === 'past_due' ? 'text-red-600' : 'text-emerald-600'}>
-              {app.care_status === 'past_due' ? 'Payment failed: please update your card.' : 'Active'}
+              {app.care_status === 'past_due' ? (app.billing_source === 'shopify' ? 'Shopify could not collect the payment. Check your Shopify billing.' : 'Payment failed: please update your card.') : 'Active'}
             </span>
-            {isOwner && (
+            {isOwner && app.billing_source === 'shopify' && app.store_domain && (
+              <a href={shopifyPricingUrl(app.store_domain)} className="text-ink underline">Change or cancel in Shopify</a>
+            )}
+            {isOwner && app.billing_source !== 'shopify' && (
               <form action={manageCarePlanAction}>
                 <input type="hidden" name="appId" value={app.id} />
                 <button className="text-ink underline">Manage card, invoices or cancel</button>
@@ -83,7 +92,7 @@ export default async function MobileOverviewPage({ params, searchParams }: { par
           </div>
         </Card>
       )}
-      {planLive && !app.setup_paid_at && isOwner && (
+      {planLive && !app.setup_paid_at && isOwner && app.billing_source !== 'shopify' && (
         <Card title="Rather we do it for you?" description={`Done-for-you setup, $${SETUP_ADDON_USD} once: we connect your store, design your app and publish it on Google Play and the App Store.`}>
           <form action={paySetupFeeAction}>
             <input type="hidden" name="appId" value={app.id} />

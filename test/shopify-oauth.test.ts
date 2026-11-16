@@ -69,3 +69,32 @@ describe('Shopify OAuth', () => {
     expect(verifyAppWebhook(body, 'nope')).toBe(false);
   });
 });
+
+describe('Shopify managed pricing', () => {
+  it('maps Shopify plan names and statuses', async () => {
+    const { planFromName, statusFromShopify, shopifyPricingUrl } = await import('@/lib/apps/shopify-billing');
+    expect(planFromName('Growth')).toBe('app-growth');
+    expect(planFromName('OY Labs Pro')).toBe('app-pro');
+    expect(planFromName('Unknown')).toBeNull();
+    expect(statusFromShopify('ACTIVE')).toBe('active');
+    expect(statusFromShopify('FROZEN')).toBe('past_due');
+    expect(statusFromShopify('CANCELLED')).toBe('canceled');
+    expect(statusFromShopify('PENDING')).toBeNull();
+    expect(shopifyPricingUrl('my-shop.myshopify.com')).toBe('https://admin.shopify.com/store/my-shop/charges/oy-labs-app-builder/pricing_plans');
+  });
+
+  it('only changes apps billed by Shopify', async () => {
+    const { applyShopifySubscription } = await import('@/lib/apps/shopify-billing');
+    const { createApp, getApp } = await import('@/lib/apps/apps');
+    const { getDb } = await import('@/lib/messaging/db');
+    const { seedWorkspace } = await import('./helpers');
+    const ws = seedWorkspace(getDb(), { name: 'Shop' });
+    const stripeApp = createApp({ workspaceId: ws, name: 'A', slug: 'app-a' });
+    const shopifyApp = createApp({ workspaceId: ws, name: 'B', slug: 'app-b' });
+    getDb().prepare("UPDATE mobile_apps SET store_domain = 's.myshopify.com'").run();
+    getDb().prepare("UPDATE mobile_apps SET billing_source = 'shopify' WHERE id = ?").run(shopifyApp.id);
+    expect(applyShopifySubscription('s.myshopify.com', { id: 'gid://shopify/AppSubscription/1', name: 'Pro', status: 'ACTIVE' })).toBe(1);
+    expect(getApp(shopifyApp.id)).toMatchObject({ plan: 'app-pro', care_status: 'active' });
+    expect(getApp(stripeApp.id)).toMatchObject({ plan: null, care_status: null });
+  });
+});

@@ -11,7 +11,7 @@ import { SignupForm } from '../forms';
 
 export const metadata = { title: 'Create your account — OY Labs', description: 'Start your OY Labs plan.' };
 
-type Params = { plan?: string; interval?: string; setup?: string; store?: string; layout?: string };
+type Params = { plan?: string; interval?: string; setup?: string; store?: string; layout?: string; source?: string };
 
 const cleanStore = (v?: string) => {
   const host = (v ?? '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/[/?#].*$/, '');
@@ -19,7 +19,8 @@ const cleanStore = (v?: string) => {
 };
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const { plan, interval, setup, store: storeParam, layout: layoutParam } = await searchParams;
+  const { plan, interval, setup, store: storeParam, layout: layoutParam, source } = await searchParams;
+  const fromShopify = source === 'shopify';
   const appPlan = appPlanById(plan);
   const withSetup = Boolean(appPlan && setup === '1');
   const store = appPlan ? cleanStore(storeParam) : undefined;
@@ -31,7 +32,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
     redirect(`/app/billing${plan ? `?plan=${plan}&interval=${interval ?? 'month'}` : ''}`);
   }
   const chosen = isPlanId(plan) ? planById(plan) : undefined;
-  const subtitle = appPlan
+  const subtitle = appPlan && fromShopify
+    ? `Your app for ${store ?? 'your store'} is ready. Create your account; you choose your plan in Shopify next, billed on your Shopify invoice.`
+    : appPlan
     ? `${store ? `Your ${LAYOUTS[layout].name.en} app for ${store}. ` : ''}${appPlan.name} · $${appPlan.monthlyUsd}/month${withSetup ? ` + $${SETUP_ADDON_USD} done-for-you setup` : ''}. Cancel any time.`
     : chosen ? `${chosen.name} plan · ${TRIAL_DAYS}-day free trial` : `${TRIAL_DAYS}-day free trial on every plan`;
   return (

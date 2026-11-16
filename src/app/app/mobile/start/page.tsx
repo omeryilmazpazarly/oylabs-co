@@ -8,6 +8,7 @@ import { isLayoutId } from '@/lib/apps/layouts';
 import { isAppPlanId } from '@/lib/apps/plans';
 import { stripeConfigured } from '@/lib/billing/stripe';
 import { attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
+import { enableShopifyBilling, shopifyPricingUrl } from '@/lib/apps/shopify-billing';
 import { errorSummary, log } from '@/lib/log';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,12 @@ export default async function StartAppPlan({ searchParams }: { searchParams: Pro
   const claimed = claimedShop((await cookies()).get(CLAIM_COOKIE)?.value);
   if (claimed && (!store || store === claimed)) {
     await attachInstall(app.id, claimed).catch((err) => log.error('shopify_oauth.claim_failed', { appId: app.id, error: errorSummary(err) }));
+    // Installed from Shopify: the plan is chosen and paid in Shopify, never Stripe.
+    if (!(await enableShopifyBilling(app.id, claimed))) redirect(shopifyPricingUrl(claimed));
+    redirect(`/app/mobile/${app.id}?subscribed=1`);
   }
+  // Billed by Shopify (installed from the App Store): plans are picked and paid there.
+  if (app.billing_source === 'shopify' && app.store_domain) redirect(shopifyPricingUrl(app.store_domain));
   const live = app.care_status === 'active' || app.care_status === 'trialing' || app.care_status === 'past_due';
   if (!isAppPlanId(plan) || (live && app.plan)) redirect(`/app/mobile/${app.id}`);
   if (!stripeConfigured()) redirect(`/app/mobile/${app.id}?error=billing`);

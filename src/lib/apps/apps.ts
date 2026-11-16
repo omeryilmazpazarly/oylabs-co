@@ -41,6 +41,8 @@ export interface MobileApp {
   care_status: string | null;
   /** Self-serve plan (lib/apps/plans), null for apps sold the old way. */
   plan: string | null;
+  /** 'shopify' for App Store installs (Shopify billing), else 'stripe'. */
+  billing_source: 'stripe' | 'shopify';
   created_at: number;
   updated_at: number;
 }

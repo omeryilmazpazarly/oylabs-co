@@ -478,6 +478,12 @@ const MIGRATIONS: string[] = [
     uninstalled_at   INTEGER
   );
   `,
+
+  /* 8 — Where an app's plan is paid: 'stripe' (website sign-ups, default) or 'shopify'
+     (installed from the Shopify App Store, billed through Shopify managed pricing). */
+  `
+  ALTER TABLE mobile_apps ADD COLUMN billing_source TEXT NOT NULL DEFAULT 'stripe';
+  `,
 ];
 
 export type Db = Database.Database;
