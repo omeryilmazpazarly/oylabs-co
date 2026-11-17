@@ -7,7 +7,7 @@ import { setUpAppFromStore } from '@/lib/apps/autofill';
 import { isLayoutId } from '@/lib/apps/layouts';
 import { isAppPlanId } from '@/lib/apps/plans';
 import { stripeConfigured } from '@/lib/billing/stripe';
-import { attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
+import { appForShop, attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
 import { enableShopifyBilling, shopifyPricingUrl } from '@/lib/apps/shopify-billing';
 import { errorSummary, log } from '@/lib/log';
 
@@ -26,10 +26,11 @@ export default async function StartAppPlan({ searchParams }: { searchParams: Pro
   // Installed from Shopify in this browser: the same store gets its one-click connection.
   const claimed = claimedShop((await cookies()).get(CLAIM_COOKIE)?.value);
   if (claimed && (!store || store === claimed)) {
-    await attachInstall(app.id, claimed).catch((err) => log.error('shopify_oauth.claim_failed', { appId: app.id, error: errorSummary(err) }));
+    const target = appForShop(ctx.workspace.id, ctx.workspace.name, claimed);
+    await attachInstall(target.id, claimed).catch((err) => log.error('shopify_oauth.claim_failed', { appId: target.id, error: errorSummary(err) }));
     // Installed from Shopify: the plan is chosen and paid in Shopify, never Stripe.
-    if (!(await enableShopifyBilling(app.id, claimed))) redirect(shopifyPricingUrl(claimed));
-    redirect(`/app/mobile/${app.id}?subscribed=1`);
+    if (!(await enableShopifyBilling(target.id, claimed))) redirect(shopifyPricingUrl(claimed));
+    redirect(`/app/mobile/${target.id}?subscribed=1`);
   }
   // Billed by Shopify (installed from the App Store): plans are picked and paid there.
   if (app.billing_source === 'shopify' && app.store_domain) redirect(shopifyPricingUrl(app.store_domain));

@@ -4,7 +4,7 @@ import { getDb, now } from '@/lib/messaging/db';
 import { decryptSecret, encryptSecret } from '@/lib/messaging/crypto';
 import { env } from '@/lib/messaging/env';
 import { errorSummary, log } from '@/lib/log';
-import { AppError, getApp, type MobileApp } from './apps';
+import { AppError, createSignupApp, getApp, listApps, type MobileApp } from './apps';
 import { registerWebhooks } from './shopify';
 
 /**
@@ -207,6 +207,15 @@ export async function attachInstall(appId: number, shop: string): Promise<Mobile
   const app = getApp(appId)!;
   await registerWebhooks(app).catch((err) => log.error('shopify_oauth.webhooks_failed', { appId, error: errorSummary(err) }));
   return app;
+}
+
+/**
+ * The workspace's app for a store installed from Shopify: the one already on that store,
+ * else one with no store yet, else a new one. Never moves an app off another store.
+ */
+export function appForShop(workspaceId: number, workspaceName: string, shop: string): MobileApp {
+  const apps = listApps(workspaceId);
+  return apps.find((a) => a.store_domain === shop) ?? apps.find((a) => !a.store_domain) ?? createSignupApp(workspaceId, workspaceName);
 }
 
 /** App uninstalled or shop erased: forget the token everywhere it was copied. */

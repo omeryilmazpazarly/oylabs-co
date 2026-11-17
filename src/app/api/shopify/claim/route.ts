@@ -1,9 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { env } from '@/lib/messaging/env';
 import { getClient } from '@/lib/auth/client-session';
-import { createSignupApp, listApps } from '@/lib/apps/apps';
 import { autofillApp } from '@/lib/apps/autofill';
-import { attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
+import { appForShop, attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
 import { enableShopifyBilling, shopifyPricingUrl } from '@/lib/apps/shopify-billing';
 import { errorSummary, log } from '@/lib/log';
 
@@ -19,8 +18,7 @@ export async function GET(request: NextRequest) {
     // Plans are paid in Shopify afterwards; the plan here only opens the App Builder sign-up.
     return NextResponse.redirect(new URL(`/signup?plan=app-growth&source=shopify&store=${encodeURIComponent(shop)}`, env.appBaseUrl()));
   }
-  const apps = listApps(ctx.workspace.id);
-  const app = apps.find((a) => a.store_domain === shop) ?? apps[0] ?? createSignupApp(ctx.workspace.id, ctx.workspace.name);
+  const app = appForShop(ctx.workspace.id, ctx.workspace.name, shop);
   try {
     const first = app.store_domain !== shop;
     await attachInstall(app.id, shop);

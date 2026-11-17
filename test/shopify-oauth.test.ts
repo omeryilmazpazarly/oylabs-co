@@ -97,4 +97,19 @@ describe('Shopify managed pricing', () => {
     expect(getApp(shopifyApp.id)).toMatchObject({ plan: 'app-pro', care_status: 'active' });
     expect(getApp(stripeApp.id)).toMatchObject({ plan: null, care_status: null });
   });
+
+  it('never moves an app that is on another store', async () => {
+    const { appForShop } = await import('@/lib/apps/shopify-oauth');
+    const { createApp } = await import('@/lib/apps/apps');
+    const { getDb } = await import('@/lib/messaging/db');
+    const { seedWorkspace } = await import('./helpers');
+    const ws = seedWorkspace(getDb(), { name: 'Shop' });
+    const live = createApp({ workspaceId: ws, name: 'Live', slug: 'live-app' });
+    getDb().prepare("UPDATE mobile_apps SET store_domain = 'live.myshopify.com' WHERE id = ?").run(live.id);
+    const fresh = appForShop(ws, 'Shop', 'new.myshopify.com');
+    expect(fresh.id).not.toBe(live.id);
+    expect(appForShop(ws, 'Shop', 'live.myshopify.com').id).toBe(live.id);
+    // An app with no store yet is reused rather than duplicated.
+    expect(appForShop(ws, 'Shop', 'new.myshopify.com').id).toBe(fresh.id);
+  });
 });
