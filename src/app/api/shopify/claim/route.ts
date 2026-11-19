@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { env } from '@/lib/messaging/env';
 import { getClient } from '@/lib/auth/client-session';
 import { autofillApp } from '@/lib/apps/autofill';
-import { appForShop, attachInstall, CLAIM_COOKIE, claimedShop } from '@/lib/apps/shopify-oauth';
+import { appForShop, attachInstall, CLAIM_COOKIE, claimedShop, getInstall, readSigned, signValue } from '@/lib/apps/shopify-oauth';
 import { enableShopifyBilling, shopifyPricingUrl } from '@/lib/apps/shopify-billing';
 import { errorSummary, log } from '@/lib/log';
 
@@ -11,6 +11,17 @@ import { errorSummary, log } from '@/lib/log';
  * store on their app; everyone else picks a plan with the store already filled in.
  */
 export async function GET(request: NextRequest) {
+  // From "Open the App Builder" in the Shopify admin: a signed 15-minute link (the
+  // admin iframe can't set our cookie), turned into the usual claim cookie.
+  const link = readSigned(request.nextUrl.searchParams.get('t'));
+  if (link) {
+    const [linkShop, expires, purpose] = link;
+    if (purpose === 'claim' && Number(expires) > Date.now() && getInstall(linkShop)) {
+      const res = NextResponse.redirect(new URL('/api/shopify/claim', env.appBaseUrl()));
+      res.cookies.set(CLAIM_COOKIE, signValue([linkShop, Date.now() + 24 * 3600_000]), { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 24 * 3600, path: '/' });
+      return res;
+    }
+  }
   const shop = claimedShop(request.cookies.get(CLAIM_COOKIE)?.value);
   if (!shop) return NextResponse.redirect(new URL('/shopify-app/', env.appBaseUrl()));
   const ctx = await getClient();

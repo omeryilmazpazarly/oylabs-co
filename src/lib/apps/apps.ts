@@ -390,6 +390,8 @@ export interface PublicConfig {
     customerAccountClientId: string | null;
     customerAccountEndpoint: string | null;
     customerAccountAuthEndpoint: string | null;
+    /** The app's privacy policy, a page in the merchant's own store. */
+    privacyPolicyUrl: string | null;
   };
   settings: AppSettings;
   home: PublicSection[];
@@ -431,6 +433,9 @@ export function buildPublicConfig(app: MobileApp, baseUrl: string, nowMs = now()
       customerAccountClientId: app.customer_client_id,
       customerAccountEndpoint: app.customer_api_endpoint,
       customerAccountAuthEndpoint: app.customer_auth_endpoint,
+      privacyPolicyUrl: app.store_domain
+        ? ((getDb().prepare('SELECT privacy_url FROM shopify_installs WHERE shop = ? AND uninstalled_at IS NULL').get(app.store_domain) as { privacy_url: string | null } | undefined)?.privacy_url ?? null)
+        : null,
     },
     settings,
     home,

@@ -484,6 +484,14 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE mobile_apps ADD COLUMN billing_source TEXT NOT NULL DEFAULT 'stripe';
   `,
+
+  /* 9 — The store as a sales channel: its channel connection, the app's privacy page in
+     the merchant's own store, and when the store's products were published to the app. */
+  `
+  ALTER TABLE shopify_installs ADD COLUMN channel_id TEXT;
+  ALTER TABLE shopify_installs ADD COLUMN privacy_url TEXT;
+  ALTER TABLE shopify_installs ADD COLUMN products_published_at INTEGER;
+  `,
 ];
 
 export type Db = Database.Database;

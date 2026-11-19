@@ -18,12 +18,19 @@ import { registerWebhooks } from './shopify';
 
 const API_VERSION = '2026-07';
 const SHOP = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/;
+export { API_VERSION };
 
 export const SHOPIFY_SCOPES = [
   'read_products',
   'read_inventory',
   'read_orders',
   'read_fulfillments',
+  // Sales channel: the channel connection and which products the app may sell.
+  'read_product_listings',
+  'read_publications',
+  'write_publications',
+  // The app's privacy policy is a page in the merchant's own store.
+  'write_online_store_pages',
   'unauthenticated_read_product_listings',
   'unauthenticated_read_product_inventory',
   'unauthenticated_read_product_tags',
@@ -128,7 +135,7 @@ async function exchangeCode(shop: string, code: string): Promise<{ token: string
   return { token: json.access_token, scopes: json.scope ?? '' };
 }
 
-async function adminGraphql<T>(shop: string, token: string, query: string, variables: Record<string, unknown> = {}): Promise<T> {
+export async function adminGraphql<T>(shop: string, token: string, query: string, variables: Record<string, unknown> = {}): Promise<T> {
   const res = await fetch(`https://${shop}/admin/api/${API_VERSION}/graphql.json`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-shopify-access-token': token },
@@ -159,13 +166,16 @@ async function storefrontToken(shop: string, token: string): Promise<string | nu
   return created.storefrontAccessTokenCreate.storefrontAccessToken?.accessToken ?? null;
 }
 
-interface Install {
+export interface Install {
   shop: string;
   token_enc: string;
   storefront_token: string | null;
   scopes: string;
   installed_at: number;
   uninstalled_at: number | null;
+  privacy_url: string | null;
+  channel_id: string | null;
+  products_published_at: number | null;
 }
 
 export function getInstall(shop: string): Install | null {
@@ -173,9 +183,8 @@ export function getInstall(shop: string): Install | null {
   return row && !row.uninstalled_at ? row : null;
 }
 
-/** Callback: trade the code for a token and remember the install. */
-export async function completeInstall(shop: string, code: string): Promise<Install> {
-  const { token, scopes } = await exchangeCode(shop, code);
+/** Remembers a store's offline token and a Storefront token made from it. */
+export async function saveInstall(shop: string, token: string, scopes: string): Promise<Install> {
   const sf = await storefrontToken(shop, token).catch((err) => {
     log.error('shopify_oauth.storefront_token_failed', { shop, error: errorSummary(err) });
     return null;
@@ -184,10 +193,23 @@ export async function completeInstall(shop: string, code: string): Promise<Insta
     .prepare(
       `INSERT INTO shopify_installs (shop, token_enc, storefront_token, scopes, installed_at, uninstalled_at)
        VALUES (@shop, @token, @sf, @scopes, @at, NULL)
-       ON CONFLICT(shop) DO UPDATE SET token_enc = @token, storefront_token = @sf, scopes = @scopes, installed_at = @at, uninstalled_at = NULL`,
+       ON CONFLICT(shop) DO UPDATE SET token_enc = @token, storefront_token = COALESCE(@sf, storefront_token), scopes = @scopes, installed_at = @at, uninstalled_at = NULL`,
     )
     .run({ shop, token: encryptSecret(token), sf, scopes, at: now() });
   return getInstall(shop)!;
+}
+
+/** Callback: trade the code for a token and remember the install. */
+export async function completeInstall(shop: string, code: string): Promise<Install> {
+  const { token, scopes } = await exchangeCode(shop, code);
+  return saveInstall(shop, token, scopes);
+}
+
+/** True when the stored grant lacks a scope the app now asks for. */
+export function needsScopes(install: Install): boolean {
+  const have = new Set(install.scopes.split(',').map((s) => s.trim()));
+  // write_x implies read_x, and Shopify reports only the write scope.
+  return SHOPIFY_SCOPES.split(',').some((s) => !have.has(s) && !have.has(s.replace(/^read_/, 'write_')));
 }
 
 /**

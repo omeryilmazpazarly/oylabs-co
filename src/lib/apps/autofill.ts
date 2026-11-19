@@ -326,7 +326,7 @@ export function previewConfig(setup: StoreSetup, layout: LayoutId): PublicConfig
     version: 1,
     updatedAt: Date.now(),
     status: 'setup',
-    store: { domain: setup.domain, storefrontToken: null, shopId: null, customerAccountClientId: null, customerAccountEndpoint: null, customerAccountAuthEndpoint: null },
+    store: { domain: setup.domain, storefrontToken: null, shopId: null, customerAccountClientId: null, customerAccountEndpoint: null, customerAccountAuthEndpoint: null, privacyPolicyUrl: null },
     settings,
     home,
     layout: LAYOUTS[layout].layout,
