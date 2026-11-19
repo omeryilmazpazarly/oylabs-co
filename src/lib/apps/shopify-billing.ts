@@ -14,7 +14,7 @@ import { getInstall } from './shopify-oauth';
 const API_VERSION = '2026-07';
 
 export function shopifyPricingUrl(shop: string): string {
-  const handle = process.env.SHOPIFY_APP_HANDLE || 'oy-labs-app-builder';
+  const handle = process.env.SHOPIFY_APP_HANDLE || 'oy-labs-mobile-app-builder';
   return `https://admin.shopify.com/store/${shop.replace(/\.myshopify\.com$/, '')}/charges/${handle}/pricing_plans`;
 }
 

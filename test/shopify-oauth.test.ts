@@ -80,7 +80,7 @@ describe('Shopify managed pricing', () => {
     expect(statusFromShopify('FROZEN')).toBe('past_due');
     expect(statusFromShopify('CANCELLED')).toBe('canceled');
     expect(statusFromShopify('PENDING')).toBeNull();
-    expect(shopifyPricingUrl('my-shop.myshopify.com')).toBe('https://admin.shopify.com/store/my-shop/charges/oy-labs-app-builder/pricing_plans');
+    expect(shopifyPricingUrl('my-shop.myshopify.com')).toBe('https://admin.shopify.com/store/my-shop/charges/oy-labs-mobile-app-builder/pricing_plans');
   });
 
   it('only changes apps billed by Shopify', async () => {
