@@ -18,7 +18,7 @@ export default function TarzSupportPage() {
   return (
     <LegalPage crumb="Support" title="Tarz Support">
       <Section title="Contact us">
-        <p>Email <a href="mailto:hello@oylabs.co" className="text-ink hover:underline">hello@oylabs.co</a> with your store address. We reply within one business day, in English or Arabic.</p>
+        <p>Email <a href="mailto:hi@oylabs.co" className="text-ink hover:underline">hi@oylabs.co</a> with your store address. We reply within one business day, in English or Arabic.</p>
       </Section>
       <Section title="Common questions">
         {FAQ.map(([q, answer]) => (

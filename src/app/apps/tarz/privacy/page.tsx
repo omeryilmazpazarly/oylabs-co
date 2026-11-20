@@ -18,7 +18,7 @@ export default function TarzPrivacyPage() {
     >
       <Section title="1. Who we are">
         <p>Tarz (&ldquo;the app&rdquo;) is a Shopify application developed and operated by <strong className="text-ink">OY Labs Ltd</strong>.</p>
-        <p>Contact: <a href="mailto:hello@oylabs.co" className={a}>hello@oylabs.co</a> · Website: <a href="https://oylabs.co" className={a}>https://oylabs.co</a></p>
+        <p>Contact: <a href="mailto:hi@oylabs.co" className={a}>hi@oylabs.co</a> · Website: <a href="https://oylabs.co" className={a}>https://oylabs.co</a></p>
       </Section>
       <Section title="2. Data we collect from merchants">
         <ul className="list-disc pl-5 space-y-1">
@@ -63,7 +63,7 @@ export default function TarzPrivacyPage() {
         <p>All traffic uses HTTPS. Merchants&rsquo; AI keys are encrypted at rest and never sent to browsers. Requests from Shopify are signature-verified, and access to production systems is limited to OY Labs staff who need it.</p>
       </Section>
       <Section title="8. Your rights">
-        <p>Shoppers should contact the store they bought from; the store can make requests through Shopify. Merchants can contact <a href="mailto:hello@oylabs.co" className={a}>hello@oylabs.co</a> to access, correct or delete their data.</p>
+        <p>Shoppers should contact the store they bought from; the store can make requests through Shopify. Merchants can contact <a href="mailto:hi@oylabs.co" className={a}>hi@oylabs.co</a> to access, correct or delete their data.</p>
       </Section>
       <Section title="9. Changes">
         <p>We will post any changes on this page and update the date above.</p>

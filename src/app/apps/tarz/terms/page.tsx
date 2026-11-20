@@ -34,7 +34,7 @@ export default function TarzTermsPage() {
         <p>You can uninstall the app at any time. We delete your shop&rsquo;s data as described in the privacy policy. We may suspend accounts that abuse the service or break these terms.</p>
       </Section>
       <Section title="9. Contact">
-        <p>Questions: <a href="mailto:hello@oylabs.co" className="text-ink hover:underline">hello@oylabs.co</a></p>
+        <p>Questions: <a href="mailto:hi@oylabs.co" className="text-ink hover:underline">hi@oylabs.co</a></p>
       </Section>
     </LegalPage>
   );
